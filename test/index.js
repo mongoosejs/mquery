@@ -3,43 +3,21 @@ var mquery = require('../')
 var mongo = require('mongodb')
 var assert = require('assert')
 var slice = require('sliced')
-var utils = mquery.utils
-
-// TODO
-// change tests so we don't directly require mongodb driver.
-// need to be able to run these with multiple implementations.
-// (nodejs, mongo shell, browser, etc)
 
 describe('mquery', function(){
-  var db;
+  var col;
 
   before(function(done){
-    mongo.Db.connect('mongodb://localhost/mquery', function (err, db_) {
+    // get the env specific collection interface
+    require('./env').getCollection(function (err, collection) {
       assert.ifError(err);
-      db = db_;
-      db.stuff = db.collection('stuff');
-
-      // fix the weird driver api
-      var find = db.stuff.find;
-      db.stuff.find = function () {
-        var args = slice(arguments);
-        if ('function' == typeof args[args.length-1]) {
-          var cb = args.pop();
-          return find.apply(db.stuff, args).toArray(utils.tick(cb));
-        } else {
-          return find.apply(db.stuff, args);
-        }
-      }
-
-      db.stuff.opts.safe = true; // lame
-      db.dropDatabase(done);
-    })
+      col = collection;
+      done();
+    });
   })
 
   after(function(done){
-    db.dropDatabase(function () {
-      db.close(done);
-    })
+    require('./env').dropCollection(done);
   })
 
   describe('mquery', function(){
@@ -58,8 +36,8 @@ describe('mquery', function(){
     })
     describe('criteria', function(){
       it('if collection-like is used as collection', function(){
-        var m = mquery(db.stuff);
-        assert.equal(db.stuff, m._collection);
+        var m = mquery(col);
+        assert.equal(col, m._collection);
       })
       it('non-collection-like is used as criteria', function(){
         var m = mquery({ works: true });
@@ -69,7 +47,7 @@ describe('mquery', function(){
     })
     describe('options', function(){
       it('are merged when passed', function(){
-        var m = mquery(db.stuff, { safe: true });
+        var m = mquery(col, { safe: true });
         assert.deepEqual({ safe: true }, m.options);
         var m = mquery({ name: 'mquery' }, { safe: true });
         assert.deepEqual({ safe: true }, m.options);
@@ -92,8 +70,8 @@ describe('mquery', function(){
     it('calls associated methods', function(){
       var m = mquery();
       assert.equal(m._collection, null);
-      m.setOptions({ collection: db.stuff });
-      assert.equal(m._collection, db.stuff);
+      m.setOptions({ collection: col });
+      assert.equal(m._collection, col);
     })
     it('directly sets option when no method exists', function(){
       var m = mquery();
@@ -113,12 +91,12 @@ describe('mquery', function(){
   describe('collection', function(){
     it('sets the _collection', function(){
       var m = mquery();
-      m.collection(db.stuff);
-      assert.equal(m._collection, db.stuff);
+      m.collection(col);
+      assert.equal(m._collection, col);
     })
     it('is chainable', function(){
       var m = mquery();
-      var n = m.collection(db.stuff);
+      var n = m.collection(col);
       assert.equal(m, n);
     })
   })
@@ -137,12 +115,6 @@ describe('mquery', function(){
     })
   })
 
-  // TODO
-  // where accepts a Query
-  // TODO
-  // merge accepts plain objects
-  // TODO
-  // test merging updat queries
   describe('where', function(){
     it('without arguments', function(){
       var m = mquery();
@@ -162,7 +134,12 @@ describe('mquery', function(){
         m.where({ name: 'flawed' });
         assert.strictEqual(m._conditions.name, 'flawed');
       })
-
+      it('that is a query', function(){
+        var m = mquery({ name: 'first' });
+        var n = mquery({ name: 'changed' });
+        m.where(n);
+        assert.strictEqual(m._conditions.name, 'changed');
+      })
       it('that is a string', function(){
         var m = mquery();
         m.where('name');
@@ -1018,15 +995,15 @@ describe('mquery', function(){
 
     describe('executes', function(){
       before(function (done) {
-        db.stuff.insert({ name: 'mquery' }, { safe: true }, done);
+        col.insert({ name: 'mquery' }, { safe: true }, done);
       });
 
       after(function(done){
-        db.stuff.remove({ name: 'mquery' }, done);
+        col.remove({ name: 'mquery' }, done);
       })
 
       it('when criteria is passed with a callback', function(done){
-        mquery(db.stuff).find({ name: 'mquery' }, function (err, docs) {
+        mquery(col).find({ name: 'mquery' }, function (err, docs) {
           assert.ifError(err);
           assert.equal(1, docs.length);
           done();
@@ -1034,14 +1011,14 @@ describe('mquery', function(){
       })
       it('when Quer yis passed with a callback', function(done){
         var m = mquery({ name: 'mquery' });
-        mquery(db.stuff).find(m, function (err, docs) {
+        mquery(col).find(m, function (err, docs) {
           assert.ifError(err);
           assert.equal(1, docs.length);
           done();
         })
       })
       it('when just a callback is passed', function(done){
-        mquery({ name: 'mquery' }).collection(db.stuff).find(function (err, docs) {
+        mquery({ name: 'mquery' }).collection(col).find(function (err, docs) {
           assert.ifError(err);
           assert.equal(1, docs.length);
           done();
@@ -1083,15 +1060,15 @@ describe('mquery', function(){
 
     describe('executes', function(){
       before(function (done) {
-        db.stuff.insert({ name: 'mquery findone' }, { safe: true }, done);
+        col.insert({ name: 'mquery findone' }, { safe: true }, done);
       });
 
       after(function(done){
-        db.stuff.remove({ name: 'mquery findone' }, done);
+        col.remove({ name: 'mquery findone' }, done);
       })
 
       it('when criteria is passed with a callback', function(done){
-        mquery(db.stuff).findOne({ name: 'mquery findone' }, function (err, doc) {
+        mquery(col).findOne({ name: 'mquery findone' }, function (err, doc) {
           assert.ifError(err);
           assert.ok(doc);
           assert.equal('mquery findone', doc.name);
@@ -1099,8 +1076,8 @@ describe('mquery', function(){
         })
       })
       it('when Query is passed with a callback', function(done){
-        var m = mquery(db.stuff).where({ name: 'mquery findone' });
-        mquery(db.stuff).findOne(m, function (err, doc) {
+        var m = mquery(col).where({ name: 'mquery findone' });
+        mquery(col).findOne(m, function (err, doc) {
           assert.ifError(err);
           assert.ok(doc);
           assert.equal('mquery findone', doc.name);
@@ -1108,7 +1085,7 @@ describe('mquery', function(){
         })
       })
       it('when just a callback is passed', function(done){
-        mquery({ name: 'mquery findone' }).collection(db.stuff).findOne(function (err, doc) {
+        mquery({ name: 'mquery findone' }).collection(col).findOne(function (err, doc) {
           assert.ifError(err);
           assert.ok(doc);
           assert.equal('mquery findone', doc.name);
@@ -1151,15 +1128,15 @@ describe('mquery', function(){
 
     describe('executes', function(){
       before(function (done) {
-        db.stuff.insert({ name: 'mquery count' }, { safe: true }, done);
+        col.insert({ name: 'mquery count' }, { safe: true }, done);
       });
 
       after(function(done){
-        db.stuff.remove({ name: 'mquery count' }, done);
+        col.remove({ name: 'mquery count' }, done);
       })
 
       it('when criteria is passed with a callback', function(done){
-        mquery(db.stuff).count({ name: 'mquery count' }, function (err, count) {
+        mquery(col).count({ name: 'mquery count' }, function (err, count) {
           assert.ifError(err);
           assert.ok(count);
           assert.ok(1 === count);
@@ -1168,7 +1145,7 @@ describe('mquery', function(){
       })
       it('when Query is passed with a callback', function(done){
         var m = mquery({ name: 'mquery count' });
-        mquery(db.stuff).count(m, function (err, count) {
+        mquery(col).count(m, function (err, count) {
           assert.ifError(err);
           assert.ok(count);
           assert.ok(1 === count);
@@ -1176,7 +1153,7 @@ describe('mquery', function(){
         })
       })
       it('when just a callback is passed', function(done){
-        mquery({ name: 'mquery count' }).collection(db.stuff).count(function (err, count) {
+        mquery({ name: 'mquery count' }).collection(col).count(function (err, count) {
           assert.ifError(err);
           assert.ok(1 === count);
           done();
@@ -1234,15 +1211,15 @@ describe('mquery', function(){
 
     describe('executes', function(){
       before(function (done) {
-        db.stuff.insert({ name: 'mquery distinct', age: 1 }, { safe: true }, done);
+        col.insert({ name: 'mquery distinct', age: 1 }, { safe: true }, done);
       });
 
       after(function(done){
-        db.stuff.remove({ name: 'mquery distinct' }, done);
+        col.remove({ name: 'mquery distinct' }, done);
       })
 
       it('when distinct arg is passed with a callback', function(done){
-        mquery(db.stuff).distinct('distinct', function (err, doc) {
+        mquery(col).distinct('distinct', function (err, doc) {
           assert.ifError(err);
           assert.ok(doc);
           done();
@@ -1250,7 +1227,7 @@ describe('mquery', function(){
       })
       describe('when criteria is passed with a callback', function(){
         it('if distinct arg was declared', function(done){
-          mquery(db.stuff).distinct('age').distinct({ name: 'mquery distinct' }, function (err, doc) {
+          mquery(col).distinct('age').distinct({ name: 'mquery distinct' }, function (err, doc) {
             assert.ifError(err);
             assert.ok(doc);
             done();
@@ -1258,14 +1235,14 @@ describe('mquery', function(){
         })
         it('but not if distinct arg was not declared', function(){
           assert.throws(function(){
-            mquery(db.stuff).distinct({ name: 'mquery distinct' }, function(){})
+            mquery(col).distinct({ name: 'mquery distinct' }, function(){})
           }, /No value for `distinct`/)
         })
       })
       describe('when Query is passed with a callback', function(){
         var m = mquery({ name: 'mquery distinct' });
         it('if distinct arg was declared', function(done){
-          mquery(db.stuff).distinct('age').distinct(m, function (err, doc) {
+          mquery(col).distinct('age').distinct(m, function (err, doc) {
             assert.ifError(err);
             assert.ok(doc);
             done();
@@ -1273,14 +1250,14 @@ describe('mquery', function(){
         })
         it('but not if distinct arg was not declared', function(){
           assert.throws(function(){
-            mquery(db.stuff).distinct(m, function(){})
+            mquery(col).distinct(m, function(){})
           }, /No value for `distinct`/)
         })
       })
       describe('when just a callback is passed', function(done){
         it('if distinct arg was declared', function(done){
           var m = mquery({ name: 'mquery distinct' });
-          m.collection(db.stuff);
+          m.collection(col);
           m.distinct('age');
           m.distinct(function (err, doc) {
             assert.ifError(err);
@@ -1290,7 +1267,7 @@ describe('mquery', function(){
         })
         it('but not if no distinct arg was declared', function(){
           var m = mquery();
-          m.collection(db.stuff);
+          m.collection(col);
           assert.throws(function () {
             m.distinct(function(){});
           }, /No value for `distinct`/);
@@ -1327,7 +1304,7 @@ describe('mquery', function(){
       assert.equal('update', n.op);
     });
 
-    it('overwrites update doc arg', function(){
+    it('merges update doc arg', function(){
       var m = mquery().where({ name: 'mquery' }).update({ x: 'stuff' });
       m.update({ z: 'stuff' });
       assert.deepEqual(m._update, { z: 'stuff', x: 'stuff' });
@@ -1351,17 +1328,18 @@ describe('mquery', function(){
     describe('executes', function(){
       var id;
       before(function (done) {
+        // TODO refactor to not use id
         id = new mongo.ObjectID;
-        db.stuff.insert({ _id: id, name: 'mquery update', age: 1 }, { safe: true }, done);
+        col.insert({ _id: id, name: 'mquery update', age: 1 }, { safe: true }, done);
       });
 
       after(function(done){
-        db.stuff.remove({ _id: id }, done);
+        col.remove({ _id: id }, done);
       })
 
       describe('when conds + doc + opts + callback passed', function(){
         it('works', function(done){
-          var m = mquery(db.stuff).where({ _id: id })
+          var m = mquery(col).where({ _id: id })
           m.update({}, { name: 'Sparky' }, { safe: true }, function (err, num) {
             assert.ifError(err);
             assert.ok(1 === num);
@@ -1376,7 +1354,7 @@ describe('mquery', function(){
 
       describe('when conds + doc + callback passed', function(){
         it('works', function (done) {
-          var m = mquery(db.stuff).update({ _id: id }, { name: 'fairgrounds' }, function (err, num, doc) {
+          var m = mquery(col).update({ _id: id }, { name: 'fairgrounds' }, function (err, num, doc) {
             assert.ifError(err);
             assert.ok(1, num);
             m.findOne(function (err, doc) {
@@ -1390,7 +1368,7 @@ describe('mquery', function(){
 
       describe('when doc + callback passed', function(){
         it('works', function (done) {
-          var m = mquery(db.stuff).where({ _id: id }).update({ name: 'changed' }, function (err, num, doc) {
+          var m = mquery(col).where({ _id: id }).update({ name: 'changed' }, function (err, num, doc) {
             assert.ifError(err);
             assert.ok(1, num);
             m.findOne(function (err, doc) {
@@ -1404,7 +1382,7 @@ describe('mquery', function(){
 
       describe('when just callback passed', function(){
         it('works', function (done) {
-          var m = mquery(db.stuff).where({ _id: id });
+          var m = mquery(col).where({ _id: id });
           m.setOptions({ safe: true });
           m.update({ name: 'Frankenweenie' });
           m.update(function (err, num) {
@@ -1421,7 +1399,7 @@ describe('mquery', function(){
 
       describe('without a callback', function(){
         it('when forced by exec()', function(done){
-          var m = mquery(db.stuff).where({ _id: id });
+          var m = mquery(col).where({ _id: id });
           m.setOptions({ safe: true, multi: true });
           m.update({ name: 'forced' });
 
@@ -1441,7 +1419,7 @@ describe('mquery', function(){
 
       describe('except when update doc is empty and missing overwrite flag', function(){
         it('works', function (done) {
-          var m = mquery(db.stuff).where({ _id: id });
+          var m = mquery(col).where({ _id: id });
           m.setOptions({ safe: true });
           m.update({ }, function (err, num) {
             assert.ifError(err);
@@ -1461,7 +1439,7 @@ describe('mquery', function(){
 
       describe('when update doc is empty with overwrite flag', function(){
         it('works', function (done) {
-          var m = mquery(db.stuff).where({ _id: id });
+          var m = mquery(col).where({ _id: id });
           m.setOptions({ safe: true, overwrite: true });
           m.update({ }, function (err, num) {
             assert.ifError(err);
@@ -1478,7 +1456,7 @@ describe('mquery', function(){
 
       describe('when boolean (true) - exec()', function(){
         it('works', function(done){
-          var m = mquery(db.stuff).where({ _id: id });
+          var m = mquery(col).where({ _id: id });
           m.update({ name: 'bool' }).update(true);
           setTimeout(function () {
             m.findOne(function (err, doc) {
@@ -1497,22 +1475,22 @@ describe('mquery', function(){
     describe('with 0 args', function(){
       var name = 'remove: no args test'
       before(function(done){
-        db.stuff.insert({ name: name }, { safe: true }, done)
+        col.insert({ name: name }, { safe: true }, done)
       })
       after(function(done){
-        db.stuff.remove({ name: name }, { safe: true }, done)
+        col.remove({ name: name }, { safe: true }, done)
       })
 
       it('does not execute', function(done){
-        var remove = db.stuff.remove;
-        db.stuff.remove = function () {
-          db.stuff.remove = remove;
+        var remove = col.remove;
+        col.remove = function () {
+          col.remove = remove;
           done(new Error('remove executed!'));
         }
 
-        var m = mquery(db.stuff).where({ name: name }).remove()
+        var m = mquery(col).where({ name: name }).remove()
         setTimeout(function () {
-          db.stuff.remove = remove;
+          col.remove = remove;
           done();
         }, 10);
       })
@@ -1526,30 +1504,30 @@ describe('mquery', function(){
     describe('with 1 argument', function(){
       var name = 'remove: 1 arg test'
       before(function(done){
-        db.stuff.insert({ name: name }, { safe: true }, done)
+        col.insert({ name: name }, { safe: true }, done)
       })
       after(function(done){
-        db.stuff.remove({ name: name }, { safe: true }, done)
+        col.remove({ name: name }, { safe: true }, done)
       })
 
       describe('that is a', function(){
         it('plain object', function(){
-          var m = mquery(db.stuff).remove({ name: 'Whiskers' });
+          var m = mquery(col).remove({ name: 'Whiskers' });
           m.remove({ color: '#fff' })
           assert.deepEqual({ name: 'Whiskers', color: '#fff' }, m._conditions);
         })
 
         it('query', function(){
           var q = mquery({ color: '#fff' });
-          var m = mquery(db.stuff).remove({ name: 'Whiskers' });
+          var m = mquery(col).remove({ name: 'Whiskers' });
           m.remove(q)
           assert.deepEqual({ name: 'Whiskers', color: '#fff' }, m._conditions);
         })
 
         it('function', function(done){
-          mquery(db.stuff, { safe: true }).where({name: name}).remove(function (err) {
+          mquery(col, { safe: true }).where({name: name}).remove(function (err) {
             assert.ifError(err);
-            mquery(db.stuff).findOne({ name: name }, function (err, doc) {
+            mquery(col).findOne({ name: name }, function (err, doc) {
               assert.ifError(err);
               assert.equal(null, doc);
               done();
@@ -1558,14 +1536,14 @@ describe('mquery', function(){
         })
 
         it('boolean (true) - execute', function(done){
-          db.stuff.insert({ name: name }, { safe: true }, function (err) {
+          col.insert({ name: name }, { safe: true }, function (err) {
             assert.ifError(err);
-            mquery(db.stuff).findOne({ name: name }, function (err, doc) {
+            mquery(col).findOne({ name: name }, function (err, doc) {
               assert.ifError(err);
               assert.ok(doc);
-              mquery(db.stuff).remove(true);
+              mquery(col).remove(true);
               setTimeout(function () {
-                mquery(db.stuff).find(function (err, docs) {
+                mquery(col).find(function (err, docs) {
                   assert.ifError(err);
                   assert.ok(docs);
                   assert.equal(0, docs.length);
@@ -1581,11 +1559,11 @@ describe('mquery', function(){
     describe('with 2 arguments', function(){
       var name = 'remove: 2 arg test'
       beforeEach(function(done){
-        db.stuff.remove({}, { safe: true }, function (err) {
+        col.remove({}, { safe: true }, function (err) {
           assert.ifError(err);
-          db.stuff.insert([{ name: 'shelly' }, { name: name }], { safe: true }, function (err) {
+          col.insert([{ name: 'shelly' }, { name: name }], { safe: true }, function (err) {
             assert.ifError(err);
-            mquery(db.stuff).find(function (err, docs) {
+            mquery(col).find(function (err, docs) {
               assert.ifError(err);
               assert.equal(2, docs.length);
               done();
@@ -1596,9 +1574,9 @@ describe('mquery', function(){
 
       describe('plain object + callback', function(){
         it('works', function(done){
-          mquery(db.stuff).remove({ name: name }, function (err) {
+          mquery(col).remove({ name: name }, function (err) {
             assert.ifError(err);
-            mquery(db.stuff).find(function (err, docs) {
+            mquery(col).find(function (err, docs) {
               assert.ifError(err);
               assert.ok(docs);
               assert.equal(1, docs.length);
@@ -1612,9 +1590,9 @@ describe('mquery', function(){
       describe('mquery + callback', function(){
         it('works', function(done){
           var m = mquery({ name: name });
-          mquery(db.stuff).remove(m, function (err) {
+          mquery(col).remove(m, function (err) {
             assert.ifError(err);
-            mquery(db.stuff).find(function (err, docs) {
+            mquery(col).find(function (err, docs) {
               assert.ifError(err);
               assert.ok(docs);
               assert.equal(1, docs.length);
@@ -1653,9 +1631,9 @@ describe('mquery', function(){
         })
       })
       it('that is a function', function(done){
-        db.stuff.insert({ name: name }, { safe: true }, function (err) {
+        col.insert({ name: name }, { safe: true }, function (err) {
           assert.ifError(err);
-          var m = mquery({ name: name }).collection(db.stuff);
+          var m = mquery({ name: name }).collection(col);
           name = '1 arg';
           var n = m.update({ $set: { name: name }});
           n.findOneAndUpdate(function (err, doc) {
@@ -1669,20 +1647,20 @@ describe('mquery', function(){
     })
     describe('with 2 args', function(){
       it('conditions + update', function(){
-        var m = mquery(db.stuff);
+        var m = mquery(col);
         m.findOneAndUpdate({ name: name }, { age: 100 });
         assert.deepEqual({ name: name }, m._conditions);
         assert.deepEqual({ age: 100 }, m._update);
       })
       it('query + update', function(){
         var n = mquery({ name: name });
-        var m = mquery(db.stuff);
+        var m = mquery(col);
         m.findOneAndUpdate(n, { age: 100 });
         assert.deepEqual({ name: name }, m._conditions);
         assert.deepEqual({ age: 100 }, m._update);
       })
       it('update + callback', function(done){
-        var m = mquery(db.stuff).where({ name: name });
+        var m = mquery(col).where({ name: name });
         m.findOneAndUpdate({ $inc: { age: 10 }}, function (err, doc) {
           assert.ifError(err);
           assert.equal(10, doc.age);
@@ -1699,7 +1677,7 @@ describe('mquery', function(){
         assert.deepEqual({ new: false }, n.options);
       })
       it('conditions + update + callback', function(done){
-        var m = mquery(db.stuff);
+        var m = mquery(col);
         m.findOneAndUpdate({ name: name }, { works: true }, function (err, doc) {
           assert.ifError(err);
           assert.ok(doc);
@@ -1711,7 +1689,7 @@ describe('mquery', function(){
     })
     describe('with 4 args', function(){
       it('conditions + update + options + callback', function(done){
-        var m = mquery(db.stuff);
+        var m = mquery(col);
         m.findOneAndUpdate({ name: name }, { works: false }, { new: false },  function (err, doc) {
           assert.ifError(err);
           assert.ok(doc);
@@ -1749,9 +1727,9 @@ describe('mquery', function(){
         })
       })
       it('that is a function', function(done){
-        db.stuff.insert({ name: name }, { safe: true }, function (err) {
+        col.insert({ name: name }, { safe: true }, function (err) {
           assert.ifError(err);
-          var m = mquery({ name: name }).collection(db.stuff);
+          var m = mquery({ name: name }).collection(col);
           m.findOneAndRemove(function (err, doc) {
             assert.ifError(err);
             assert.ok(doc);
@@ -1763,22 +1741,22 @@ describe('mquery', function(){
     })
     describe('with 2 args', function(){
       it('conditions + options', function(){
-        var m = mquery(db.stuff);
+        var m = mquery(col);
         m.findOneAndRemove({ name: name }, { new: false });
         assert.deepEqual({ name: name }, m._conditions);
         assert.deepEqual({ new: false }, m.options);
       })
       it('query + options', function(){
         var n = mquery({ name: name });
-        var m = mquery(db.stuff);
+        var m = mquery(col);
         m.findOneAndRemove(n, { sort: { x: 1 }});
         assert.deepEqual({ name: name }, m._conditions);
         assert.deepEqual({ sort: [[ 'x', 1 ]]}, m.options);
       })
       it('conditions + callback', function(done){
-        db.stuff.insert({ name: name }, { safe: true }, function (err) {
+        col.insert({ name: name }, { safe: true }, function (err) {
           assert.ifError(err);
-          var m = mquery(db.stuff);
+          var m = mquery(col);
           m.findOneAndRemove({ name: name }, function (err, doc) {
             assert.ifError(err);
             assert.equal(name, doc.name);
@@ -1787,10 +1765,10 @@ describe('mquery', function(){
         });
       })
       it('query + callback', function(done){
-        db.stuff.insert({ name: name }, { safe: true }, function (err) {
+        col.insert({ name: name }, { safe: true }, function (err) {
           assert.ifError(err);
           var n = mquery({ name: name })
-          var m = mquery(db.stuff);
+          var m = mquery(col);
           m.findOneAndRemove(n, function (err, doc) {
             assert.ifError(err);
             assert.equal(name, doc.name);
@@ -1802,9 +1780,9 @@ describe('mquery', function(){
     describe('with 3 args', function(){
       it('conditions + options + callback', function(done){
         name = 'findOneAndRemove + conds + options + cb';
-        db.stuff.insert([{ name: name }, { name: 'a' }], { safe: true }, function (err) {
+        col.insert([{ name: name }, { name: 'a' }], { safe: true }, function (err) {
           assert.ifError(err);
-          var m = mquery(db.stuff);
+          var m = mquery(col);
           m.findOneAndRemove({ name: name }, { sort: { name: 1 }}, function (err, doc) {
             assert.ifError(err);
             assert.ok(doc);
@@ -1818,11 +1796,11 @@ describe('mquery', function(){
 
   describe('exec', function(){
     beforeEach(function(done){
-      db.stuff.insert([{ name: 'exec', age: 1 }, { name: 'exec', age: 2 }], done);
+      col.insert([{ name: 'exec', age: 1 }, { name: 'exec', age: 2 }], done);
     })
 
     afterEach(function(done){
-      mquery(db.stuff).remove(done);
+      mquery(col).remove(done);
     })
 
     it('requires an op', function(){
@@ -1832,7 +1810,7 @@ describe('mquery', function(){
     })
 
     it('find', function(done){
-      var m = mquery(db.stuff).find({ name: 'exec' });
+      var m = mquery(col).find({ name: 'exec' });
       m.exec(function (err, docs) {
         assert.ifError(err);
         assert.equal(2, docs.length);
@@ -1841,7 +1819,7 @@ describe('mquery', function(){
     })
 
     it('findOne', function(done){
-      var m = mquery(db.stuff).findOne({ age: 2 });
+      var m = mquery(col).findOne({ age: 2 });
       m.exec(function (err, doc) {
         assert.ifError(err);
         assert.equal(2, doc.age);
@@ -1850,7 +1828,7 @@ describe('mquery', function(){
     })
 
     it('count', function(done){
-      var m = mquery(db.stuff).count({ name: 'exec' });
+      var m = mquery(col).count({ name: 'exec' });
       m.exec(function (err, count) {
         assert.ifError(err);
         assert.equal(2, count);
@@ -1860,7 +1838,7 @@ describe('mquery', function(){
 
     it('distinct', function(done){
       var m = mquery({ name: 'exec' });
-      m.collection(db.stuff);
+      m.collection(col);
       m.distinct('age');
       m.exec(function (err, array) {
         assert.ifError(err);
@@ -1876,7 +1854,7 @@ describe('mquery', function(){
       var num;
 
       it('with a callback', function(done){
-        var m = mquery(db.stuff);
+        var m = mquery(col);
         m.where({ name: 'exec' })
 
         m.count(function (err, _num) {
@@ -1887,7 +1865,7 @@ describe('mquery', function(){
           m.exec(function (err, res) {
             assert.ifError(err);
             assert.equal(num, res);
-            mquery(db.stuff).find({ name: 'exec + update' }, function (err, docs) {
+            mquery(col).find({ name: 'exec + update' }, function (err, docs) {
               assert.ifError(err);
               assert.equal(num, docs.length);
               done();
@@ -1897,7 +1875,7 @@ describe('mquery', function(){
       })
 
       it('without a callback', function(done){
-        var m = mquery(db.stuff)
+        var m = mquery(col)
         m.where({ name: 'exec + update' }).setOptions({ multi: true })
         m.update({ name: 'exec' });
 
@@ -1905,7 +1883,7 @@ describe('mquery', function(){
         m.exec();
 
         setTimeout(function () {
-          mquery(db.stuff).find({ name: 'exec' }, function (err, docs) {
+          mquery(col).find({ name: 'exec' }, function (err, docs) {
             assert.ifError(err);
             assert.equal(2, docs.length);
             done();
@@ -1916,7 +1894,7 @@ describe('mquery', function(){
 
     describe('remove', function(){
       it('with a callback', function(done){
-        var m = mquery(db.stuff).where({ age: 2 }).remove();
+        var m = mquery(col).where({ age: 2 }).remove();
         m.exec(function (err, num) {
           assert.ifError(err);
           assert.equal(1, num);
@@ -1925,11 +1903,11 @@ describe('mquery', function(){
       })
 
       it('without a callback', function(done){
-        var m = mquery(db.stuff).where({ age: 1 }).remove();
+        var m = mquery(col).where({ age: 1 }).remove();
         m.exec();
 
         setTimeout(function () {
-          mquery(db.stuff).where('name', 'exec').count(function(err, num) {
+          mquery(col).where('name', 'exec').count(function(err, num) {
             assert.equal(1, num);
             done();
           })
@@ -1939,7 +1917,7 @@ describe('mquery', function(){
 
     describe('findOneAndUpdate', function(){
       it('with a callback', function(done){
-        var m = mquery(db.stuff);
+        var m = mquery(col);
         m.findOneAndUpdate({ name: 'exec', age: 1 }, { $set: { name: 'findOneAndUpdate' }});
         m.exec(function (err, doc) {
           assert.ifError(err);
@@ -1951,13 +1929,13 @@ describe('mquery', function(){
 
     describe('findOneAndRemove', function(){
       it('with a callback', function(done){
-        var m = mquery(db.stuff);
+        var m = mquery(col);
         m.findOneAndRemove({ name: 'exec', age: 2 });
         m.exec(function (err, doc) {
           assert.ifError(err);
           assert.equal('exec', doc.name);
           assert.equal(2, doc.age);
-          mquery(db.stuff).count({ name: 'exec' }, function (err, num) {
+          mquery(col).count({ name: 'exec' }, function (err, num) {
             assert.ifError(err);
             assert.equal(1, num);
             done();
