@@ -3,6 +3,8 @@
 
 Expressive MongoDB query builder.
 
+_work in progress_
+
 ## Installation
 
 via npm:
@@ -15,8 +17,8 @@ Goals:
 - consistant API
 - customizable
 - browser compatibile
-- compatibile with any driver (node-mongodb-native, meteor, mongo shell, etc)
+- compatibile with any driver (node-mongodb-native, mongo shell, etc)
 
 ## License
 
-[MIT](https://github.com/aheckmann/greadme/blob/master/LICENSE)
+[MIT](https://github.com/aheckmann/mquery/blob/master/LICENSE)
