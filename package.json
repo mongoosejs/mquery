@@ -22,6 +22,11 @@
     "mocha": "1.5.0",
     "mongodb": "1.1.8"
   },
+  "bugs": {
+    "url":"https://github.com/learnboost/mquery/issues/new"
+  },
   "author": "Aaron Heckmann <aaron.heckmann+github@gmail.com>",
-  "license": "MIT"
+  "license": "MIT",
+  "keywords": ["mongodb","query","builder"],
+  "homepage": "https://github.com/learnboost/mquery/"
 }
