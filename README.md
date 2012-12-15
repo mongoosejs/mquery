@@ -13,12 +13,14 @@ via npm:
 
 Goals:
 
+```
 [x] flexible
 [x] consistant API
 [x] customizable
 [ ] browser compatibile
 [x] compatibile with node-mongodb-native
 [ ] compatibile with mongo shell
+```
 
 ## License
 
