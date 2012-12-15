@@ -13,11 +13,12 @@ via npm:
 
 Goals:
 
-- flexible
-- consistant API
-- customizable
-- browser compatibile
-- compatibile with any driver (node-mongodb-native, mongo shell, etc)
+[x] flexible
+[x] consistant API
+[x] customizable
+[ ] browser compatibile
+[x] compatibile with node-mongodb-native
+[ ] compatibile with mongo shell
 
 ## License
 
