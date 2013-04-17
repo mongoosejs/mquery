@@ -20,7 +20,7 @@
   },
   "devDependencies": {
     "mocha": "1.5.0",
-    "mongodb": "1.1.8"
+    "mongodb": "1.2.14"
   },
   "bugs": {
     "url":"https://github.com/learnboost/mquery/issues/new"
