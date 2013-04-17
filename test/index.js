@@ -37,7 +37,7 @@ describe('mquery', function(){
     describe('criteria', function(){
       it('if collection-like is used as collection', function(){
         var m = mquery(col);
-        assert.equal(col, m._collection);
+        assert.equal(col, m._collection.collection);
       })
       it('non-collection-like is used as criteria', function(){
         var m = mquery({ works: true });
@@ -71,7 +71,7 @@ describe('mquery', function(){
       var m = mquery();
       assert.equal(m._collection, null);
       m.setOptions({ collection: col });
-      assert.equal(m._collection, col);
+      assert.equal(m._collection.collection, col);
     })
     it('directly sets option when no method exists', function(){
       var m = mquery();
@@ -92,7 +92,7 @@ describe('mquery', function(){
     it('sets the _collection', function(){
       var m = mquery();
       m.collection(col);
-      assert.equal(m._collection, col);
+      assert.equal(m._collection.collection, col);
     })
     it('is chainable', function(){
       var m = mquery();
