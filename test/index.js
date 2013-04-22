@@ -607,7 +607,7 @@ describe('mquery', function(){
 
     it('expects `center`', function(){
       assert.throws(function () {
-        mquery().near('loc', { radius: 3 });
+        mquery().near('loc', { maxDistance: 3 });
       }, /center is required/)
       assert.doesNotThrow(function () {
         mquery().near('loc', { center: [3,4] });
@@ -626,12 +626,8 @@ describe('mquery', function(){
       var m = mquery().where('loc').near({ center: [1,2], maxDistance:4 });
       assert.deepEqual(m._conditions, { loc: { $near: [1,2], $maxDistance: 4}});
     })
-    it('supports maxDistance through radius', function(){
-      var m = mquery().where('loc').near({ center: [1,2], radius:4 });
-      assert.deepEqual(m._conditions, { loc: { $near: [1,2], $maxDistance: 4}});
-    })
     it('is chainable', function(){
-      var m = mquery().where('loc').near({ center: [1,2], radius:4 }).find({ x: 1 });
+      var m = mquery().where('loc').near({ center: [1,2], maxDistance:4 }).find({ x: 1 });
       assert.deepEqual(m._conditions, { loc: { $near: [1,2], $maxDistance: 4}, x: 1});
     })
   })
