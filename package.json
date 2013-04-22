@@ -16,7 +16,8 @@
   ],
   "dependencies": {
     "sliced": "0.0.3",
-    "debug": "0.7.0"
+    "debug": "0.7.0",
+    "regexp-clone": "0.0.1"
   },
   "devDependencies": {
     "mocha": "1.5.0",
