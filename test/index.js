@@ -235,6 +235,33 @@ describe('mquery', function(){
     })
   })
 
+  describe('and', function(){
+    it('pushes onto the internal $and condition', function(){
+      var m = mquery();
+      m.and({ 'Nightmare Before Christmas': true });
+      assert.deepEqual([{'Nightmare Before Christmas': true }], m._conditions.$and)
+    })
+    it('allows passing arrays', function(){
+      var m = mquery();
+      var arg = [{ 'Nightmare Before Christmas': true }, { x: 1 }];
+      m.and(arg);
+      assert.deepEqual(arg, m._conditions.$and)
+    })
+    it('allows calling multiple times', function(){
+      var m = mquery();
+      var arg = [{ looper: true }, { x: 1 }];
+      m.and(arg);
+      m.and({ y: 1 })
+      m.and([{ w: 'oo' }, { z: 'oo'} ])
+      assert.deepEqual([{looper:true},{x:1},{y:1},{w:'oo'},{z:'oo'}], m._conditions.$and)
+    })
+    it('is chainable', function(){
+      var m = mquery();
+      m.and({ o: "k"}).where('name', 'table');
+      assert.deepEqual({ name: 'table', $and: [{ o: 'k' }] }, m._conditions)
+    })
+  })
+
   function generalCondition (type) {
     return function () {
       it('accepts 2 args', function(){
