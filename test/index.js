@@ -465,7 +465,7 @@ describe('mquery', function(){
   describe('within', function(){
     it('is chainable', function(){
       var m = mquery();
-      assert.equal(m.within(), m);
+      assert.equal(m.where('a').within(), m);
     })
     describe('when called with arguments', function(){
       it('must follow where()', function(){
@@ -475,7 +475,7 @@ describe('mquery', function(){
       })
 
       describe('of length 1', function(){
-        it('throws if not a box, polygon, or center', function(){
+        it('throws if not a recognized shape', function(){
           assert.throws(function () {
             mquery().where('loc').within({});
           }, /Invalid argument/)
@@ -494,6 +494,10 @@ describe('mquery', function(){
         it('delegates to polygon when exists', function(){
           var m = mquery().where('loc').within({ polygon: [[10,10], [11,14],[10,9]] });
           assert.deepEqual({ $within: {$polygon:[[10,10], [11,14],[10,9]]}}, m._conditions.loc);
+        })
+        it('delegates to geometry when exists', function(){
+          var m = mquery().where('loc').within({ type: 'Polygon', coordinates: [[10,10], [11,14],[10,9]] });
+          assert.deepEqual({ $within: {$geometry: {type:'Polygon', coordinates: [[10,10], [11,14],[10,9]]}}}, m._conditions.loc);
         })
       })
 
@@ -607,6 +611,142 @@ describe('mquery', function(){
       assert.doesNotThrow(function () {
         mquery().circle('loc', { center: [1,2], radius: 1 });
       });
+    })
+  })
+
+  describe('geometry', function(){
+    // within + intersects
+    var point = { type: 'Point', coordinates: [[0,0],[1,1]] };
+
+    it('must be called after within or intersects', function(done){
+      assert.throws(function () {
+        mquery().where('a').geometry(point);
+      }, /must come after/);
+
+      assert.doesNotThrow(function () {
+        mquery().where('a').within().geometry(point);
+      });
+
+      assert.doesNotThrow(function () {
+        mquery().where('a').intersects().geometry(point);
+      });
+
+      done();
+    })
+
+    describe('when called with one argument', function(){
+      describe('after within()', function(){
+        it('and arg quacks like geoJSON', function(done){
+          var m = mquery().where('a').within().geometry(point);
+          assert.deepEqual({ a: { $within: { $geometry: point }}}, m._conditions);
+          done();
+        })
+      })
+
+      describe('after intersects()', function(){
+        it('and arg quacks like geoJSON', function(done){
+          var m = mquery().where('a').intersects().geometry(point);
+          assert.deepEqual({ a: { $intersects: { $geometry: point }}}, m._conditions);
+          done();
+        })
+      })
+
+      it('and arg does not quack like geoJSON', function(done){
+        assert.throws(function () {
+          mquery().where('b').within().geometry({type:1, coordinates:2});
+        }, /Invalid argument/);
+        done();
+      })
+    })
+
+    describe('when called with zero arguments', function(){
+      it('throws', function(done){
+        assert.throws(function () {
+          mquery().where('a').within().geometry();
+        }, /Invalid argument/);
+
+        done();
+      })
+    })
+
+    describe('when called with more than one arguments', function(){
+      it('throws', function(done){
+        assert.throws(function () {
+          mquery().where('a').within().geometry({type:'a',coordinates:[]}, 2);
+        }, /Invalid argument/);
+        done();
+      })
+    })
+  })
+
+  describe('intersects', function(){
+    it('must be used after where()', function(done){
+      var m = mquery();
+      assert.throws(function () {
+        m.intersects();
+      }, /must be used after where/)
+      done();
+    })
+
+    it('sets geo comparison to "$intersects"', function(done){
+      var n = mquery().where('a').intersects();
+      assert.equal('$intersects', n._geoComparison);
+      done();
+    })
+
+    it('is chainable', function(){
+      var m = mquery();
+      assert.equal(m.where('a').intersects(), m);
+    })
+
+    it('calls geometry if argument quacks like geojson', function(done){
+      var m = mquery();
+      var o = { type: 'LineString', coordinates: [[0,1],[3,40]] };
+      var ran = false;
+
+      m.geometry = function (arg) {
+        ran = true;
+        assert.deepEqual(o, arg);
+      }
+
+      m.where('a').intersects(o);
+      assert.ok(ran);
+
+      done();
+    })
+
+    it('throws if argument is not geometry-like', function(done){
+      var m = mquery().where('a');
+
+      assert.throws(function () {
+        m.intersects(null);
+      }, /Invalid argument/);
+
+      assert.throws(function () {
+        m.intersects(undefined);
+      }, /Invalid argument/);
+
+      assert.throws(function () {
+        m.intersects(false);
+      }, /Invalid argument/);
+
+      assert.throws(function () {
+        m.intersects({});
+      }, /Invalid argument/);
+
+      assert.throws(function () {
+        m.intersects([]);
+      }, /Invalid argument/);
+
+      assert.throws(function () {
+        m.intersects(function(){});
+      }, /Invalid argument/);
+
+      assert.throws(function () {
+        m.intersects(NaN);
+      }, /Invalid argument/);
+
+      done();
     })
   })
 
