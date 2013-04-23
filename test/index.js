@@ -2144,6 +2144,4 @@ describe('mquery', function(){
     })
   })
 
-  // TODO document how to override things like _fieldsForExec and
-  // _optionsForExec to customize your own behaviors.
-})  
+})
