@@ -30,7 +30,7 @@ describe('mquery', function(){
     describe('defaults', function(){
       it('are set', function(){
         var m = mquery();
-        assert.strictEqual(null, m.op);
+        assert.strictEqual(undefined, m.op);
         assert.deepEqual({}, m.options);
       })
     })
@@ -55,14 +55,31 @@ describe('mquery', function(){
     })
   })
 
-  describe('custom', function(){
-    // test default options
+  describe('toConstructor', function(){
     it('creates subclasses of mquery', function(){
       var opts = { safe: { w: 'majority' }, readPreference: 'p' };
-      var M = mquery.subclass(opts);
+      var match = { name: 'test', count: { $gt: 101 }};
+      var select = { name: 1, count: 0 }
+      var update = { $set: { x: true }};
+      var path = 'street';
+
+      var q = mquery().setOptions(opts);
+      q.where(match);
+      q.select(select);
+      q.update(update);
+      q.where(path);
+      q.find();
+
+      var M = q.toConstructor();
       var m = M();
+
       assert.ok(m instanceof mquery);
       assert.deepEqual(opts, m.options);
+      assert.deepEqual(match, m._conditions);
+      assert.deepEqual(select, m._fields);
+      assert.deepEqual(update, m._update);
+      assert.equal(path, m._path);
+      assert.equal('find', m.op);
     })
   })
 
