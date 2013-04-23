@@ -870,6 +870,8 @@ describe('mquery', function(){
       }
       t('x', '-y');
     })
+
+    noDistinct('select');
   })
 
   describe('slice', function(){
@@ -904,6 +906,7 @@ describe('mquery', function(){
         assert.deepEqual(query._fields, {collection: {$slice: [5,10]}});
       })
     })
+
     describe('with 2 args', function(){
       describe('and first is a number', function(){
         it('throws if not called after where', function(){
@@ -930,7 +933,11 @@ describe('mquery', function(){
         assert.deepEqual(query._fields, {collection: {$slice: [14, 10]}});
       })
     })
+
+    noDistinct('slice');
   })
+
+  // options
 
   describe('sort', function(){
     describe('with 0 args', function(){
@@ -974,8 +981,6 @@ describe('mquery', function(){
     })
   })
 
-  // options
-
   function simpleOption (type) {
     describe(type, function(){
       it('sets the ' + type + ' option', function(){
@@ -986,6 +991,16 @@ describe('mquery', function(){
         var m = mquery();
         assert.equal(m[type](3), m);
       })
+      noDistinct(type);
+    })
+  }
+
+  function noDistinct (type) {
+    it('cannot be used with distinct()', function(done){
+      assert.throws(function () {
+        mquery().distinct('name')[type](4);
+      }, new RegExp(type + ' cannot be used with distinct'));
+      done();
     })
   }
 
@@ -1005,6 +1020,7 @@ describe('mquery', function(){
       query.snapshot(false);
       assert.equal(false, query.options.snapshot);
     })
+    noDistinct('snapshot');
   })
 
   describe('hint', function(){
@@ -1041,6 +1057,8 @@ describe('mquery', function(){
         assert.equal(undefined, m.options.hint);
       })
     })
+
+    noDistinct('hint');
   })
 
   describe('slaveOk', function(){
@@ -1089,7 +1107,10 @@ describe('mquery', function(){
       var m = mquery();
       assert.equal(m, m.tailable());
     })
+    noDistinct('tailable');
   })
+
+  // utils
 
   describe('merge', function(){
     describe('with falsy arg', function(){
@@ -1160,6 +1181,8 @@ describe('mquery', function(){
       })
     })
   })
+
+  // queries
 
   describe('find', function(){
     describe('with no callback', function(){
@@ -1397,7 +1420,6 @@ describe('mquery', function(){
     it('merges other queries', function(){
       var m = mquery().distinct({ name: 'mquery' }, 'age')
       m.read('nearest');
-      m.select('_id');
       var a = mquery().distinct(m);
       assert.deepEqual(a._conditions, m._conditions);
       assert.deepEqual(a.options, m.options);
@@ -1468,6 +1490,85 @@ describe('mquery', function(){
             m.distinct(function(){});
           }, /No value for `distinct`/);
         })
+      })
+    })
+
+    describe('validates its option', function(){
+      it('sort', function(done){
+        assert.throws(function(){
+          var m = mquery().sort('x').distinct();
+        }, /sort cannot be used with distinct/);
+        done();
+      })
+
+      it('select', function(done){
+        assert.throws(function(){
+          var m = mquery().select('x').distinct();
+        }, /field selection and slice cannot be used with distinct/);
+        done();
+      })
+
+      it('slice', function(done){
+        assert.throws(function(){
+          var m = mquery().where('x').slice(-3).distinct();
+        }, /field selection and slice cannot be used with distinct/);
+        done();
+      })
+
+      it('limit', function(done){
+        assert.throws(function(){
+          var m = mquery().limit(3).distinct();
+        }, /limit cannot be used with distinct/);
+        done();
+      })
+
+      it('skip', function(done){
+        assert.throws(function(){
+          var m = mquery().skip(3).distinct();
+        }, /skip cannot be used with distinct/);
+        done();
+      })
+
+      it('batchSize', function(done){
+        assert.throws(function(){
+          var m = mquery({}, { batchSize: 3 }).distinct();
+        }, /batchSize cannot be used with distinct/);
+        done();
+      })
+
+      it('comment', function(done){
+        assert.throws(function(){
+          var m = mquery().comment('mquery').distinct();
+        }, /comment cannot be used with distinct/);
+        done();
+      })
+
+      it('maxScan', function(done){
+        assert.throws(function(){
+          var m = mquery().maxScan(300).distinct();
+        }, /maxScan cannot be used with distinct/);
+        done();
+      })
+
+      it('snapshot', function(done){
+        assert.throws(function(){
+          var m = mquery().snapshot().distinct();
+        }, /snapshot cannot be used with distinct/);
+        done();
+      })
+
+      it('hint', function(done){
+        assert.throws(function(){
+          var m = mquery().hint({ x: 1 }).distinct();
+        }, /hint cannot be used with distinct/);
+        done();
+      })
+
+      it('tailable', function(done){
+        assert.throws(function(){
+          var m = mquery().tailable().distinct();
+        }, /tailable cannot be used with distinct/);
+        done();
       })
     })
   })
