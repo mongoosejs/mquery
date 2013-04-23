@@ -1123,6 +1123,14 @@ describe('mquery', function(){
           assert.deepEqual(n._fields, m._fields);
           assert.deepEqual(n.options, m.options);
         })
+        it('clones update arguments', function(done){
+          var original = { $set: { iTerm: true }}
+          var m = mquery().update(original);
+          var n = mquery().merge(m);
+          m.update({ $set: { x: 2 }})
+          assert.notDeepEqual(m._update, n._update);
+          done();
+        })
         it('is chainable', function(){
           var m = mquery({ x: 'hi' });
           var n = mquery();
@@ -1135,6 +1143,14 @@ describe('mquery', function(){
           var m = { x: 'hi' };
           var n = mquery().merge(m);
           assert.deepEqual(n._conditions, { x: 'hi' });
+        })
+        it('clones update arguments', function(done){
+          var original = { $set: { iTerm: true }}
+          var m = mquery().update(original);
+          var n = mquery().merge(original);
+          m.update({ $set: { x: 2 }})
+          assert.notDeepEqual(m._update, n._update);
+          done();
         })
         it('is chainable', function(){
           var m = { x: 'hi' };
