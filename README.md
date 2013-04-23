@@ -3,24 +3,17 @@
 
 Expressive MongoDB query builder.
 
-_work in progress_
+##Features
+
+  - node.js driver compatibility
+  - custom constructor API for creating your own base queries
+  - MongoDB 2.4 geoJSON support
 
 ## Installation
 
 via npm:
 
     $ npm install mquery
-
-Goals:
-
-```
-[x] flexible
-[x] consistant API
-[x] customizable
-[ ] browser compatibile
-[x] compatibile with node-mongodb-native
-[ ] compatibile with mongo shell
-```
 
 ## License
 
