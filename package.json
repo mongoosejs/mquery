@@ -20,7 +20,7 @@
     "regexp-clone": "0.0.1"
   },
   "devDependencies": {
-    "mocha": "1.5.0",
+    "mocha": "1.9.x",
     "mongodb": "1.2.14"
   },
   "bugs": {
