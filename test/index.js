@@ -1501,15 +1501,18 @@ describe('mquery', function(){
     });
 
     it('merges update doc arg', function(){
-      var m = mquery().where({ name: 'mquery' }).update({ x: 'stuff' });
+      var a = [1,2];
+      var m = mquery().where({ name: 'mquery' }).update({ x: 'stuff', a: a });
       m.update({ z: 'stuff' });
-      assert.deepEqual(m._update, { z: 'stuff', x: 'stuff' });
+      assert.deepEqual(m._update, { z: 'stuff', x: 'stuff', a: a });
       assert.deepEqual(m._conditions, { name: 'mquery' });
       assert.ok(!m.options.overwrite);
       m.update({}, { z: 'renamed' }, { overwrite: true });
-      assert.deepEqual(m._update, { z: 'renamed', x: 'stuff' });
-      assert.deepEqual(m._conditions, { name: 'mquery' });
       assert.ok(m.options.overwrite === true);
+      assert.deepEqual(m._conditions, { name: 'mquery' });
+      assert.deepEqual(m._update, { z: 'renamed', x: 'stuff', a: a });
+      a.push(3);
+      assert.notDeepEqual(m._update, { z: 'renamed', x: 'stuff', a: a });
     })
 
     it('merges other options', function(){
