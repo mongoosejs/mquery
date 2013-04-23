@@ -972,7 +972,7 @@ describe('mquery', function(){
     })
   }
 
-  'limit skip maxscan batchSize comment'.split(' ').forEach(simpleOption)
+  'limit skip maxScan batchSize comment'.split(' ').forEach(simpleOption)
 
   describe('snapshot', function(){
     it('works', function(){
