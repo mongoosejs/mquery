@@ -816,6 +816,8 @@ describe('mquery', function(){
     })
   })
 
+  // fields
+
   describe('select', function(){
     describe('with 0 args', function(){
       it('is chainable', function(){
@@ -872,6 +874,7 @@ describe('mquery', function(){
     })
 
     noDistinct('select');
+    no('count', 'select');
   })
 
   describe('slice', function(){
@@ -935,6 +938,7 @@ describe('mquery', function(){
     })
 
     noDistinct('slice');
+    no('count', 'slice');
   })
 
   // options
@@ -979,6 +983,8 @@ describe('mquery', function(){
       assert.ok(e, 'uh oh. no error was thrown');
       assert.equal(e.message, 'Invalid sort() argument. Must be a string or object.');
     })
+
+    no('count', 'sort');
   })
 
   function simpleOption (type) {
@@ -991,20 +997,15 @@ describe('mquery', function(){
         var m = mquery();
         assert.equal(m[type](3), m);
       })
+
       noDistinct(type);
+
+      if ('limit' == type || 'skip' == type) return;
+      no('count', type);
     })
   }
 
-  function noDistinct (type) {
-    it('cannot be used with distinct()', function(done){
-      assert.throws(function () {
-        mquery().distinct('name')[type](4);
-      }, new RegExp(type + ' cannot be used with distinct'));
-      done();
-    })
-  }
-
-  'limit skip maxScan batchSize comment'.split(' ').forEach(simpleOption)
+  'limit skip maxScan batchSize comment'.split(' ').forEach(simpleOption);
 
   describe('snapshot', function(){
     it('works', function(){
@@ -1021,6 +1022,7 @@ describe('mquery', function(){
       assert.equal(false, query.options.snapshot);
     })
     noDistinct('snapshot');
+    no('count', 'snapshot');
   })
 
   describe('hint', function(){
@@ -1059,6 +1061,7 @@ describe('mquery', function(){
     })
 
     noDistinct('hint');
+    no('count', 'hint');
   })
 
   describe('slaveOk', function(){
@@ -1108,6 +1111,7 @@ describe('mquery', function(){
       assert.equal(m, m.tailable());
     })
     noDistinct('tailable');
+    no('count', 'tailable');
   })
 
   // utils
@@ -1377,6 +1381,85 @@ describe('mquery', function(){
           assert.ok(1 === count);
           done();
         });
+      })
+    })
+
+    describe('validates its option', function(){
+      it('sort', function(done){
+        assert.throws(function(){
+          var m = mquery().sort('x').count();
+        }, /sort cannot be used with count/);
+        done();
+      })
+
+      it('select', function(done){
+        assert.throws(function(){
+          var m = mquery().select('x').count();
+        }, /field selection and slice cannot be used with count/);
+        done();
+      })
+
+      it('slice', function(done){
+        assert.throws(function(){
+          var m = mquery().where('x').slice(-3).count();
+        }, /field selection and slice cannot be used with count/);
+        done();
+      })
+
+      it('limit', function(done){
+        assert.doesNotThrow(function(){
+          var m = mquery().limit(3).count();
+        })
+        done();
+      })
+
+      it('skip', function(done){
+        assert.doesNotThrow(function(){
+          var m = mquery().skip(3).count();
+        })
+        done();
+      })
+
+      it('batchSize', function(done){
+        assert.throws(function(){
+          var m = mquery({}, { batchSize: 3 }).count();
+        }, /batchSize cannot be used with count/);
+        done();
+      })
+
+      it('comment', function(done){
+        assert.throws(function(){
+          var m = mquery().comment('mquery').count();
+        }, /comment cannot be used with count/);
+        done();
+      })
+
+      it('maxScan', function(done){
+        assert.throws(function(){
+          var m = mquery().maxScan(300).count();
+        }, /maxScan cannot be used with count/);
+        done();
+      })
+
+      it('snapshot', function(done){
+        assert.throws(function(){
+          var m = mquery().snapshot().count();
+        }, /snapshot cannot be used with count/);
+        done();
+      })
+
+      it('hint', function(done){
+        assert.throws(function(){
+          var m = mquery().hint({ x: 1 }).count();
+        }, /hint cannot be used with count/);
+        done();
+      })
+
+      it('tailable', function(done){
+        assert.throws(function(){
+          var m = mquery().tailable().count();
+        }, /tailable cannot be used with count/);
+        done();
       })
     })
   })
@@ -2245,4 +2328,21 @@ describe('mquery', function(){
     })
   })
 
+  function noDistinct (type) {
+    it('cannot be used with distinct()', function(done){
+      assert.throws(function () {
+        mquery().distinct('name')[type](4);
+      }, new RegExp(type + ' cannot be used with distinct'));
+      done();
+    })
+  }
+
+  function no (method, type) {
+    it('cannot be used with ' + method + '()', function(done){
+      assert.throws(function () {
+        mquery()[method]()[type](4);
+      }, new RegExp(type + ' cannot be used with ' + method));
+      done();
+    })
+  }
 })
