@@ -1820,6 +1820,25 @@ describe('mquery', function(){
         })
       });
 
+      describe('when update doc is set with overwrite flag', function(){
+        it('works', function (done) {
+          var m = mquery(col).where({ _id: id });
+          m.setOptions({ safe: true, overwrite: true });
+          m.update({ all: 'yep', two: 2 }, function (err, num) {
+            assert.ifError(err);
+            assert.ok(1 === num);
+            m.findOne(function (err, doc) {
+              assert.ifError(err);
+              assert.equal(3, mquery.utils.keys(doc).length);
+              assert.equal('yep', doc.all);
+              assert.equal(2, doc.two);
+              assert.equal(id, doc._id.toString());
+              done();
+            })
+          })
+        })
+      })
+
       describe('when update doc is empty with overwrite flag', function(){
         it('works', function (done) {
           var m = mquery(col).where({ _id: id });
