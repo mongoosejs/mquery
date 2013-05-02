@@ -93,16 +93,17 @@ mquery().update()
 mquery().update(match, {$set: { x: 1 }})
 mquery().update(match, {$set: { x: 1 }}, options)
 
-mquery().update(callback)                                                   // executes
-mquery().update({$set: { x: 1 }}, callback)                                 // executes
-mquery().update(match, {$set: { x: 1 }}, callback)                          // executes
-mquery().update(match, {$set: { x: 1 }}, options, function (err, result){}) // executes
+// the following all execute the command
+mquery().update(callback)
+mquery().update({$set: { x: 1 }}, callback)
+mquery().update(match, {$set: { x: 1 }}, callback)
+mquery().update(match, {$set: { x: 1 }}, options, function (err, result){})
 mquery().update(true) // executes (unsafe write)
 ```
 
-#####update document
+#####the update document
 
-All paths passed that are not $atomic operations will become $set ops. For example:
+All paths passed that are not `$atomic` operations will become `$set` ops. For example:
 
 ```js
 mquery(collection).where({ _id: id }).update({ title: 'words' }, callback)
@@ -113,6 +114,8 @@ becomes
 ```js
 collection.update({ _id: id }, { $set: { title: 'words' }}, callback)
 ```
+
+This behavior can be overridden using the `overwrite` option (see below).
 
 #####options
 
@@ -125,6 +128,23 @@ Passing an empty object `{ }` as the update document will result in a no-op unle
 ```js
 var q = mquery(collection).where({ _id: id }).setOptions({ overwrite: true });
 q.update({ }, callback); // overwrite with an empty doc
+```
+
+The `overwrite` option isn't just for empty objects, it also provides a means to override the default `$set` conversion and send the update document as is.
+
+```js
+// create a base query
+var base = mquery({ _id: 108 }).collection(collection).toConstructor();
+
+base().findOne(function (err, doc) {
+  console.log(doc); // { _id: 108, name: 'cajon' })
+
+  base().setOptions({ overwrite: true }).update({ changed: true }, function (err) {
+    base.findOne(function (err, doc) {
+      console.log(doc); // { _id: 108, changed: true }) - the doc was overwritten
+    });
+  });
+})
 ```
 
 - multi
@@ -142,7 +162,7 @@ mquery({ name: /^match/ })
   .setOptions({ multi: true })
   .update({ $addToSet: { arr: 4 }}, callback)
 
-// multi update with overwrite to empty doc
+// update multiple documents with an empty doc
 var q = mquery(collection).where({ name: /^match/ });
 q.setOptions({ multi: true, overwrite: true })
 q.update({ });
