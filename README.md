@@ -86,7 +86,71 @@ mquery().remove(match, function (err){})
 
 ###update
 
+Declares this query an _update_ query. Optionally pass an update document, match clause, options or callback. If a callback is passed, the query is executed. To force execution without passing a callback, run `update(true)`.
+
+```js
+mquery().update()
+mquery().update(match, {$set: { x: 1 }})
+mquery().update(match, {$set: { x: 1 }}, options)
+
+mquery().update(callback)                                                   // executes
+mquery().update({$set: { x: 1 }}, callback)                                 // executes
+mquery().update(match, {$set: { x: 1 }}, callback)                          // executes
+mquery().update(match, {$set: { x: 1 }}, options, function (err, result){}) // executes
+mquery().update(true) // executes (unsafe write)
+```
+
+#####update document
+
+All paths passed that are not $atomic operations will become $set ops. For example:
+
+```js
+mquery(collection).where({ _id: id }).update({ title: 'words' }, callback)
+```
+
+becomes
+
+```js
+collection.update({ _id: id }, { $set: { title: 'words' }}, callback)
+```
+
+#####options
+
+Options are passed to the `setOptions()` method.
+
+- overwrite
+
+Passing an empty object `{ }` as the update document will result in a no-op unless the `overwrite` option is passed. Without the `overwrite` option, the update operation will be ignored and the callback executed without sending the command to MongoDB to prevent accidently overwritting documents in the collection.
+
+```js
+var q = mquery(collection).where({ _id: id }).setOptions({ overwrite: true });
+q.update({ }, callback); // overwrite with an empty doc
+```
+
+- multi
+
+Updates only modify a single document by default. To update multiple documents, set the `multi` option to `true`.
+
+```js
+mquery()
+  .collection(coll)
+  .update({ name: /^match/ }, { $addToSet: { arr: 4 }}, { multi: true }, callback)
+
+// another way of doing it
+mquery({ name: /^match/ })
+  .collection(coll)
+  .setOptions({ multi: true })
+  .update({ $addToSet: { arr: 4 }}, callback)
+
+// multi update with overwrite to empty doc
+var q = mquery(collection).where({ name: /^match/ });
+q.setOptions({ multi: true, overwrite: true })
+q.update({ });
+q.update(callback); // executed
+```
+
 ###findOneAndUpdate
+
 ###findOneAndRemove
 
 ###distinct
