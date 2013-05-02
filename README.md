@@ -40,7 +40,7 @@ require('mongodb').connect(uri, function (err, db) {
 
 ##Fluent API
 
-###find
+###find()
 
 Declares this query a _find_ query. Optionally pass a match clause and / or callback. If a callback is passed the query is executed.
 
@@ -51,7 +51,7 @@ mquery().find(callback)
 mquery().find(match, callback)
 ```
 
-###findOne
+###findOne()
 
 Declares this query a _findOne_ query. Optionally pass a match clause and / or callback. If a callback is passed the query is executed.
 
@@ -62,7 +62,7 @@ mquery().findOne(callback)
 mquery().findOne(match, callback)
 ```
 
-###count
+###count()
 
 Declares this query a _count_ query. Optionally pass a match clause and / or callback. If a callback is passed the query is executed.
 
@@ -73,7 +73,7 @@ mquery().count(callback)
 mquery().count(match, function (err, number){})
 ```
 
-###remove
+###remove()
 
 Declares this query a _remove_ query. Optionally pass a match clause and / or callback. If a callback is passed the query is executed.
 
@@ -84,7 +84,7 @@ mquery().remove(callback)
 mquery().remove(match, function (err){})
 ```
 
-###update
+###update()
 
 Declares this query an _update_ query. Optionally pass an update document, match clause, options or callback. If a callback is passed, the query is executed. To force execution without passing a callback, run `update(true)`.
 
@@ -169,11 +169,11 @@ q.update({ });
 q.update(callback); // executed
 ```
 
-###findOneAndUpdate
+###findOneAndUpdate()
 
-###findOneAndRemove
+###findOneAndRemove()
 
-###distinct
+###distinct()
 
 Declares this query a _distinct_ query. Optionally pass the distinct field, a match clause and / or callback. If a callback is passed the query is executed.
 
@@ -188,7 +188,7 @@ mquery().distinct(match, field, callback)
 mquery().distinct(function (err, result) {})
 ```
 
-###exec
+###exec()
 
 Executes the query.
 
@@ -196,51 +196,51 @@ Executes the query.
 mquery().findOne().where('route').intersects(polygon).exec(function (err, docs){})
 ```
 
-###$where
-###where
-###equals
-###or
-###nor
-###and
-###gt
-###gte
-###lt
-###lte
-###ne
-###in
-###nin
-###regex
-###size
-###maxDistance
-###mod
-###exists
-###elemMatch
-###within
-###box
-###polygon
-###circle
-###geometry
-###intersects
-###select
-###slice
-###sort
-###limit
-###skip
-###maxScan
-###batchSize
-###comment
-###snapshot
-###hint
-###slaveOk
-###read
-###tailable
+###$where()
+###where()
+###equals()
+###or()
+###nor()
+###and()
+###gt()
+###gte()
+###lt()
+###lte()
+###ne()
+###in()
+###nin()
+###regex()
+###size()
+###maxDistance()
+###mod()
+###exists()
+###elemMatch()
+###within()
+###box()
+###polygon()
+###circle()
+###geometry()
+###intersects()
+###select()
+###slice()
+###sort()
+###limit()
+###skip()
+###maxScan()
+###batchSize()
+###comment()
+###snapshot()
+###hint()
+###slaveOk()
+###read()
+###tailable()
 
 ##Helpers
 
-###merge
-###setOptions
-###collection
-###canMerge
+###merge()
+###setOptions()
+###collection()
+###canMerge()
 
 ##Custom Base Queries
 
