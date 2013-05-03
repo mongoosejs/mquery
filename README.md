@@ -267,50 +267,582 @@ Executes the query.
 mquery().findOne().where('route').intersects(polygon).exec(function (err, docs){})
 ```
 
-###$where()
-###where()
-###equals()
-###or()
-###nor()
+-------------
+
+###all()
+
+Specifies an `$all` query condition
+
+```js
+mquery().where('permission').all(['read', 'write'])
+```
+
+[MongoDB documentation](http://docs.mongodb.org/manual/reference/operator/all/)
+
 ###and()
-###gt()
-###gte()
-###lt()
-###lte()
-###ne()
-###in()
-###nin()
-###regex()
-###size()
-###maxDistance()
-###mod()
-###exists()
-###elemMatch()
-###within()
+
+Specifies arguments for an `$and` condition
+
+```js
+mquery().and([{ color: 'green' }, { status: 'ok' }])
+```
+
+[MongoDB documentation](http://docs.mongodb.org/manual/reference/operator/and/)
+
 ###box()
-###polygon()
+
+Specifies a `$box` condition
+
+```js
+var lowerLeft = [40.73083, -73.99756]
+var upperRight= [40.741404,  -73.988135]
+
+mquery().where('location').within().box(lowerLeft, upperRight)
+```
+
+[MongoDB Documentation](http://docs.mongodb.org/manual/reference/operator/box/)
+
 ###circle()
+
+Specifies a `$center` or `$centerSphere` condition.
+
+```js
+var area = { center: [50, 50], radius: 10, unique: true }
+query.where('loc').within().circle(area)
+query.center('loc', area);
+
+// for spherical calculations
+var area = { center: [50, 50], radius: 10, unique: true, spherical: true }
+query.where('loc').within().circle(area)
+query.center('loc', area);
+```
+
+- [MongoDB Documentation - center](http://docs.mongodb.org/manual/reference/operator/center/)
+- [MongoDB Documentation - centerSphere](http://docs.mongodb.org/manual/reference/operator/centerSphere/)
+
+###elemMatch()
+
+Specifies an `$elemMatch` condition
+
+```js
+query.where('comment').elemMatch({ author: 'autobot', votes: {$gte: 5}})
+
+query.elemMatch('comment', function (elem) {
+  elem.where('author').equals('autobot');
+  elem.where('votes').gte(5);
+})
+```
+
+[MongoDB Documentation](http://docs.mongodb.org/manual/reference/operator/elemMatch/)
+
+###equals()
+
+Specifies the complementary comparison value for the path specified with `where()`.
+
+```js
+mquery().where('age').equals(49);
+
+// is the same as
+
+mquery().where({ 'age': 49 });
+```
+
+###exists()
+
+Specifies an `$exists` condition
+
+```js
+// { name: { $exists: true }}
+mquery().where('name').exists()
+mquery().where('name').exists(true)
+mquery().exists('name')
+
+// { name: { $exists: false }}
+mquery().where('name').exists(false);
+mquery().exists('name', false);
+```
+
+[MongoDB Documentation](http://docs.mongodb.org/manual/reference/operator/exists/)
+
 ###geometry()
+
+Specifies a `$geometry` condition
+
+```js
+var polyA = [[[ 10, 20 ], [ 10, 40 ], [ 30, 40 ], [ 30, 20 ]]]
+query.where('loc').within().geometry({ type: 'Polygon', coordinates: polyA })
+
+// or
+var polyB = [[ 0, 0 ], [ 1, 1 ]]
+query.where('loc').within().geometry({ type: 'LineString', coordinates: polyB })
+
+// or
+var polyC = [ 0, 0 ]
+query.where('loc').within().geometry({ type: 'Point', coordinates: polyC })
+
+// or
+query.where('loc').intersects().geometry({ type: 'Point', coordinates: polyC })
+```
+
+`geometry()` **must** come after either `intersects()` or `within()`.
+
+The `object` argument must contain `type` and `coordinates` properties.
+
+- type `String`
+- coordinates `Array`
+
+[MongoDB Documentation](http://docs.mongodb.org/manual/reference/operator/geometry/)
+
+###gt()
+
+Specifies a `$gt` query condition.
+
+```js
+mquery().where('clicks').gt(999)
+```
+
+[MongoDB Documentation](http://docs.mongodb.org/manual/reference/operator/gt/)
+
+###gte()
+
+Specifies a `$gte` query condition.
+
+[MongoDB Documentation](http://docs.mongodb.org/manual/reference/operator/gte/)
+
+```js
+mquery().where('clicks').gte(1000)
+```
+
+###in()
+
+Specifies an `$in` query condition.
+
+```js
+mquery().where('author_id').in([3, 48901, 761])
+```
+
+[MongoDB Documentation](http://docs.mongodb.org/manual/reference/operator/in/)
+
 ###intersects()
+
+Declares an `$geoIntersects` query for `geometry()`.
+
+```js
+query.where('path').intersects().geometry({
+    type: 'LineString'
+  , coordinates: [[180.0, 11.0], [180, 9.0]]
+})
+
+// geometry arguments are supported
+query.where('path').intersects({
+    type: 'LineString'
+  , coordinates: [[180.0, 11.0], [180, 9.0]]
+})
+```
+
+**Must** be used after `where()`.
+
+[MongoDB Documentation](http://docs.mongodb.org/manual/reference/operator/geoIntersects/)
+
+###lt()
+
+Specifies a `$lt` query condition.
+
+```js
+mquery().where('clicks').lt(50)
+```
+
+[MongoDB Documentation](http://docs.mongodb.org/manual/reference/operator/lt/)
+
+###lte()
+
+Specifies a `$lte` query condition.
+
+```js
+mquery().where('clicks').lte(49)
+```
+
+[MongoDB Documentation](http://docs.mongodb.org/manual/reference/operator/lte/)
+
+###maxDistance()
+
+Specifies a `$maxDistance` query condition.
+
+```js
+mquery().where('location').near({ center: [139, 74.3] }).maxDistance(5)
+```
+
+[MongoDB Documentation](http://docs.mongodb.org/manual/reference/operator/maxDistance/)
+
+###mod()
+
+Specifies a `$mod` condition
+
+```js
+mquery().where('count').mod(2, 0)
+```
+
+[MongoDB Documentation](http://docs.mongodb.org/manual/reference/operator/mod/)
+
+###ne()
+
+Specifies a `$ne` query condition.
+
+```js
+mquery().where('status').ne('ok')
+```
+
+[MongoDB Documentation](http://docs.mongodb.org/manual/reference/operator/ne/)
+
+###nin()
+
+Specifies an `$nin` query condition.
+
+```js
+mquery().where('author_id').nin([3, 48901, 761])
+```
+
+[MongoDB Documentation](http://docs.mongodb.org/manual/reference/operator/nin/)
+
+###nor()
+
+Specifies arguments for an `$nor` condition.
+
+```js
+mquery().nor([{ color: 'green' }, { status: 'ok' }])
+```
+
+[MongoDB Documentation](http://docs.mongodb.org/manual/reference/operator/nor/)
+
+###or()
+
+Specifies arguments for an `$or` condition.
+
+```js
+mquery().or([{ color: 'red' }, { status: 'emergency' }])
+```
+
+[MongoDB Documentation](http://docs.mongodb.org/manual/reference/operator/or/)
+
+###polygon()
+
+Specifies a `$polygon` condition
+
+```js
+mquery().where('loc').within().polygon([10,20], [13, 25], [7,15])
+mquery().polygon('loc', [10,20], [13, 25], [7,15])
+```
+
+[MongoDB Documentation](http://docs.mongodb.org/manual/reference/operator/polygon/)
+
+###regex()
+
+Specifies a `$regex` query condition.
+
+```js
+mquery().where('name').regex(/^sixstepsrecords/)
+```
+
+[MongoDB Documentation](http://docs.mongodb.org/manual/reference/operator/regex/)
+
 ###select()
+
+Specifies which document fields to include or exclude
+
+```js
+// 1 means include, 0 means exclude
+mquery().select({ name: 1, address: 1, _id: 0 })
+
+// or
+
+mquery().select('name address -_id')
+```
+
+#####String syntax
+
+When passing a string, prefixing a path with `-` will flag that path as excluded. When a path does not have the `-` prefix, it is included.
+
+```js
+// include a and b, exclude c
+query.select('a b -c');
+
+// or you may use object notation, useful when
+// you have keys already prefixed with a "-"
+query.select({a: 1, b: 1, c: 0});
+```
+
+_Cannot be used with `distinct()`._
+
+###size()
+
+Specifies a `$size` query condition.
+
+```js
+mquery().where('someArray').size(6)
+```
+
+[MongoDB Documentation](http://docs.mongodb.org/manual/reference/operator/size/)
+
 ###slice()
-###sort()
-###limit()
-###skip()
-###maxScan()
+
+Specifies a `$slice` projection for a `path`
+
+```js
+mquery().where('comments').slice(5)
+mquery().where('comments').slice(-5)
+mquery().where('comments').slice([-10, 5])
+```
+
+[MongoDB Documentation](http://docs.mongodb.org/manual/reference/projection/slice/)
+
+###within()
+
+Sets a `$within` argument for geo-spatial queries
+
+```js
+mquery().within().box()
+mquery().within().circle()
+mquery().within().geometry()
+
+mquery().where('loc').within({ center: [50,50], radius: 10, unique: true, spherical: true });
+mquery().where('loc').within({ box: [[40.73, -73.9], [40.7, -73.988]] });
+mquery().where('loc').within({ polygon: [[],[],[],[]] });
+
+mquery().where('loc').within([], [], []) // polygon
+mquery().where('loc').within([], []) // box
+mquery().where('loc').within({ type: 'LineString', coordinates: [...] }); // geometry
+```
+
+[MongoDB Documentation](http://docs.mongodb.org/manual/reference/operator/geoWithin/)
+
+###where()
+
+Specifies a `path` for use with chaining
+
+```js
+// instead of writing:
+mquery().find({age: {$gte: 21, $lte: 65}});
+
+// we can instead write:
+mquery().where('age').gte(21).lte(65);
+
+// passing query conditions is permitted too
+mquery().find().where({ name: 'vonderful' })
+
+// chaining
+mquery()
+.where('age').gte(21).lte(65)
+.where({ 'name': /^vonderful/i })
+.where('friends').slice(10)
+.exec(callback)
+```
+
+###$where()
+
+Specifies a `$where` condition.
+
+Use `$where` when you need to select documents using a JavaScript expression.
+
+```js
+query.$where('this.comments.length > 10 || this.name.length > 5').exec(callback)
+
+query.$where(function () {
+  return this.comments.length > 10 || this.name.length > 5;
+})
+```
+
+Only use `$where` when you have a condition that cannot be met using other MongoDB operators like `$lt`. Be sure to read about all of [its caveats](http://docs.mongodb.org/manual/reference/operator/where/) before using.
+
+-----------
+
 ###batchSize()
+
+Specifies the batchSize option.
+
+```js
+query.batchSize(100)
+```
+
+_Cannot be used with `distinct()`._
+
+[MongoDB documentation](http://docs.mongodb.org/manual/reference/method/cursor.batchSize/)
+
 ###comment()
-###snapshot()
+
+Specifies the comment option.
+
+```js
+query.comment('login query');
+```
+
+_Cannot be used with `distinct()`._
+
+[MongoDB documentation](http://docs.mongodb.org/manual/reference/operator/)
+
 ###hint()
-###slaveOk()
+
+Sets query hints.
+
+```js
+mquery().hint({ indexA: 1, indexB: -1 })
+```
+
+_Cannot be used with `distinct()`._
+
+[MongoDB documentation](http://docs.mongodb.org/manual/reference/operator/hint/)
+
+###limit()
+
+Specifies the limit option.
+
+```js
+query.limit(20)
+```
+
+_Cannot be used with `distinct()`._
+
+[MongoDB documentation](http://docs.mongodb.org/manual/reference/method/cursor.limit/)
+
+###maxScan()
+
+Specifies the maxScan option.
+
+```js
+query.maxScan(100)
+```
+
+_Cannot be used with `distinct()`._
+
+[MongoDB documentation](http://docs.mongodb.org/manual/reference/operator/maxScan/)
+
+###skip()
+
+Specifies the skip option.
+
+```js
+query.skip(100).limit(20)
+```
+
+_Cannot be used with `distinct()`._
+
+[MongoDB documentation](http://docs.mongodb.org/manual/reference/method/cursor.skip/)
+
+###sort()
+
+Sets the query sort order.
+
+If an object is passed, key values allowed are `asc`, `desc`, `ascending`, `descending`, `1`, and `-1`.
+
+If a string is passed, it must be a space delimited list of path names. The sort order of each path is ascending unless the path name is prefixed with `-` which will be treated as descending.
+
+```js
+// these are equivalent
+query.sort({ field: 'asc', test: -1 });
+query.sort('field -test');
+```
+
+_Cannot be used with `distinct()`._
+
+[MongoDB documentation](http://docs.mongodb.org/manual/reference/method/cursor.sort/)
+
 ###read()
+
+Sets the readPreference option for the query.
+
+```js
+mquery().read('primary')
+mquery().read('p')  // same as primary
+
+mquery().read('primaryPreferred')
+mquery().read('pp') // same as primaryPreferred
+
+mquery().read('secondary')
+mquery().read('s')  // same as secondary
+
+mquery().read('secondaryPreferred')
+mquery().read('sp') // same as secondaryPreferred
+
+mquery().read('nearest')
+mquery().read('n')  // same as nearest
+
+// specifying tags
+mquery().read('s', [{ dc:'sf', s: 1 },{ dc:'ma', s: 2 }])
+```
+
+#####Preferences:
+
+- `primary` - (default) Read from primary only. Operations will produce an error if primary is unavailable. Cannot be combined with tags.
+- `secondary` - Read from secondary if available, otherwise error.
+- `primaryPreferred` - Read from primary if available, otherwise a secondary.
+- `secondaryPreferred` - Read from a secondary if available, otherwise read from the primary.
+- `nearest` - All operations read from among the nearest candidates, but unlike other modes, this option will include both the primary and all secondaries in the random selection.
+
+Aliases
+
+- `p`   primary
+- `pp`  primaryPreferred
+- `s`   secondary
+- `sp`  secondaryPreferred
+- `n`   nearest
+
+Read more about how to use read preferrences [here](http://docs.mongodb.org/manual/applications/replication/#read-preference) and [here](http://mongodb.github.com/node-mongodb-native/driver-articles/anintroductionto1_1and2_2.html#read-preferences).
+
+###slaveOk()
+
+Sets the slaveOk option. `true` allows reading from secondaries.
+
+**deprecated** use [read()](#read) preferences instead if on mongodb >= 2.2
+
+```js
+query.slaveOk() // true
+query.slaveOk(true)
+query.slaveOk(false)
+```
+
+[MongoDB documentation](http://docs.mongodb.org/manual/reference/method/rs.slaveOk/)
+
+###snapshot()
+
+Specifies this query as a snapshot query.
+
+```js
+mquery().snapshot() // true
+mquery().snapshot(true)
+mquery().snapshot(false)
+```
+
+_Cannot be used with `distinct()`._
+
+[MongoDB documentation](http://docs.mongodb.org/manual/reference/operator/snapshot/)
+
 ###tailable()
+
+Sets tailable option.
+
+```js
+mquery().tailable() <== true
+mquery().tailable(true)
+mquery().tailable(false)
+```
+
+_Cannot be used with `distinct()`._
+
+[MongoDB Documentation](http://docs.mongodb.org/manual/tutorial/create-tailable-cursor/)
 
 ##Helpers
 
-###merge()
+###collection()
 
-Merges other mquery or match condition objects into this one. When a Query is passed, its match conditions, field selection and options are merged.
+Sets the querys collection.
+
+```js
+mquery().collection(aCollection)
+```
+
+
+###merge(object)
+
+Merges other mquery or match condition objects into this one. When an muery instance is passed, its match conditions, field selection and options are merged.
 
 ```js
 var drum = mquery({ type: 'drum' }).collection(instruments);
@@ -318,10 +850,38 @@ var redDrum = mqery({ color: 'red' }).merge(drum);
 redDrum.count(function (err, n) {
   console.log('there are %d red drums', n);
 })
+```
 
-###Query.canMerge()
+Internally uses `Query.canMerge` to determine validity.
 
-Determines if `conditions` can be merged using `mquery().merge()`
+###setOptions(options)
+
+Sets query options.
+
+```js
+mquery().setOptions({ collection: coll, limit: 20 })
+```
+
+#####options
+
+- [tailable](#tailable) *
+- [sort](#sort) *
+- [limit](#limit) *
+- [skip](#skip) *
+- [maxScan](#maxScan) *
+- [batchSize](#batchSize) *
+- [comment](#comment) *
+- [snapshot](#snapshot) *
+- [hint](#hint) *
+- [slaveOk](#slaveOk) *
+- [safe](http://docs.mongodb.org/manual/reference/write-concern/): Boolean - passed through to the collection. Setting to `true` is equivalent to `{ w: 1 }`
+- [collection](#collection): the collection to query against
+
+_* denotes a query helper method is also available_
+
+###Query.canMerge(conditions)
+
+Determines if `conditions` can be merged using `mquery().merge()`.
 
 ```js
 var query = mquery({ type: 'drum' });
@@ -330,9 +890,6 @@ if (okToMerge) {
   query.merge(anObject);
 }
 ```
-
-###setOptions()
-###collection()
 
 ##Custom Base Queries
 
