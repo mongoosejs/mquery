@@ -309,9 +309,30 @@ mquery().findOne().where('route').intersects(polygon).exec(function (err, docs){
 ##Helpers
 
 ###merge()
+
+Merges other mquery or match condition objects into this one. When a Query is passed, its match conditions, field selection and options are merged.
+
+```js
+var drum = mquery({ type: 'drum' }).collection(instruments);
+var redDrum = mqery({ color: 'red' }).merge(drum);
+redDrum.count(function (err, n) {
+  console.log('there are %d red drums', n);
+})
+
+###Query.canMerge()
+
+Determines if `conditions` can be merged using `mquery().merge()`
+
+```js
+var query = mquery({ type: 'drum' });
+var okToMerge = mquery.canMerge(anObject)
+if (okToMerge) {
+  query.merge(anObject);
+}
+```
+
 ###setOptions()
 ###collection()
-###canMerge()
 
 ##Custom Base Queries
 
