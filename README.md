@@ -267,50 +267,267 @@ Executes the query.
 mquery().findOne().where('route').intersects(polygon).exec(function (err, docs){})
 ```
 
-###$where()
-###where()
-###equals()
-###or()
-###nor()
+==================
+
 ###and()
+###box()
+###circle()
+###elemMatch()
+
+###equals()
+
+Specifies the complementary comparison value for the path specified with `where()`.
+
+```js
+mquery().where('age').equals(49);
+
+// is the same as
+
+mquery().where({ 'age': 49 });
+```
+
+###exists()
+###geometry()
 ###gt()
 ###gte()
+###in()
+###intersects()
 ###lt()
 ###lte()
-###ne()
-###in()
-###nin()
-###regex()
-###size()
 ###maxDistance()
 ###mod()
-###exists()
-###elemMatch()
-###within()
-###box()
+###ne()
+###nor()
+###or()
 ###polygon()
-###circle()
-###geometry()
-###intersects()
+###nin()
+###regex()
 ###select()
+###size()
 ###slice()
-###sort()
-###limit()
-###skip()
-###maxScan()
+###within()
+
+###where()
+
+Specifies a `path` for use with chaining.
+
+```js
+// instead of writing:
+mquery().find({age: {$gte: 21, $lte: 65}});
+
+// we can instead write:
+mquery().where('age').gte(21).lte(65);
+
+// passing query conditions is permitted too
+mquery().find().where({ name: 'vonderful' })
+
+// chaining
+mquery()
+.where('age').gte(21).lte(65)
+.where({ 'name': /^vonderful/i })
+.where('friends').slice(10)
+.exec(callback)
+```
+
+
+###$where()
+
+Specifies a `$where` condition.
+
+Use `$where` when you need to select documents using a JavaScript expression.
+
+```js
+query.$where('this.comments.length > 10 || this.name.length > 5').exec(callback)
+
+query.$where(function () {
+  return this.comments.length > 10 || this.name.length > 5;
+})
+```
+
+Only use `$where` when you have a condition that cannot be met using other MongoDB operators like `$lt`. Be sure to read about all of [its caveats](http://docs.mongodb.org/manual/reference/operator/where/) before using.
+
+================
+
 ###batchSize()
+
+Specifies the batchSize option.
+
+```js
+query.batchSize(100)
+```
+
+_Cannot be used with `distinct()`._
+
+[MongoDB documentation](http://docs.mongodb.org/manual/reference/method/cursor.batchSize/)
+
 ###comment()
-###snapshot()
+
+Specifies the comment option.
+
+```js
+query.comment('login query');
+```
+
+_Cannot be used with `distinct()`._
+
+[MongoDB documentation](http://docs.mongodb.org/manual/reference/operator/)
+
 ###hint()
-###slaveOk()
+
+Sets query hints.
+
+```js
+mquery().hint({ indexA: 1, indexB: -1 })
+```
+
+_Cannot be used with `distinct()`._
+
+[MongoDB documentation](http://docs.mongodb.org/manual/reference/operator/hint/)
+
+###limit()
+
+Specifies the limit option.
+
+```js
+query.limit(20)
+```
+
+_Cannot be used with `distinct()`._
+
+[MongoDB documentation](http://docs.mongodb.org/manual/reference/method/cursor.limit/)
+
+###maxScan()
+
+Specifies the maxScan option.
+
+```js
+query.maxScan(100)
+```
+
+_Cannot be used with `distinct()`._
+
+[MongoDB documentation](http://docs.mongodb.org/manual/reference/operator/maxScan/)
+
+
+###skip()
+
+Specifies the skip option.
+
+```js
+query.skip(100).limit(20)
+```
+
+_Cannot be used with `distinct()`._
+
+[MongoDB documentation](http://docs.mongodb.org/manual/reference/method/cursor.skip/)
+
+###sort()
+
+Sets the query sort order.
+
+If an object is passed, key values allowed are `asc`, `desc`, `ascending`, `descending`, `1`, and `-1`.
+
+If a string is passed, it must be a space delimited list of path names. The sort order of each path is ascending unless the path name is prefixed with `-` which will be treated as descending.
+
+```js
+// these are equivalent
+query.sort({ field: 'asc', test: -1 });
+query.sort('field -test');
+```
+
+_Cannot be used with `distinct()`._
+
+[MongoDB documentation](http://docs.mongodb.org/manual/reference/method/cursor.sort/)
+
 ###read()
+
+Sets the readPreference option for the query.
+
+```js
+mquery().read('primary')
+mquery().read('p')  // same as primary
+
+mquery().read('primaryPreferred')
+mquery().read('pp') // same as primaryPreferred
+
+mquery().read('secondary')
+mquery().read('s')  // same as secondary
+
+mquery().read('secondaryPreferred')
+mquery().read('sp') // same as secondaryPreferred
+
+mquery().read('nearest')
+mquery().read('n')  // same as nearest
+
+// specifying tags
+mquery().read('s', [{ dc:'sf', s: 1 },{ dc:'ma', s: 2 }])
+```
+
+#####Preferences:
+
+- `primary` - (default) Read from primary only. Operations will produce an error if primary is unavailable. Cannot be combined with tags.
+- `secondary` - Read from secondary if available, otherwise error.
+- `primaryPreferred` - Read from primary if available, otherwise a secondary.
+- `secondaryPreferred` - Read from a secondary if available, otherwise read from the primary.
+- `nearest` - All operations read from among the nearest candidates, but unlike other modes, this option will include both the primary and all secondaries in the random selection.
+
+Aliases
+
+- `p`   primary
+- `pp`  primaryPreferred
+- `s`   secondary
+- `sp`  secondaryPreferred
+- `n`   nearest
+
+Read more about how to use read preferrences [here](http://docs.mongodb.org/manual/applications/replication/#read-preference) and [here](http://mongodb.github.com/node-mongodb-native/driver-articles/anintroductionto1_1and2_2.html#read-preferences).
+
+###slaveOk()
+
+Sets the slaveOk option. `true` allows reading from secondaries.
+
+**deprecated** use [read()](#read) preferences instead if on mongodb >= 2.2
+
+```js
+query.slaveOk() // true
+query.slaveOk(true)
+query.slaveOk(false)
+```
+
+[MongoDB documentation](http://docs.mongodb.org/manual/reference/method/rs.slaveOk/)
+
+###snapshot()
+
+Specifies this query as a snapshot query.
+
+```js
+mquery().snapshot() // true
+mquery().snapshot(true)
+mquery().snapshot(false)
+```
+
+_Cannot be used with `distinct()`._
+
+[MongoDB documentation](http://docs.mongodb.org/manual/reference/operator/snapshot/)
+
 ###tailable()
+
+Sets tailable option.
+
+```js
+mquery().tailable() <== true
+mquery().tailable(true)
+mquery().tailable(false)
+```
+
+_Cannot be used with `distinct()`._
+
+[MongoDB Documentation](http://docs.mongodb.org/manual/tutorial/create-tailable-cursor/)
 
 ##Helpers
 
-###merge()
+###merge(object)
 
-Merges other mquery or match condition objects into this one. When a Query is passed, its match conditions, field selection and options are merged.
+Merges other mquery or match condition objects into this one. When an muery instance is passed, its match conditions, field selection and options are merged.
 
 ```js
 var drum = mquery({ type: 'drum' }).collection(instruments);
@@ -318,10 +535,46 @@ var redDrum = mqery({ color: 'red' }).merge(drum);
 redDrum.count(function (err, n) {
   console.log('there are %d red drums', n);
 })
+```
 
-###Query.canMerge()
+Internally uses `Query.canMerge` to determine validity.
 
-Determines if `conditions` can be merged using `mquery().merge()`
+###setOptions(options)
+
+Sets query options.
+
+```js
+mquery().setOptions({ collection: coll, limit: 20 })
+```
+
+#####options
+
+- [tailable](#tailable) *
+- [sort](#sort) *
+- [limit](#limit) *
+- [skip](#skip) *
+- [maxScan](#maxScan) *
+- [batchSize](#batchSize) *
+- [comment](#comment) *
+- [snapshot](#snapshot) *
+- [hint](#hint) *
+- [slaveOk](#slaveOk) *
+- [safe](http://docs.mongodb.org/manual/reference/write-concern/): Boolean - passed through to the collection. Setting to `true` is equivalent to `{ w: 1 }`
+- [collection](#collection): the collection to query against
+
+_* denotes a query helper method is also available_
+
+###collection()
+
+Sets the querys collection.
+
+```js
+mquery().collection(aCollection)
+```
+
+###Query.canMerge(conditions)
+
+Determines if `conditions` can be merged using `mquery().merge()`.
 
 ```js
 var query = mquery({ type: 'drum' });
@@ -330,9 +583,6 @@ if (okToMerge) {
   query.merge(anObject);
 }
 ```
-
-###setOptions()
-###collection()
 
 ##Custom Base Queries
 
