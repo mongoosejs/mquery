@@ -48,7 +48,9 @@ Declares this query a _find_ query. Optionally pass a match clause and / or call
 mquery().find()
 mquery().find(match)
 mquery().find(callback)
-mquery().find(match, callback)
+mquery().find(match, function (err, docs) {
+  assert(Array.isArray(docs));
+})
 ```
 
 ###findOne()
@@ -59,7 +61,12 @@ Declares this query a _findOne_ query. Optionally pass a match clause and / or c
 mquery().findOne()
 mquery().findOne(match)
 mquery().findOne(callback)
-mquery().findOne(match, callback)
+mquery().findOne(match, function (err, doc) {
+  if (doc) {
+    // the document may not be found
+    console.log(doc);
+  }
+})
 ```
 
 ###count()
@@ -70,7 +77,9 @@ Declares this query a _count_ query. Optionally pass a match clause and / or cal
 mquery().count()
 mquery().count(match)
 mquery().count(callback)
-mquery().count(match, function (err, number){})
+mquery().count(match, function (err, number){
+  console.log('we found %d matching documents', number);
+})
 ```
 
 ###remove()
@@ -90,14 +99,14 @@ Declares this query an _update_ query. Optionally pass an update document, match
 
 ```js
 mquery().update()
-mquery().update(match, {$set: { x: 1 }})
-mquery().update(match, {$set: { x: 1 }}, options)
+mquery().update(match, updateDocument)
+mquery().update(match, updateDocument, options)
 
 // the following all execute the command
 mquery().update(callback)
-mquery().update({$set: { x: 1 }}, callback)
-mquery().update(match, {$set: { x: 1 }}, callback)
-mquery().update(match, {$set: { x: 1 }}, options, function (err, result){})
+mquery().update({$set: updateDocument, callback)
+mquery().update(match, updateDocument, callback)
+mquery().update(match, updateDocument, options, function (err, result){})
 mquery().update(true) // executes (unsafe write)
 ```
 
@@ -166,26 +175,88 @@ mquery({ name: /^match/ })
 var q = mquery(collection).where({ name: /^match/ });
 q.setOptions({ multi: true, overwrite: true })
 q.update({ });
-q.update(callback); // executed
+q.update(function (err, result) {
+  console.log(arguments);
+});
 ```
 
 ###findOneAndUpdate()
 
+Declares this query a _findAndModify_ with update query. Optionally pass a match clause, update document, options, or callback. If a callback is passed, the query is executed.
+
+When executed, the first matching document (if found) is modified according to the update document and passed back to the callback.
+
+#####options
+
+Options are passed to the `setOptions()` method.
+
+- `new`: boolean - true to return the modified document rather than the original. defaults to true
+- `upsert`: boolean - creates the object if it doesn't exist. defaults to false
+- `sort`: if multiple docs are found by the match condition, sets the sort order to choose which doc to update
+
+```js
+query.findOneAndUpdate()
+query.findOneAndUpdate(updateDocument)
+query.findOneAndUpdate(match, updateDocument)
+query.findOneAndUpdate(match, updateDocument, options)
+
+// the following all execute the command
+query.findOneAndUpdate(callback)
+query.findOneAndUpdate(updateDocument, callback)
+query.findOneAndUpdate(match, updateDocument, callback)
+query.findOneAndUpdate(match, updateDocument, options, function (err, doc) {
+  if (doc) {
+    // the document may not be found
+    console.log(doc);
+  }
+})
+ ```
+
 ###findOneAndRemove()
+
+Declares this query a _findAndModify_ with remove query. Optionally pass a match clause, options, or callback. If a callback is passed, the query is executed.
+
+When executed, the first matching document (if found) is modified according to the update document, removed from the collection and passed to the callback.
+
+#####options
+
+Options are passed to the `setOptions()` method.
+
+- `sort`: if multiple docs are found by the condition, sets the sort order to choose which doc to modify and remove
+
+```js
+A.where().findOneAndRemove()
+A.where().findOneAndRemove(match)
+A.where().findOneAndRemove(match, options)
+
+// the following all execute the command
+A.where().findOneAndRemove(callback)
+A.where().findOneAndRemove(match, callback)
+A.where().findOneAndRemove(match, options, function (err, doc) {
+  if (doc) {
+    // the document may not be found
+    console.log(doc);
+  }
+})
+ ```
 
 ###distinct()
 
-Declares this query a _distinct_ query. Optionally pass the distinct field, a match clause and / or callback. If a callback is passed the query is executed.
+Declares this query a _distinct_ query. Optionally pass the distinct field, a match clause or callback. If a callback is passed the query is executed.
 
 ```js
 mquery().distinct()
-mquery().distinct(field)
-mquery().distinct(field, callback)
 mquery().distinct(match)
-mquery().distinct(match, callback)
 mquery().distinct(match, field)
-mquery().distinct(match, field, callback)
-mquery().distinct(function (err, result) {})
+mquery().distinct(field)
+
+// the following all execute the command
+mquery().distinct(callback)
+mquery().distinct(field, callback)
+mquery().distinct(match, callback)
+mquery().distinct(match, field, function (err, result) {
+  console.log(result);
+})
 ```
 
 ###exec()
