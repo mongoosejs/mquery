@@ -1,7 +1,7 @@
 #mquery
 ===========
 
-Expressive MongoDB query builder
+`mquery` is a fluent mongodb query builder designed to run in multiple environments. As of v0.1, `mquery` runs on `Node.js` only with support for the MongoDB shell and browser environments planned for upcoming releases.
 
 ##Features
 
