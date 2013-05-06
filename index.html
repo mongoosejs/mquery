@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8' />
+    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+    <meta name="description" content="mquery : Expressive MongoDB query builder" />
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>mquery</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/aheckmann/mquery">View on GitHub</a>
+
+          <h1 id="project_title">mquery</h1>
+          <h2 id="project_tagline">Expressive MongoDB query builder</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/aheckmann/mquery/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/aheckmann/mquery/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <p><code>mquery</code> is a fluent mongodb query builder designed to run in multiple environments. As of v0.1, <code>mquery</code> runs on <code>Node.js</code> only with support for the MongoDB shell and browser environments planned for upcoming releases.</p>
+
+<h2>Features</h2>
+
+<ul>
+<li>fluent query builder api</li>
+<li>custom base query support</li>
+<li>MongoDB 2.4 geoJSON support</li>
+<li>method + option combinations validation</li>
+<li>node.js driver compatibility</li>
+<li>environment detection</li>
+<li>
+<a href="https://github.com/visionmedia/debug">debug</a> support</li>
+<li>separated collection implementations for maximum flexibility</li>
+</ul><h2>Use</h2>
+
+<div class="highlight"><pre><span class="nx">require</span><span class="p">(</span><span class="s1">'mongodb'</span><span class="p">).</span><span class="nx">connect</span><span class="p">(</span><span class="nx">uri</span><span class="p">,</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">db</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">if</span> <span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="k">return</span> <span class="nx">handleError</span><span class="p">(</span><span class="nx">err</span><span class="p">);</span>
+
+  <span class="c1">// get a collection</span>
+  <span class="kd">var</span> <span class="nx">collection</span> <span class="o">=</span> <span class="nx">db</span><span class="p">.</span><span class="nx">collection</span><span class="p">(</span><span class="s1">'artists'</span><span class="p">);</span>
+
+  <span class="c1">// pass it to the constructor</span>
+  <span class="nx">mquery</span><span class="p">(</span><span class="nx">collection</span><span class="p">).</span><span class="nx">find</span><span class="p">({..},</span> <span class="nx">callback</span><span class="p">);</span>
+
+  <span class="c1">// or pass it to the collection method</span>
+  <span class="nx">mquery</span><span class="p">().</span><span class="nx">find</span><span class="p">({..}).</span><span class="nx">collection</span><span class="p">(</span><span class="nx">collection</span><span class="p">).</span><span class="nx">exec</span><span class="p">(</span><span class="nx">callback</span><span class="p">)</span>
+
+  <span class="c1">// or better yet, create a custom query constructor that has it always set</span>
+  <span class="kd">var</span> <span class="nx">Artist</span> <span class="o">=</span> <span class="nx">mquery</span><span class="p">(</span><span class="nx">collection</span><span class="p">).</span><span class="nx">toConstructor</span><span class="p">();</span>
+  <span class="nx">Artist</span><span class="p">().</span><span class="nx">find</span><span class="p">(..).</span><span class="nx">where</span><span class="p">(..).</span><span class="nx">exec</span><span class="p">(</span><span class="nx">callback</span><span class="p">)</span>
+<span class="p">})</span>
+</pre></div>
+
+<p><code>mquery</code> requires a collection object to work with. In the example above we just pass the collection object created using the official <a href="https://github.com/mongodb/node-mongodb-native">MongoDB driver</a>.</p>
+
+<h2>Fluent API</h2>
+
+<h3>find()</h3>
+
+<p>Declares this query a <em>find</em> query. Optionally pass a match clause and / or callback. If a callback is passed the query is executed.</p>
+
+<div class="highlight"><pre><span class="nx">mquery</span><span class="p">().</span><span class="nx">find</span><span class="p">()</span>
+<span class="nx">mquery</span><span class="p">().</span><span class="nx">find</span><span class="p">(</span><span class="nx">match</span><span class="p">)</span>
+<span class="nx">mquery</span><span class="p">().</span><span class="nx">find</span><span class="p">(</span><span class="nx">callback</span><span class="p">)</span>
+<span class="nx">mquery</span><span class="p">().</span><span class="nx">find</span><span class="p">(</span><span class="nx">match</span><span class="p">,</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">docs</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">assert</span><span class="p">(</span><span class="nb">Array</span><span class="p">.</span><span class="nx">isArray</span><span class="p">(</span><span class="nx">docs</span><span class="p">));</span>
+<span class="p">})</span>
+</pre></div>
+
+<h3>findOne()</h3>
+
+<p>Declares this query a <em>findOne</em> query. Optionally pass a match clause and / or callback. If a callback is passed the query is executed.</p>
+
+<div class="highlight"><pre><span class="nx">mquery</span><span class="p">().</span><span class="nx">findOne</span><span class="p">()</span>
+<span class="nx">mquery</span><span class="p">().</span><span class="nx">findOne</span><span class="p">(</span><span class="nx">match</span><span class="p">)</span>
+<span class="nx">mquery</span><span class="p">().</span><span class="nx">findOne</span><span class="p">(</span><span class="nx">callback</span><span class="p">)</span>
+<span class="nx">mquery</span><span class="p">().</span><span class="nx">findOne</span><span class="p">(</span><span class="nx">match</span><span class="p">,</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">doc</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">if</span> <span class="p">(</span><span class="nx">doc</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// the document may not be found</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">doc</span><span class="p">);</span>
+  <span class="p">}</span>
+<span class="p">})</span>
+</pre></div>
+
+<h3>count()</h3>
+
+<p>Declares this query a <em>count</em> query. Optionally pass a match clause and / or callback. If a callback is passed the query is executed.</p>
+
+<div class="highlight"><pre><span class="nx">mquery</span><span class="p">().</span><span class="nx">count</span><span class="p">()</span>
+<span class="nx">mquery</span><span class="p">().</span><span class="nx">count</span><span class="p">(</span><span class="nx">match</span><span class="p">)</span>
+<span class="nx">mquery</span><span class="p">().</span><span class="nx">count</span><span class="p">(</span><span class="nx">callback</span><span class="p">)</span>
+<span class="nx">mquery</span><span class="p">().</span><span class="nx">count</span><span class="p">(</span><span class="nx">match</span><span class="p">,</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">number</span><span class="p">){</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">'we found %d matching documents'</span><span class="p">,</span> <span class="nx">number</span><span class="p">);</span>
+<span class="p">})</span>
+</pre></div>
+
+<h3>remove()</h3>
+
+<p>Declares this query a <em>remove</em> query. Optionally pass a match clause and / or callback. If a callback is passed the query is executed.</p>
+
+<div class="highlight"><pre><span class="nx">mquery</span><span class="p">().</span><span class="nx">remove</span><span class="p">()</span>
+<span class="nx">mquery</span><span class="p">().</span><span class="nx">remove</span><span class="p">(</span><span class="nx">match</span><span class="p">)</span>
+<span class="nx">mquery</span><span class="p">().</span><span class="nx">remove</span><span class="p">(</span><span class="nx">callback</span><span class="p">)</span>
+<span class="nx">mquery</span><span class="p">().</span><span class="nx">remove</span><span class="p">(</span><span class="nx">match</span><span class="p">,</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">err</span><span class="p">){})</span>
+</pre></div>
+
+<h3>update()</h3>
+
+<p>Declares this query an <em>update</em> query. Optionally pass an update document, match clause, options or callback. If a callback is passed, the query is executed. To force execution without passing a callback, run <code>update(true)</code>.</p>
+
+<div class="highlight"><pre><span class="nx">mquery</span><span class="p">().</span><span class="nx">update</span><span class="p">()</span>
+<span class="nx">mquery</span><span class="p">().</span><span class="nx">update</span><span class="p">(</span><span class="nx">match</span><span class="p">,</span> <span class="nx">updateDocument</span><span class="p">)</span>
+<span class="nx">mquery</span><span class="p">().</span><span class="nx">update</span><span class="p">(</span><span class="nx">match</span><span class="p">,</span> <span class="nx">updateDocument</span><span class="p">,</span> <span class="nx">options</span><span class="p">)</span>
+
+<span class="c1">// the following all execute the command</span>
+<span class="nx">mquery</span><span class="p">().</span><span class="nx">update</span><span class="p">(</span><span class="nx">callback</span><span class="p">)</span>
+<span class="nx">mquery</span><span class="p">().</span><span class="nx">update</span><span class="p">({</span><span class="nx">$set</span><span class="o">:</span> <span class="nx">updateDocument</span><span class="p">,</span> <span class="nx">callback</span><span class="p">)</span>
+<span class="nx">mquery</span><span class="p">().</span><span class="nx">update</span><span class="p">(</span><span class="nx">match</span><span class="p">,</span> <span class="nx">updateDocument</span><span class="p">,</span> <span class="nx">callback</span><span class="p">)</span>
+<span class="nx">mquery</span><span class="p">().</span><span class="nx">update</span><span class="p">(</span><span class="nx">match</span><span class="p">,</span> <span class="nx">updateDocument</span><span class="p">,</span> <span class="nx">options</span><span class="p">,</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">result</span><span class="p">){})</span>
+<span class="nx">mquery</span><span class="p">().</span><span class="nx">update</span><span class="p">(</span><span class="kc">true</span><span class="p">)</span> <span class="c1">// executes (unsafe write)</span>
+</pre></div>
+
+<h5>the update document</h5>
+
+<p>All paths passed that are not <code>$atomic</code> operations will become <code>$set</code> ops. For example:</p>
+
+<div class="highlight"><pre><span class="nx">mquery</span><span class="p">(</span><span class="nx">collection</span><span class="p">).</span><span class="nx">where</span><span class="p">({</span> <span class="nx">_id</span><span class="o">:</span> <span class="nx">id</span> <span class="p">}).</span><span class="nx">update</span><span class="p">({</span> <span class="nx">title</span><span class="o">:</span> <span class="s1">'words'</span> <span class="p">},</span> <span class="nx">callback</span><span class="p">)</span>
+</pre></div>
+
+<p>becomes</p>
+
+<div class="highlight"><pre><span class="nx">collection</span><span class="p">.</span><span class="nx">update</span><span class="p">({</span> <span class="nx">_id</span><span class="o">:</span> <span class="nx">id</span> <span class="p">},</span> <span class="p">{</span> <span class="nx">$set</span><span class="o">:</span> <span class="p">{</span> <span class="nx">title</span><span class="o">:</span> <span class="s1">'words'</span> <span class="p">}},</span> <span class="nx">callback</span><span class="p">)</span>
+</pre></div>
+
+<p>This behavior can be overridden using the <code>overwrite</code> option (see below).</p>
+
+<h5>options</h5>
+
+<p>Options are passed to the <code>setOptions()</code> method.</p>
+
+<ul>
+<li>overwrite</li>
+</ul><p>Passing an empty object <code>{ }</code> as the update document will result in a no-op unless the <code>overwrite</code> option is passed. Without the <code>overwrite</code> option, the update operation will be ignored and the callback executed without sending the command to MongoDB to prevent accidently overwritting documents in the collection.</p>
+
+<div class="highlight"><pre><span class="kd">var</span> <span class="nx">q</span> <span class="o">=</span> <span class="nx">mquery</span><span class="p">(</span><span class="nx">collection</span><span class="p">).</span><span class="nx">where</span><span class="p">({</span> <span class="nx">_id</span><span class="o">:</span> <span class="nx">id</span> <span class="p">}).</span><span class="nx">setOptions</span><span class="p">({</span> <span class="nx">overwrite</span><span class="o">:</span> <span class="kc">true</span> <span class="p">});</span>
+<span class="nx">q</span><span class="p">.</span><span class="nx">update</span><span class="p">({</span> <span class="p">},</span> <span class="nx">callback</span><span class="p">);</span> <span class="c1">// overwrite with an empty doc</span>
+</pre></div>
+
+<p>The <code>overwrite</code> option isn't just for empty objects, it also provides a means to override the default <code>$set</code> conversion and send the update document as is.</p>
+
+<div class="highlight"><pre><span class="c1">// create a base query</span>
+<span class="kd">var</span> <span class="nx">base</span> <span class="o">=</span> <span class="nx">mquery</span><span class="p">({</span> <span class="nx">_id</span><span class="o">:</span> <span class="mi">108</span> <span class="p">}).</span><span class="nx">collection</span><span class="p">(</span><span class="nx">collection</span><span class="p">).</span><span class="nx">toConstructor</span><span class="p">();</span>
+
+<span class="nx">base</span><span class="p">().</span><span class="nx">findOne</span><span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">doc</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">doc</span><span class="p">);</span> <span class="c1">// { _id: 108, name: 'cajon' })</span>
+
+  <span class="nx">base</span><span class="p">().</span><span class="nx">setOptions</span><span class="p">({</span> <span class="nx">overwrite</span><span class="o">:</span> <span class="kc">true</span> <span class="p">}).</span><span class="nx">update</span><span class="p">({</span> <span class="nx">changed</span><span class="o">:</span> <span class="kc">true</span> <span class="p">},</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">base</span><span class="p">.</span><span class="nx">findOne</span><span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">doc</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">doc</span><span class="p">);</span> <span class="c1">// { _id: 108, changed: true }) - the doc was overwritten</span>
+    <span class="p">});</span>
+  <span class="p">});</span>
+<span class="p">})</span>
+</pre></div>
+
+<ul>
+<li>multi</li>
+</ul><p>Updates only modify a single document by default. To update multiple documents, set the <code>multi</code> option to <code>true</code>.</p>
+
+<div class="highlight"><pre><span class="nx">mquery</span><span class="p">()</span>
+  <span class="p">.</span><span class="nx">collection</span><span class="p">(</span><span class="nx">coll</span><span class="p">)</span>
+  <span class="p">.</span><span class="nx">update</span><span class="p">({</span> <span class="nx">name</span><span class="o">:</span> <span class="sr">/^match/</span> <span class="p">},</span> <span class="p">{</span> <span class="nx">$addToSet</span><span class="o">:</span> <span class="p">{</span> <span class="nx">arr</span><span class="o">:</span> <span class="mi">4</span> <span class="p">}},</span> <span class="p">{</span> <span class="nx">multi</span><span class="o">:</span> <span class="kc">true</span> <span class="p">},</span> <span class="nx">callback</span><span class="p">)</span>
+
+<span class="c1">// another way of doing it</span>
+<span class="nx">mquery</span><span class="p">({</span> <span class="nx">name</span><span class="o">:</span> <span class="sr">/^match/</span> <span class="p">})</span>
+  <span class="p">.</span><span class="nx">collection</span><span class="p">(</span><span class="nx">coll</span><span class="p">)</span>
+  <span class="p">.</span><span class="nx">setOptions</span><span class="p">({</span> <span class="nx">multi</span><span class="o">:</span> <span class="kc">true</span> <span class="p">})</span>
+  <span class="p">.</span><span class="nx">update</span><span class="p">({</span> <span class="nx">$addToSet</span><span class="o">:</span> <span class="p">{</span> <span class="nx">arr</span><span class="o">:</span> <span class="mi">4</span> <span class="p">}},</span> <span class="nx">callback</span><span class="p">)</span>
+
+<span class="c1">// update multiple documents with an empty doc</span>
+<span class="kd">var</span> <span class="nx">q</span> <span class="o">=</span> <span class="nx">mquery</span><span class="p">(</span><span class="nx">collection</span><span class="p">).</span><span class="nx">where</span><span class="p">({</span> <span class="nx">name</span><span class="o">:</span> <span class="sr">/^match/</span> <span class="p">});</span>
+<span class="nx">q</span><span class="p">.</span><span class="nx">setOptions</span><span class="p">({</span> <span class="nx">multi</span><span class="o">:</span> <span class="kc">true</span><span class="p">,</span> <span class="nx">overwrite</span><span class="o">:</span> <span class="kc">true</span> <span class="p">})</span>
+<span class="nx">q</span><span class="p">.</span><span class="nx">update</span><span class="p">({</span> <span class="p">});</span>
+<span class="nx">q</span><span class="p">.</span><span class="nx">update</span><span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">result</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">arguments</span><span class="p">);</span>
+<span class="p">});</span>
+</pre></div>
+
+<h3>findOneAndUpdate()</h3>
+
+<p>Declares this query a <em>findAndModify</em> with update query. Optionally pass a match clause, update document, options, or callback. If a callback is passed, the query is executed.</p>
+
+<p>When executed, the first matching document (if found) is modified according to the update document and passed back to the callback.</p>
+
+<h5>options</h5>
+
+<p>Options are passed to the <code>setOptions()</code> method.</p>
+
+<ul>
+<li>
+<code>new</code>: boolean - true to return the modified document rather than the original. defaults to true</li>
+<li>
+<code>upsert</code>: boolean - creates the object if it doesn't exist. defaults to false</li>
+<li>
+<code>sort</code>: if multiple docs are found by the match condition, sets the sort order to choose which doc to update</li>
+</ul><div class="highlight"><pre><span class="nx">query</span><span class="p">.</span><span class="nx">findOneAndUpdate</span><span class="p">()</span>
+<span class="nx">query</span><span class="p">.</span><span class="nx">findOneAndUpdate</span><span class="p">(</span><span class="nx">updateDocument</span><span class="p">)</span>
+<span class="nx">query</span><span class="p">.</span><span class="nx">findOneAndUpdate</span><span class="p">(</span><span class="nx">match</span><span class="p">,</span> <span class="nx">updateDocument</span><span class="p">)</span>
+<span class="nx">query</span><span class="p">.</span><span class="nx">findOneAndUpdate</span><span class="p">(</span><span class="nx">match</span><span class="p">,</span> <span class="nx">updateDocument</span><span class="p">,</span> <span class="nx">options</span><span class="p">)</span>
+
+<span class="c1">// the following all execute the command</span>
+<span class="nx">query</span><span class="p">.</span><span class="nx">findOneAndUpdate</span><span class="p">(</span><span class="nx">callback</span><span class="p">)</span>
+<span class="nx">query</span><span class="p">.</span><span class="nx">findOneAndUpdate</span><span class="p">(</span><span class="nx">updateDocument</span><span class="p">,</span> <span class="nx">callback</span><span class="p">)</span>
+<span class="nx">query</span><span class="p">.</span><span class="nx">findOneAndUpdate</span><span class="p">(</span><span class="nx">match</span><span class="p">,</span> <span class="nx">updateDocument</span><span class="p">,</span> <span class="nx">callback</span><span class="p">)</span>
+<span class="nx">query</span><span class="p">.</span><span class="nx">findOneAndUpdate</span><span class="p">(</span><span class="nx">match</span><span class="p">,</span> <span class="nx">updateDocument</span><span class="p">,</span> <span class="nx">options</span><span class="p">,</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">doc</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">if</span> <span class="p">(</span><span class="nx">doc</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// the document may not be found</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">doc</span><span class="p">);</span>
+  <span class="p">}</span>
+<span class="p">})</span>
+</pre></div>
+
+<h3>findOneAndRemove()</h3>
+
+<p>Declares this query a <em>findAndModify</em> with remove query. Optionally pass a match clause, options, or callback. If a callback is passed, the query is executed.</p>
+
+<p>When executed, the first matching document (if found) is modified according to the update document, removed from the collection and passed to the callback.</p>
+
+<h5>options</h5>
+
+<p>Options are passed to the <code>setOptions()</code> method.</p>
+
+<ul>
+<li>
+<code>sort</code>: if multiple docs are found by the condition, sets the sort order to choose which doc to modify and remove</li>
+</ul><div class="highlight"><pre><span class="nx">A</span><span class="p">.</span><span class="nx">where</span><span class="p">().</span><span class="nx">findOneAndRemove</span><span class="p">()</span>
+<span class="nx">A</span><span class="p">.</span><span class="nx">where</span><span class="p">().</span><span class="nx">findOneAndRemove</span><span class="p">(</span><span class="nx">match</span><span class="p">)</span>
+<span class="nx">A</span><span class="p">.</span><span class="nx">where</span><span class="p">().</span><span class="nx">findOneAndRemove</span><span class="p">(</span><span class="nx">match</span><span class="p">,</span> <span class="nx">options</span><span class="p">)</span>
+
+<span class="c1">// the following all execute the command</span>
+<span class="nx">A</span><span class="p">.</span><span class="nx">where</span><span class="p">().</span><span class="nx">findOneAndRemove</span><span class="p">(</span><span class="nx">callback</span><span class="p">)</span>
+<span class="nx">A</span><span class="p">.</span><span class="nx">where</span><span class="p">().</span><span class="nx">findOneAndRemove</span><span class="p">(</span><span class="nx">match</span><span class="p">,</span> <span class="nx">callback</span><span class="p">)</span>
+<span class="nx">A</span><span class="p">.</span><span class="nx">where</span><span class="p">().</span><span class="nx">findOneAndRemove</span><span class="p">(</span><span class="nx">match</span><span class="p">,</span> <span class="nx">options</span><span class="p">,</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">doc</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">if</span> <span class="p">(</span><span class="nx">doc</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// the document may not be found</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">doc</span><span class="p">);</span>
+  <span class="p">}</span>
+<span class="p">})</span>
+</pre></div>
+
+<h3>distinct()</h3>
+
+<p>Declares this query a <em>distinct</em> query. Optionally pass the distinct field, a match clause or callback. If a callback is passed the query is executed.</p>
+
+<div class="highlight"><pre><span class="nx">mquery</span><span class="p">().</span><span class="nx">distinct</span><span class="p">()</span>
+<span class="nx">mquery</span><span class="p">().</span><span class="nx">distinct</span><span class="p">(</span><span class="nx">match</span><span class="p">)</span>
+<span class="nx">mquery</span><span class="p">().</span><span class="nx">distinct</span><span class="p">(</span><span class="nx">match</span><span class="p">,</span> <span class="nx">field</span><span class="p">)</span>
+<span class="nx">mquery</span><span class="p">().</span><span class="nx">distinct</span><span class="p">(</span><span class="nx">field</span><span class="p">)</span>
+
+<span class="c1">// the following all execute the command</span>
+<span class="nx">mquery</span><span class="p">().</span><span class="nx">distinct</span><span class="p">(</span><span class="nx">callback</span><span class="p">)</span>
+<span class="nx">mquery</span><span class="p">().</span><span class="nx">distinct</span><span class="p">(</span><span class="nx">field</span><span class="p">,</span> <span class="nx">callback</span><span class="p">)</span>
+<span class="nx">mquery</span><span class="p">().</span><span class="nx">distinct</span><span class="p">(</span><span class="nx">match</span><span class="p">,</span> <span class="nx">callback</span><span class="p">)</span>
+<span class="nx">mquery</span><span class="p">().</span><span class="nx">distinct</span><span class="p">(</span><span class="nx">match</span><span class="p">,</span> <span class="nx">field</span><span class="p">,</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">result</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">result</span><span class="p">);</span>
+<span class="p">})</span>
+</pre></div>
+
+<h3>exec()</h3>
+
+<p>Executes the query.</p>
+
+<div class="highlight"><pre><span class="nx">mquery</span><span class="p">().</span><span class="nx">findOne</span><span class="p">().</span><span class="nx">where</span><span class="p">(</span><span class="s1">'route'</span><span class="p">).</span><span class="nx">intersects</span><span class="p">(</span><span class="nx">polygon</span><span class="p">).</span><span class="nx">exec</span><span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">docs</span><span class="p">){})</span>
+</pre></div>
+
+<hr><h3>all()</h3>
+
+<p>Specifies an <code>$all</code> query condition</p>
+
+<div class="highlight"><pre><span class="nx">mquery</span><span class="p">().</span><span class="nx">where</span><span class="p">(</span><span class="s1">'permission'</span><span class="p">).</span><span class="nx">all</span><span class="p">([</span><span class="s1">'read'</span><span class="p">,</span> <span class="s1">'write'</span><span class="p">])</span>
+</pre></div>
+
+<p><a href="http://docs.mongodb.org/manual/reference/operator/all/">MongoDB documentation</a></p>
+
+<h3>and()</h3>
+
+<p>Specifies arguments for an <code>$and</code> condition</p>
+
+<div class="highlight"><pre><span class="nx">mquery</span><span class="p">().</span><span class="nx">and</span><span class="p">([{</span> <span class="nx">color</span><span class="o">:</span> <span class="s1">'green'</span> <span class="p">},</span> <span class="p">{</span> <span class="nx">status</span><span class="o">:</span> <span class="s1">'ok'</span> <span class="p">}])</span>
+</pre></div>
+
+<p><a href="http://docs.mongodb.org/manual/reference/operator/and/">MongoDB documentation</a></p>
+
+<h3>box()</h3>
+
+<p>Specifies a <code>$box</code> condition</p>
+
+<div class="highlight"><pre><span class="kd">var</span> <span class="nx">lowerLeft</span> <span class="o">=</span> <span class="p">[</span><span class="mf">40.73083</span><span class="p">,</span> <span class="o">-</span><span class="mf">73.99756</span><span class="p">]</span>
+<span class="kd">var</span> <span class="nx">upperRight</span><span class="o">=</span> <span class="p">[</span><span class="mf">40.741404</span><span class="p">,</span>  <span class="o">-</span><span class="mf">73.988135</span><span class="p">]</span>
+
+<span class="nx">mquery</span><span class="p">().</span><span class="nx">where</span><span class="p">(</span><span class="s1">'location'</span><span class="p">).</span><span class="nx">within</span><span class="p">().</span><span class="nx">box</span><span class="p">(</span><span class="nx">lowerLeft</span><span class="p">,</span> <span class="nx">upperRight</span><span class="p">)</span>
+</pre></div>
+
+<p><a href="http://docs.mongodb.org/manual/reference/operator/box/">MongoDB Documentation</a></p>
+
+<h3>circle()</h3>
+
+<p>Specifies a <code>$center</code> or <code>$centerSphere</code> condition.</p>
+
+<div class="highlight"><pre><span class="kd">var</span> <span class="nx">area</span> <span class="o">=</span> <span class="p">{</span> <span class="nx">center</span><span class="o">:</span> <span class="p">[</span><span class="mi">50</span><span class="p">,</span> <span class="mi">50</span><span class="p">],</span> <span class="nx">radius</span><span class="o">:</span> <span class="mi">10</span><span class="p">,</span> <span class="nx">unique</span><span class="o">:</span> <span class="kc">true</span> <span class="p">}</span>
+<span class="nx">query</span><span class="p">.</span><span class="nx">where</span><span class="p">(</span><span class="s1">'loc'</span><span class="p">).</span><span class="nx">within</span><span class="p">().</span><span class="nx">circle</span><span class="p">(</span><span class="nx">area</span><span class="p">)</span>
+<span class="nx">query</span><span class="p">.</span><span class="nx">center</span><span class="p">(</span><span class="s1">'loc'</span><span class="p">,</span> <span class="nx">area</span><span class="p">);</span>
+
+<span class="c1">// for spherical calculations</span>
+<span class="kd">var</span> <span class="nx">area</span> <span class="o">=</span> <span class="p">{</span> <span class="nx">center</span><span class="o">:</span> <span class="p">[</span><span class="mi">50</span><span class="p">,</span> <span class="mi">50</span><span class="p">],</span> <span class="nx">radius</span><span class="o">:</span> <span class="mi">10</span><span class="p">,</span> <span class="nx">unique</span><span class="o">:</span> <span class="kc">true</span><span class="p">,</span> <span class="nx">spherical</span><span class="o">:</span> <span class="kc">true</span> <span class="p">}</span>
+<span class="nx">query</span><span class="p">.</span><span class="nx">where</span><span class="p">(</span><span class="s1">'loc'</span><span class="p">).</span><span class="nx">within</span><span class="p">().</span><span class="nx">circle</span><span class="p">(</span><span class="nx">area</span><span class="p">)</span>
+<span class="nx">query</span><span class="p">.</span><span class="nx">center</span><span class="p">(</span><span class="s1">'loc'</span><span class="p">,</span> <span class="nx">area</span><span class="p">);</span>
+</pre></div>
+
+<ul>
+<li><a href="http://docs.mongodb.org/manual/reference/operator/center/">MongoDB Documentation - center</a></li>
+<li><a href="http://docs.mongodb.org/manual/reference/operator/centerSphere/">MongoDB Documentation - centerSphere</a></li>
+</ul><h3>elemMatch()</h3>
+
+<p>Specifies an <code>$elemMatch</code> condition</p>
+
+<div class="highlight"><pre><span class="nx">query</span><span class="p">.</span><span class="nx">where</span><span class="p">(</span><span class="s1">'comment'</span><span class="p">).</span><span class="nx">elemMatch</span><span class="p">({</span> <span class="nx">author</span><span class="o">:</span> <span class="s1">'autobot'</span><span class="p">,</span> <span class="nx">votes</span><span class="o">:</span> <span class="p">{</span><span class="nx">$gte</span><span class="o">:</span> <span class="mi">5</span><span class="p">}})</span>
+
+<span class="nx">query</span><span class="p">.</span><span class="nx">elemMatch</span><span class="p">(</span><span class="s1">'comment'</span><span class="p">,</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">elem</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">elem</span><span class="p">.</span><span class="nx">where</span><span class="p">(</span><span class="s1">'author'</span><span class="p">).</span><span class="nx">equals</span><span class="p">(</span><span class="s1">'autobot'</span><span class="p">);</span>
+  <span class="nx">elem</span><span class="p">.</span><span class="nx">where</span><span class="p">(</span><span class="s1">'votes'</span><span class="p">).</span><span class="nx">gte</span><span class="p">(</span><span class="mi">5</span><span class="p">);</span>
+<span class="p">})</span>
+</pre></div>
+
+<p><a href="http://docs.mongodb.org/manual/reference/operator/elemMatch/">MongoDB Documentation</a></p>
+
+<h3>equals()</h3>
+
+<p>Specifies the complementary comparison value for the path specified with <code>where()</code>.</p>
+
+<div class="highlight"><pre><span class="nx">mquery</span><span class="p">().</span><span class="nx">where</span><span class="p">(</span><span class="s1">'age'</span><span class="p">).</span><span class="nx">equals</span><span class="p">(</span><span class="mi">49</span><span class="p">);</span>
+
+<span class="c1">// is the same as</span>
+
+<span class="nx">mquery</span><span class="p">().</span><span class="nx">where</span><span class="p">({</span> <span class="s1">'age'</span><span class="o">:</span> <span class="mi">49</span> <span class="p">});</span>
+</pre></div>
+
+<h3>exists()</h3>
+
+<p>Specifies an <code>$exists</code> condition</p>
+
+<div class="highlight"><pre><span class="c1">// { name: { $exists: true }}</span>
+<span class="nx">mquery</span><span class="p">().</span><span class="nx">where</span><span class="p">(</span><span class="s1">'name'</span><span class="p">).</span><span class="nx">exists</span><span class="p">()</span>
+<span class="nx">mquery</span><span class="p">().</span><span class="nx">where</span><span class="p">(</span><span class="s1">'name'</span><span class="p">).</span><span class="nx">exists</span><span class="p">(</span><span class="kc">true</span><span class="p">)</span>
+<span class="nx">mquery</span><span class="p">().</span><span class="nx">exists</span><span class="p">(</span><span class="s1">'name'</span><span class="p">)</span>
+
+<span class="c1">// { name: { $exists: false }}</span>
+<span class="nx">mquery</span><span class="p">().</span><span class="nx">where</span><span class="p">(</span><span class="s1">'name'</span><span class="p">).</span><span class="nx">exists</span><span class="p">(</span><span class="kc">false</span><span class="p">);</span>
+<span class="nx">mquery</span><span class="p">().</span><span class="nx">exists</span><span class="p">(</span><span class="s1">'name'</span><span class="p">,</span> <span class="kc">false</span><span class="p">);</span>
+</pre></div>
+
+<p><a href="http://docs.mongodb.org/manual/reference/operator/exists/">MongoDB Documentation</a></p>
+
+<h3>geometry()</h3>
+
+<p>Specifies a <code>$geometry</code> condition</p>
+
+<div class="highlight"><pre><span class="kd">var</span> <span class="nx">polyA</span> <span class="o">=</span> <span class="p">[[[</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">20</span> <span class="p">],</span> <span class="p">[</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">40</span> <span class="p">],</span> <span class="p">[</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">40</span> <span class="p">],</span> <span class="p">[</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">20</span> <span class="p">]]]</span>
+<span class="nx">query</span><span class="p">.</span><span class="nx">where</span><span class="p">(</span><span class="s1">'loc'</span><span class="p">).</span><span class="nx">within</span><span class="p">().</span><span class="nx">geometry</span><span class="p">({</span> <span class="nx">type</span><span class="o">:</span> <span class="s1">'Polygon'</span><span class="p">,</span> <span class="nx">coordinates</span><span class="o">:</span> <span class="nx">polyA</span> <span class="p">})</span>
+
+<span class="c1">// or</span>
+<span class="kd">var</span> <span class="nx">polyB</span> <span class="o">=</span> <span class="p">[[</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span> <span class="p">],</span> <span class="p">[</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span> <span class="p">]]</span>
+<span class="nx">query</span><span class="p">.</span><span class="nx">where</span><span class="p">(</span><span class="s1">'loc'</span><span class="p">).</span><span class="nx">within</span><span class="p">().</span><span class="nx">geometry</span><span class="p">({</span> <span class="nx">type</span><span class="o">:</span> <span class="s1">'LineString'</span><span class="p">,</span> <span class="nx">coordinates</span><span class="o">:</span> <span class="nx">polyB</span> <span class="p">})</span>
+
+<span class="c1">// or</span>
+<span class="kd">var</span> <span class="nx">polyC</span> <span class="o">=</span> <span class="p">[</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span> <span class="p">]</span>
+<span class="nx">query</span><span class="p">.</span><span class="nx">where</span><span class="p">(</span><span class="s1">'loc'</span><span class="p">).</span><span class="nx">within</span><span class="p">().</span><span class="nx">geometry</span><span class="p">({</span> <span class="nx">type</span><span class="o">:</span> <span class="s1">'Point'</span><span class="p">,</span> <span class="nx">coordinates</span><span class="o">:</span> <span class="nx">polyC</span> <span class="p">})</span>
+
+<span class="c1">// or</span>
+<span class="nx">query</span><span class="p">.</span><span class="nx">where</span><span class="p">(</span><span class="s1">'loc'</span><span class="p">).</span><span class="nx">intersects</span><span class="p">().</span><span class="nx">geometry</span><span class="p">({</span> <span class="nx">type</span><span class="o">:</span> <span class="s1">'Point'</span><span class="p">,</span> <span class="nx">coordinates</span><span class="o">:</span> <span class="nx">polyC</span> <span class="p">})</span>
+</pre></div>
+
+<p><code>geometry()</code> <strong>must</strong> come after either <code>intersects()</code> or <code>within()</code>.</p>
+
+<p>The <code>object</code> argument must contain <code>type</code> and <code>coordinates</code> properties.</p>
+
+<ul>
+<li>type <code>String</code>
+</li>
+<li>coordinates <code>Array</code>
+</li>
+</ul><p><a href="http://docs.mongodb.org/manual/reference/operator/geometry/">MongoDB Documentation</a></p>
+
+<h3>gt()</h3>
+
+<p>Specifies a <code>$gt</code> query condition.</p>
+
+<div class="highlight"><pre><span class="nx">mquery</span><span class="p">().</span><span class="nx">where</span><span class="p">(</span><span class="s1">'clicks'</span><span class="p">).</span><span class="nx">gt</span><span class="p">(</span><span class="mi">999</span><span class="p">)</span>
+</pre></div>
+
+<p><a href="http://docs.mongodb.org/manual/reference/operator/gt/">MongoDB Documentation</a></p>
+
+<h3>gte()</h3>
+
+<p>Specifies a <code>$gte</code> query condition.</p>
+
+<p><a href="http://docs.mongodb.org/manual/reference/operator/gte/">MongoDB Documentation</a></p>
+
+<div class="highlight"><pre><span class="nx">mquery</span><span class="p">().</span><span class="nx">where</span><span class="p">(</span><span class="s1">'clicks'</span><span class="p">).</span><span class="nx">gte</span><span class="p">(</span><span class="mi">1000</span><span class="p">)</span>
+</pre></div>
+
+<h3>in()</h3>
+
+<p>Specifies an <code>$in</code> query condition.</p>
+
+<div class="highlight"><pre><span class="nx">mquery</span><span class="p">().</span><span class="nx">where</span><span class="p">(</span><span class="s1">'author_id'</span><span class="p">).</span><span class="k">in</span><span class="p">([</span><span class="mi">3</span><span class="p">,</span> <span class="mi">48901</span><span class="p">,</span> <span class="mi">761</span><span class="p">])</span>
+</pre></div>
+
+<p><a href="http://docs.mongodb.org/manual/reference/operator/in/">MongoDB Documentation</a></p>
+
+<h3>intersects()</h3>
+
+<p>Declares an <code>$geoIntersects</code> query for <code>geometry()</code>.</p>
+
+<div class="highlight"><pre><span class="nx">query</span><span class="p">.</span><span class="nx">where</span><span class="p">(</span><span class="s1">'path'</span><span class="p">).</span><span class="nx">intersects</span><span class="p">().</span><span class="nx">geometry</span><span class="p">({</span>
+    <span class="nx">type</span><span class="o">:</span> <span class="s1">'LineString'</span>
+  <span class="p">,</span> <span class="nx">coordinates</span><span class="o">:</span> <span class="p">[[</span><span class="mf">180.0</span><span class="p">,</span> <span class="mf">11.0</span><span class="p">],</span> <span class="p">[</span><span class="mi">180</span><span class="p">,</span> <span class="mf">9.0</span><span class="p">]]</span>
+<span class="p">})</span>
+
+<span class="c1">// geometry arguments are supported</span>
+<span class="nx">query</span><span class="p">.</span><span class="nx">where</span><span class="p">(</span><span class="s1">'path'</span><span class="p">).</span><span class="nx">intersects</span><span class="p">({</span>
+    <span class="nx">type</span><span class="o">:</span> <span class="s1">'LineString'</span>
+  <span class="p">,</span> <span class="nx">coordinates</span><span class="o">:</span> <span class="p">[[</span><span class="mf">180.0</span><span class="p">,</span> <span class="mf">11.0</span><span class="p">],</span> <span class="p">[</span><span class="mi">180</span><span class="p">,</span> <span class="mf">9.0</span><span class="p">]]</span>
+<span class="p">})</span>
+</pre></div>
+
+<p><strong>Must</strong> be used after <code>where()</code>.</p>
+
+<p><a href="http://docs.mongodb.org/manual/reference/operator/geoIntersects/">MongoDB Documentation</a></p>
+
+<h3>lt()</h3>
+
+<p>Specifies a <code>$lt</code> query condition.</p>
+
+<div class="highlight"><pre><span class="nx">mquery</span><span class="p">().</span><span class="nx">where</span><span class="p">(</span><span class="s1">'clicks'</span><span class="p">).</span><span class="nx">lt</span><span class="p">(</span><span class="mi">50</span><span class="p">)</span>
+</pre></div>
+
+<p><a href="http://docs.mongodb.org/manual/reference/operator/lt/">MongoDB Documentation</a></p>
+
+<h3>lte()</h3>
+
+<p>Specifies a <code>$lte</code> query condition.</p>
+
+<div class="highlight"><pre><span class="nx">mquery</span><span class="p">().</span><span class="nx">where</span><span class="p">(</span><span class="s1">'clicks'</span><span class="p">).</span><span class="nx">lte</span><span class="p">(</span><span class="mi">49</span><span class="p">)</span>
+</pre></div>
+
+<p><a href="http://docs.mongodb.org/manual/reference/operator/lte/">MongoDB Documentation</a></p>
+
+<h3>maxDistance()</h3>
+
+<p>Specifies a <code>$maxDistance</code> query condition.</p>
+
+<div class="highlight"><pre><span class="nx">mquery</span><span class="p">().</span><span class="nx">where</span><span class="p">(</span><span class="s1">'location'</span><span class="p">).</span><span class="nx">near</span><span class="p">({</span> <span class="nx">center</span><span class="o">:</span> <span class="p">[</span><span class="mi">139</span><span class="p">,</span> <span class="mf">74.3</span><span class="p">]</span> <span class="p">}).</span><span class="nx">maxDistance</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+</pre></div>
+
+<p><a href="http://docs.mongodb.org/manual/reference/operator/maxDistance/">MongoDB Documentation</a></p>
+
+<h3>mod()</h3>
+
+<p>Specifies a <code>$mod</code> condition</p>
+
+<div class="highlight"><pre><span class="nx">mquery</span><span class="p">().</span><span class="nx">where</span><span class="p">(</span><span class="s1">'count'</span><span class="p">).</span><span class="nx">mod</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+</pre></div>
+
+<p><a href="http://docs.mongodb.org/manual/reference/operator/mod/">MongoDB Documentation</a></p>
+
+<h3>ne()</h3>
+
+<p>Specifies a <code>$ne</code> query condition.</p>
+
+<div class="highlight"><pre><span class="nx">mquery</span><span class="p">().</span><span class="nx">where</span><span class="p">(</span><span class="s1">'status'</span><span class="p">).</span><span class="nx">ne</span><span class="p">(</span><span class="s1">'ok'</span><span class="p">)</span>
+</pre></div>
+
+<p><a href="http://docs.mongodb.org/manual/reference/operator/ne/">MongoDB Documentation</a></p>
+
+<h3>nin()</h3>
+
+<p>Specifies an <code>$nin</code> query condition.</p>
+
+<div class="highlight"><pre><span class="nx">mquery</span><span class="p">().</span><span class="nx">where</span><span class="p">(</span><span class="s1">'author_id'</span><span class="p">).</span><span class="nx">nin</span><span class="p">([</span><span class="mi">3</span><span class="p">,</span> <span class="mi">48901</span><span class="p">,</span> <span class="mi">761</span><span class="p">])</span>
+</pre></div>
+
+<p><a href="http://docs.mongodb.org/manual/reference/operator/nin/">MongoDB Documentation</a></p>
+
+<h3>nor()</h3>
+
+<p>Specifies arguments for an <code>$nor</code> condition.</p>
+
+<div class="highlight"><pre><span class="nx">mquery</span><span class="p">().</span><span class="nx">nor</span><span class="p">([{</span> <span class="nx">color</span><span class="o">:</span> <span class="s1">'green'</span> <span class="p">},</span> <span class="p">{</span> <span class="nx">status</span><span class="o">:</span> <span class="s1">'ok'</span> <span class="p">}])</span>
+</pre></div>
+
+<p><a href="http://docs.mongodb.org/manual/reference/operator/nor/">MongoDB Documentation</a></p>
+
+<h3>or()</h3>
+
+<p>Specifies arguments for an <code>$or</code> condition.</p>
+
+<div class="highlight"><pre><span class="nx">mquery</span><span class="p">().</span><span class="nx">or</span><span class="p">([{</span> <span class="nx">color</span><span class="o">:</span> <span class="s1">'red'</span> <span class="p">},</span> <span class="p">{</span> <span class="nx">status</span><span class="o">:</span> <span class="s1">'emergency'</span> <span class="p">}])</span>
+</pre></div>
+
+<p><a href="http://docs.mongodb.org/manual/reference/operator/or/">MongoDB Documentation</a></p>
+
+<h3>polygon()</h3>
+
+<p>Specifies a <code>$polygon</code> condition</p>
+
+<div class="highlight"><pre><span class="nx">mquery</span><span class="p">().</span><span class="nx">where</span><span class="p">(</span><span class="s1">'loc'</span><span class="p">).</span><span class="nx">within</span><span class="p">().</span><span class="nx">polygon</span><span class="p">([</span><span class="mi">10</span><span class="p">,</span><span class="mi">20</span><span class="p">],</span> <span class="p">[</span><span class="mi">13</span><span class="p">,</span> <span class="mi">25</span><span class="p">],</span> <span class="p">[</span><span class="mi">7</span><span class="p">,</span><span class="mi">15</span><span class="p">])</span>
+<span class="nx">mquery</span><span class="p">().</span><span class="nx">polygon</span><span class="p">(</span><span class="s1">'loc'</span><span class="p">,</span> <span class="p">[</span><span class="mi">10</span><span class="p">,</span><span class="mi">20</span><span class="p">],</span> <span class="p">[</span><span class="mi">13</span><span class="p">,</span> <span class="mi">25</span><span class="p">],</span> <span class="p">[</span><span class="mi">7</span><span class="p">,</span><span class="mi">15</span><span class="p">])</span>
+</pre></div>
+
+<p><a href="http://docs.mongodb.org/manual/reference/operator/polygon/">MongoDB Documentation</a></p>
+
+<h3>regex()</h3>
+
+<p>Specifies a <code>$regex</code> query condition.</p>
+
+<div class="highlight"><pre><span class="nx">mquery</span><span class="p">().</span><span class="nx">where</span><span class="p">(</span><span class="s1">'name'</span><span class="p">).</span><span class="nx">regex</span><span class="p">(</span><span class="sr">/^sixstepsrecords/</span><span class="p">)</span>
+</pre></div>
+
+<p><a href="http://docs.mongodb.org/manual/reference/operator/regex/">MongoDB Documentation</a></p>
+
+<h3>select()</h3>
+
+<p>Specifies which document fields to include or exclude</p>
+
+<div class="highlight"><pre><span class="c1">// 1 means include, 0 means exclude</span>
+<span class="nx">mquery</span><span class="p">().</span><span class="nx">select</span><span class="p">({</span> <span class="nx">name</span><span class="o">:</span> <span class="mi">1</span><span class="p">,</span> <span class="nx">address</span><span class="o">:</span> <span class="mi">1</span><span class="p">,</span> <span class="nx">_id</span><span class="o">:</span> <span class="mi">0</span> <span class="p">})</span>
+
+<span class="c1">// or</span>
+
+<span class="nx">mquery</span><span class="p">().</span><span class="nx">select</span><span class="p">(</span><span class="s1">'name address -_id'</span><span class="p">)</span>
+</pre></div>
+
+<h5>String syntax</h5>
+
+<p>When passing a string, prefixing a path with <code>-</code> will flag that path as excluded. When a path does not have the <code>-</code> prefix, it is included.</p>
+
+<div class="highlight"><pre><span class="c1">// include a and b, exclude c</span>
+<span class="nx">query</span><span class="p">.</span><span class="nx">select</span><span class="p">(</span><span class="s1">'a b -c'</span><span class="p">);</span>
+
+<span class="c1">// or you may use object notation, useful when</span>
+<span class="c1">// you have keys already prefixed with a "-"</span>
+<span class="nx">query</span><span class="p">.</span><span class="nx">select</span><span class="p">({</span><span class="nx">a</span><span class="o">:</span> <span class="mi">1</span><span class="p">,</span> <span class="nx">b</span><span class="o">:</span> <span class="mi">1</span><span class="p">,</span> <span class="nx">c</span><span class="o">:</span> <span class="mi">0</span><span class="p">});</span>
+</pre></div>
+
+<p><em>Cannot be used with <code>distinct()</code>.</em></p>
+
+<h3>size()</h3>
+
+<p>Specifies a <code>$size</code> query condition.</p>
+
+<div class="highlight"><pre><span class="nx">mquery</span><span class="p">().</span><span class="nx">where</span><span class="p">(</span><span class="s1">'someArray'</span><span class="p">).</span><span class="nx">size</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span>
+</pre></div>
+
+<p><a href="http://docs.mongodb.org/manual/reference/operator/size/">MongoDB Documentation</a></p>
+
+<h3>slice()</h3>
+
+<p>Specifies a <code>$slice</code> projection for a <code>path</code></p>
+
+<div class="highlight"><pre><span class="nx">mquery</span><span class="p">().</span><span class="nx">where</span><span class="p">(</span><span class="s1">'comments'</span><span class="p">).</span><span class="nx">slice</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+<span class="nx">mquery</span><span class="p">().</span><span class="nx">where</span><span class="p">(</span><span class="s1">'comments'</span><span class="p">).</span><span class="nx">slice</span><span class="p">(</span><span class="o">-</span><span class="mi">5</span><span class="p">)</span>
+<span class="nx">mquery</span><span class="p">().</span><span class="nx">where</span><span class="p">(</span><span class="s1">'comments'</span><span class="p">).</span><span class="nx">slice</span><span class="p">([</span><span class="o">-</span><span class="mi">10</span><span class="p">,</span> <span class="mi">5</span><span class="p">])</span>
+</pre></div>
+
+<p><a href="http://docs.mongodb.org/manual/reference/projection/slice/">MongoDB Documentation</a></p>
+
+<h3>within()</h3>
+
+<p>Sets a <code>$within</code> argument for geo-spatial queries</p>
+
+<div class="highlight"><pre><span class="nx">mquery</span><span class="p">().</span><span class="nx">within</span><span class="p">().</span><span class="nx">box</span><span class="p">()</span>
+<span class="nx">mquery</span><span class="p">().</span><span class="nx">within</span><span class="p">().</span><span class="nx">circle</span><span class="p">()</span>
+<span class="nx">mquery</span><span class="p">().</span><span class="nx">within</span><span class="p">().</span><span class="nx">geometry</span><span class="p">()</span>
+
+<span class="nx">mquery</span><span class="p">().</span><span class="nx">where</span><span class="p">(</span><span class="s1">'loc'</span><span class="p">).</span><span class="nx">within</span><span class="p">({</span> <span class="nx">center</span><span class="o">:</span> <span class="p">[</span><span class="mi">50</span><span class="p">,</span><span class="mi">50</span><span class="p">],</span> <span class="nx">radius</span><span class="o">:</span> <span class="mi">10</span><span class="p">,</span> <span class="nx">unique</span><span class="o">:</span> <span class="kc">true</span><span class="p">,</span> <span class="nx">spherical</span><span class="o">:</span> <span class="kc">true</span> <span class="p">});</span>
+<span class="nx">mquery</span><span class="p">().</span><span class="nx">where</span><span class="p">(</span><span class="s1">'loc'</span><span class="p">).</span><span class="nx">within</span><span class="p">({</span> <span class="nx">box</span><span class="o">:</span> <span class="p">[[</span><span class="mf">40.73</span><span class="p">,</span> <span class="o">-</span><span class="mf">73.9</span><span class="p">],</span> <span class="p">[</span><span class="mf">40.7</span><span class="p">,</span> <span class="o">-</span><span class="mf">73.988</span><span class="p">]]</span> <span class="p">});</span>
+<span class="nx">mquery</span><span class="p">().</span><span class="nx">where</span><span class="p">(</span><span class="s1">'loc'</span><span class="p">).</span><span class="nx">within</span><span class="p">({</span> <span class="nx">polygon</span><span class="o">:</span> <span class="p">[[],[],[],[]]</span> <span class="p">});</span>
+
+<span class="nx">mquery</span><span class="p">().</span><span class="nx">where</span><span class="p">(</span><span class="s1">'loc'</span><span class="p">).</span><span class="nx">within</span><span class="p">([],</span> <span class="p">[],</span> <span class="p">[])</span> <span class="c1">// polygon</span>
+<span class="nx">mquery</span><span class="p">().</span><span class="nx">where</span><span class="p">(</span><span class="s1">'loc'</span><span class="p">).</span><span class="nx">within</span><span class="p">([],</span> <span class="p">[])</span> <span class="c1">// box</span>
+<span class="nx">mquery</span><span class="p">().</span><span class="nx">where</span><span class="p">(</span><span class="s1">'loc'</span><span class="p">).</span><span class="nx">within</span><span class="p">({</span> <span class="nx">type</span><span class="o">:</span> <span class="s1">'LineString'</span><span class="p">,</span> <span class="nx">coordinates</span><span class="o">:</span> <span class="p">[...]</span> <span class="p">});</span> <span class="c1">// geometry</span>
+</pre></div>
+
+<p><a href="http://docs.mongodb.org/manual/reference/operator/geoWithin/">MongoDB Documentation</a></p>
+
+<h3>where()</h3>
+
+<p>Specifies a <code>path</code> for use with chaining</p>
+
+<div class="highlight"><pre><span class="c1">// instead of writing:</span>
+<span class="nx">mquery</span><span class="p">().</span><span class="nx">find</span><span class="p">({</span><span class="nx">age</span><span class="o">:</span> <span class="p">{</span><span class="nx">$gte</span><span class="o">:</span> <span class="mi">21</span><span class="p">,</span> <span class="nx">$lte</span><span class="o">:</span> <span class="mi">65</span><span class="p">}});</span>
+
+<span class="c1">// we can instead write:</span>
+<span class="nx">mquery</span><span class="p">().</span><span class="nx">where</span><span class="p">(</span><span class="s1">'age'</span><span class="p">).</span><span class="nx">gte</span><span class="p">(</span><span class="mi">21</span><span class="p">).</span><span class="nx">lte</span><span class="p">(</span><span class="mi">65</span><span class="p">);</span>
+
+<span class="c1">// passing query conditions is permitted too</span>
+<span class="nx">mquery</span><span class="p">().</span><span class="nx">find</span><span class="p">().</span><span class="nx">where</span><span class="p">({</span> <span class="nx">name</span><span class="o">:</span> <span class="s1">'vonderful'</span> <span class="p">})</span>
+
+<span class="c1">// chaining</span>
+<span class="nx">mquery</span><span class="p">()</span>
+<span class="p">.</span><span class="nx">where</span><span class="p">(</span><span class="s1">'age'</span><span class="p">).</span><span class="nx">gte</span><span class="p">(</span><span class="mi">21</span><span class="p">).</span><span class="nx">lte</span><span class="p">(</span><span class="mi">65</span><span class="p">)</span>
+<span class="p">.</span><span class="nx">where</span><span class="p">({</span> <span class="s1">'name'</span><span class="o">:</span> <span class="sr">/^vonderful/i</span> <span class="p">})</span>
+<span class="p">.</span><span class="nx">where</span><span class="p">(</span><span class="s1">'friends'</span><span class="p">).</span><span class="nx">slice</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+<span class="p">.</span><span class="nx">exec</span><span class="p">(</span><span class="nx">callback</span><span class="p">)</span>
+</pre></div>
+
+<h3>$where()</h3>
+
+<p>Specifies a <code>$where</code> condition.</p>
+
+<p>Use <code>$where</code> when you need to select documents using a JavaScript expression.</p>
+
+<div class="highlight"><pre><span class="nx">query</span><span class="p">.</span><span class="nx">$where</span><span class="p">(</span><span class="s1">'this.comments.length &gt; 10 || this.name.length &gt; 5'</span><span class="p">).</span><span class="nx">exec</span><span class="p">(</span><span class="nx">callback</span><span class="p">)</span>
+
+<span class="nx">query</span><span class="p">.</span><span class="nx">$where</span><span class="p">(</span><span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="k">this</span><span class="p">.</span><span class="nx">comments</span><span class="p">.</span><span class="nx">length</span> <span class="o">&gt;</span> <span class="mi">10</span> <span class="o">||</span> <span class="k">this</span><span class="p">.</span><span class="nx">name</span><span class="p">.</span><span class="nx">length</span> <span class="o">&gt;</span> <span class="mi">5</span><span class="p">;</span>
+<span class="p">})</span>
+</pre></div>
+
+<p>Only use <code>$where</code> when you have a condition that cannot be met using other MongoDB operators like <code>$lt</code>. Be sure to read about all of <a href="http://docs.mongodb.org/manual/reference/operator/where/">its caveats</a> before using.</p>
+
+<hr><h3>batchSize()</h3>
+
+<p>Specifies the batchSize option.</p>
+
+<div class="highlight"><pre><span class="nx">query</span><span class="p">.</span><span class="nx">batchSize</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
+</pre></div>
+
+<p><em>Cannot be used with <code>distinct()</code>.</em></p>
+
+<p><a href="http://docs.mongodb.org/manual/reference/method/cursor.batchSize/">MongoDB documentation</a></p>
+
+<h3>comment()</h3>
+
+<p>Specifies the comment option.</p>
+
+<div class="highlight"><pre><span class="nx">query</span><span class="p">.</span><span class="nx">comment</span><span class="p">(</span><span class="s1">'login query'</span><span class="p">);</span>
+</pre></div>
+
+<p><em>Cannot be used with <code>distinct()</code>.</em></p>
+
+<p><a href="http://docs.mongodb.org/manual/reference/operator/">MongoDB documentation</a></p>
+
+<h3>hint()</h3>
+
+<p>Sets query hints.</p>
+
+<div class="highlight"><pre><span class="nx">mquery</span><span class="p">().</span><span class="nx">hint</span><span class="p">({</span> <span class="nx">indexA</span><span class="o">:</span> <span class="mi">1</span><span class="p">,</span> <span class="nx">indexB</span><span class="o">:</span> <span class="o">-</span><span class="mi">1</span> <span class="p">})</span>
+</pre></div>
+
+<p><em>Cannot be used with <code>distinct()</code>.</em></p>
+
+<p><a href="http://docs.mongodb.org/manual/reference/operator/hint/">MongoDB documentation</a></p>
+
+<h3>limit()</h3>
+
+<p>Specifies the limit option.</p>
+
+<div class="highlight"><pre><span class="nx">query</span><span class="p">.</span><span class="nx">limit</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span>
+</pre></div>
+
+<p><em>Cannot be used with <code>distinct()</code>.</em></p>
+
+<p><a href="http://docs.mongodb.org/manual/reference/method/cursor.limit/">MongoDB documentation</a></p>
+
+<h3>maxScan()</h3>
+
+<p>Specifies the maxScan option.</p>
+
+<div class="highlight"><pre><span class="nx">query</span><span class="p">.</span><span class="nx">maxScan</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
+</pre></div>
+
+<p><em>Cannot be used with <code>distinct()</code>.</em></p>
+
+<p><a href="http://docs.mongodb.org/manual/reference/operator/maxScan/">MongoDB documentation</a></p>
+
+<h3>skip()</h3>
+
+<p>Specifies the skip option.</p>
+
+<div class="highlight"><pre><span class="nx">query</span><span class="p">.</span><span class="nx">skip</span><span class="p">(</span><span class="mi">100</span><span class="p">).</span><span class="nx">limit</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span>
+</pre></div>
+
+<p><em>Cannot be used with <code>distinct()</code>.</em></p>
+
+<p><a href="http://docs.mongodb.org/manual/reference/method/cursor.skip/">MongoDB documentation</a></p>
+
+<h3>sort()</h3>
+
+<p>Sets the query sort order.</p>
+
+<p>If an object is passed, key values allowed are <code>asc</code>, <code>desc</code>, <code>ascending</code>, <code>descending</code>, <code>1</code>, and <code>-1</code>.</p>
+
+<p>If a string is passed, it must be a space delimited list of path names. The sort order of each path is ascending unless the path name is prefixed with <code>-</code> which will be treated as descending.</p>
+
+<div class="highlight"><pre><span class="c1">// these are equivalent</span>
+<span class="nx">query</span><span class="p">.</span><span class="nx">sort</span><span class="p">({</span> <span class="nx">field</span><span class="o">:</span> <span class="s1">'asc'</span><span class="p">,</span> <span class="nx">test</span><span class="o">:</span> <span class="o">-</span><span class="mi">1</span> <span class="p">});</span>
+<span class="nx">query</span><span class="p">.</span><span class="nx">sort</span><span class="p">(</span><span class="s1">'field -test'</span><span class="p">);</span>
+</pre></div>
+
+<p><em>Cannot be used with <code>distinct()</code>.</em></p>
+
+<p><a href="http://docs.mongodb.org/manual/reference/method/cursor.sort/">MongoDB documentation</a></p>
+
+<h3>read()</h3>
+
+<p>Sets the readPreference option for the query.</p>
+
+<div class="highlight"><pre><span class="nx">mquery</span><span class="p">().</span><span class="nx">read</span><span class="p">(</span><span class="s1">'primary'</span><span class="p">)</span>
+<span class="nx">mquery</span><span class="p">().</span><span class="nx">read</span><span class="p">(</span><span class="s1">'p'</span><span class="p">)</span>  <span class="c1">// same as primary</span>
+
+<span class="nx">mquery</span><span class="p">().</span><span class="nx">read</span><span class="p">(</span><span class="s1">'primaryPreferred'</span><span class="p">)</span>
+<span class="nx">mquery</span><span class="p">().</span><span class="nx">read</span><span class="p">(</span><span class="s1">'pp'</span><span class="p">)</span> <span class="c1">// same as primaryPreferred</span>
+
+<span class="nx">mquery</span><span class="p">().</span><span class="nx">read</span><span class="p">(</span><span class="s1">'secondary'</span><span class="p">)</span>
+<span class="nx">mquery</span><span class="p">().</span><span class="nx">read</span><span class="p">(</span><span class="s1">'s'</span><span class="p">)</span>  <span class="c1">// same as secondary</span>
+
+<span class="nx">mquery</span><span class="p">().</span><span class="nx">read</span><span class="p">(</span><span class="s1">'secondaryPreferred'</span><span class="p">)</span>
+<span class="nx">mquery</span><span class="p">().</span><span class="nx">read</span><span class="p">(</span><span class="s1">'sp'</span><span class="p">)</span> <span class="c1">// same as secondaryPreferred</span>
+
+<span class="nx">mquery</span><span class="p">().</span><span class="nx">read</span><span class="p">(</span><span class="s1">'nearest'</span><span class="p">)</span>
+<span class="nx">mquery</span><span class="p">().</span><span class="nx">read</span><span class="p">(</span><span class="s1">'n'</span><span class="p">)</span>  <span class="c1">// same as nearest</span>
+
+<span class="c1">// specifying tags</span>
+<span class="nx">mquery</span><span class="p">().</span><span class="nx">read</span><span class="p">(</span><span class="s1">'s'</span><span class="p">,</span> <span class="p">[{</span> <span class="nx">dc</span><span class="o">:</span><span class="s1">'sf'</span><span class="p">,</span> <span class="nx">s</span><span class="o">:</span> <span class="mi">1</span> <span class="p">},{</span> <span class="nx">dc</span><span class="o">:</span><span class="s1">'ma'</span><span class="p">,</span> <span class="nx">s</span><span class="o">:</span> <span class="mi">2</span> <span class="p">}])</span>
+</pre></div>
+
+<h5>Preferences:</h5>
+
+<ul>
+<li>
+<code>primary</code> - (default) Read from primary only. Operations will produce an error if primary is unavailable. Cannot be combined with tags.</li>
+<li>
+<code>secondary</code> - Read from secondary if available, otherwise error.</li>
+<li>
+<code>primaryPreferred</code> - Read from primary if available, otherwise a secondary.</li>
+<li>
+<code>secondaryPreferred</code> - Read from a secondary if available, otherwise read from the primary.</li>
+<li>
+<code>nearest</code> - All operations read from among the nearest candidates, but unlike other modes, this option will include both the primary and all secondaries in the random selection.</li>
+</ul><p>Aliases</p>
+
+<ul>
+<li>
+<code>p</code>   primary</li>
+<li>
+<code>pp</code>  primaryPreferred</li>
+<li>
+<code>s</code>   secondary</li>
+<li>
+<code>sp</code>  secondaryPreferred</li>
+<li>
+<code>n</code>   nearest</li>
+</ul><p>Read more about how to use read preferrences <a href="http://docs.mongodb.org/manual/applications/replication/#read-preference">here</a> and <a href="http://mongodb.github.com/node-mongodb-native/driver-articles/anintroductionto1_1and2_2.html#read-preferences">here</a>.</p>
+
+<h3>slaveOk()</h3>
+
+<p>Sets the slaveOk option. <code>true</code> allows reading from secondaries.</p>
+
+<p><strong>deprecated</strong> use <a href="#read">read()</a> preferences instead if on mongodb &gt;= 2.2</p>
+
+<div class="highlight"><pre><span class="nx">query</span><span class="p">.</span><span class="nx">slaveOk</span><span class="p">()</span> <span class="c1">// true</span>
+<span class="nx">query</span><span class="p">.</span><span class="nx">slaveOk</span><span class="p">(</span><span class="kc">true</span><span class="p">)</span>
+<span class="nx">query</span><span class="p">.</span><span class="nx">slaveOk</span><span class="p">(</span><span class="kc">false</span><span class="p">)</span>
+</pre></div>
+
+<p><a href="http://docs.mongodb.org/manual/reference/method/rs.slaveOk/">MongoDB documentation</a></p>
+
+<h3>snapshot()</h3>
+
+<p>Specifies this query as a snapshot query.</p>
+
+<div class="highlight"><pre><span class="nx">mquery</span><span class="p">().</span><span class="nx">snapshot</span><span class="p">()</span> <span class="c1">// true</span>
+<span class="nx">mquery</span><span class="p">().</span><span class="nx">snapshot</span><span class="p">(</span><span class="kc">true</span><span class="p">)</span>
+<span class="nx">mquery</span><span class="p">().</span><span class="nx">snapshot</span><span class="p">(</span><span class="kc">false</span><span class="p">)</span>
+</pre></div>
+
+<p><em>Cannot be used with <code>distinct()</code>.</em></p>
+
+<p><a href="http://docs.mongodb.org/manual/reference/operator/snapshot/">MongoDB documentation</a></p>
+
+<h3>tailable()</h3>
+
+<p>Sets tailable option.</p>
+
+<div class="highlight"><pre><span class="nx">mquery</span><span class="p">().</span><span class="nx">tailable</span><span class="p">()</span> <span class="o">&lt;==</span> <span class="kc">true</span>
+<span class="nx">mquery</span><span class="p">().</span><span class="nx">tailable</span><span class="p">(</span><span class="kc">true</span><span class="p">)</span>
+<span class="nx">mquery</span><span class="p">().</span><span class="nx">tailable</span><span class="p">(</span><span class="kc">false</span><span class="p">)</span>
+</pre></div>
+
+<p><em>Cannot be used with <code>distinct()</code>.</em></p>
+
+<p><a href="http://docs.mongodb.org/manual/tutorial/create-tailable-cursor/">MongoDB Documentation</a></p>
+
+<h2>Helpers</h2>
+
+<h3>collection()</h3>
+
+<p>Sets the querys collection.</p>
+
+<div class="highlight"><pre><span class="nx">mquery</span><span class="p">().</span><span class="nx">collection</span><span class="p">(</span><span class="nx">aCollection</span><span class="p">)</span>
+</pre></div>
+
+<h3>merge(object)</h3>
+
+<p>Merges other mquery or match condition objects into this one. When an muery instance is passed, its match conditions, field selection and options are merged.</p>
+
+<div class="highlight"><pre><span class="kd">var</span> <span class="nx">drum</span> <span class="o">=</span> <span class="nx">mquery</span><span class="p">({</span> <span class="nx">type</span><span class="o">:</span> <span class="s1">'drum'</span> <span class="p">}).</span><span class="nx">collection</span><span class="p">(</span><span class="nx">instruments</span><span class="p">);</span>
+<span class="kd">var</span> <span class="nx">redDrum</span> <span class="o">=</span> <span class="nx">mqery</span><span class="p">({</span> <span class="nx">color</span><span class="o">:</span> <span class="s1">'red'</span> <span class="p">}).</span><span class="nx">merge</span><span class="p">(</span><span class="nx">drum</span><span class="p">);</span>
+<span class="nx">redDrum</span><span class="p">.</span><span class="nx">count</span><span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">n</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">'there are %d red drums'</span><span class="p">,</span> <span class="nx">n</span><span class="p">);</span>
+<span class="p">})</span>
+</pre></div>
+
+<p>Internally uses <code>Query.canMerge</code> to determine validity.</p>
+
+<h3>setOptions(options)</h3>
+
+<p>Sets query options.</p>
+
+<div class="highlight"><pre><span class="nx">mquery</span><span class="p">().</span><span class="nx">setOptions</span><span class="p">({</span> <span class="nx">collection</span><span class="o">:</span> <span class="nx">coll</span><span class="p">,</span> <span class="nx">limit</span><span class="o">:</span> <span class="mi">20</span> <span class="p">})</span>
+</pre></div>
+
+<h5>options</h5>
+
+<ul>
+<li>
+<a href="#tailable">tailable</a> *</li>
+<li>
+<a href="#sort">sort</a> *</li>
+<li>
+<a href="#limit">limit</a> *</li>
+<li>
+<a href="#skip">skip</a> *</li>
+<li>
+<a href="#maxScan">maxScan</a> *</li>
+<li>
+<a href="#batchSize">batchSize</a> *</li>
+<li>
+<a href="#comment">comment</a> *</li>
+<li>
+<a href="#snapshot">snapshot</a> *</li>
+<li>
+<a href="#hint">hint</a> *</li>
+<li>
+<a href="#slaveOk">slaveOk</a> *</li>
+<li>
+<a href="http://docs.mongodb.org/manual/reference/write-concern/">safe</a>: Boolean - passed through to the collection. Setting to <code>true</code> is equivalent to <code>{ w: 1 }</code>
+</li>
+<li>
+<a href="#collection">collection</a>: the collection to query against</li>
+</ul><p><em>* denotes a query helper method is also available</em></p>
+
+<h3>Query.canMerge(conditions)</h3>
+
+<p>Determines if <code>conditions</code> can be merged using <code>mquery().merge()</code>.</p>
+
+<div class="highlight"><pre><span class="kd">var</span> <span class="nx">query</span> <span class="o">=</span> <span class="nx">mquery</span><span class="p">({</span> <span class="nx">type</span><span class="o">:</span> <span class="s1">'drum'</span> <span class="p">});</span>
+<span class="kd">var</span> <span class="nx">okToMerge</span> <span class="o">=</span> <span class="nx">mquery</span><span class="p">.</span><span class="nx">canMerge</span><span class="p">(</span><span class="nx">anObject</span><span class="p">)</span>
+<span class="k">if</span> <span class="p">(</span><span class="nx">okToMerge</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">query</span><span class="p">.</span><span class="nx">merge</span><span class="p">(</span><span class="nx">anObject</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+
+<h2>Custom Base Queries</h2>
+
+<p>Often times we want custom base queries that encapsulate predefined criteria. With <code>mquery</code> this is easy. First create the query you want to reuse and call its <code>toConstructor()</code> method which returns a new subclass of <code>mquery</code> that retains all options and criteria of the original.</p>
+
+<div class="highlight"><pre><span class="kd">var</span> <span class="nx">greatMovies</span> <span class="o">=</span> <span class="nx">mquery</span><span class="p">(</span><span class="nx">movieCollection</span><span class="p">).</span><span class="nx">where</span><span class="p">(</span><span class="s1">'rating'</span><span class="p">).</span><span class="nx">gte</span><span class="p">(</span><span class="mf">4.5</span><span class="p">).</span><span class="nx">toConstructor</span><span class="p">();</span>
+
+<span class="c1">// use it!</span>
+<span class="nx">greatMovies</span><span class="p">().</span><span class="nx">count</span><span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">n</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">'There are %d great movies'</span><span class="p">,</span> <span class="nx">n</span><span class="p">);</span>
+<span class="p">});</span>
+
+<span class="nx">greatMovies</span><span class="p">().</span><span class="nx">where</span><span class="p">({</span> <span class="nx">name</span><span class="o">:</span> <span class="sr">/^Life/</span> <span class="p">}).</span><span class="nx">select</span><span class="p">(</span><span class="s1">'name'</span><span class="p">).</span><span class="nx">find</span><span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">docs</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">docs</span><span class="p">);</span>
+<span class="p">});</span>
+</pre></div>
+
+<h2>Validation</h2>
+
+<p>Method and options combinations are checked for validity at runtime to prevent creation of invalid query constructs. For example, a <code>distinct</code> query does not support specifying options like <code>hint</code> or field selection. In this case an error will be thrown so you can catch these mistakes in development.</p>
+
+<h2>Debug support</h2>
+
+<p>Debug mode is provided through the use of the <a href="https://github.com/visionmedia/debug">debug</a> module. To enable:</p>
+
+<pre><code>DEBUG=mquery node yourprogram.js
+</code></pre>
+
+<p>Read the debug module documentation for more details.</p>
+
+<h2>Future goals</h2>
+
+<ul>
+<li>mongo shell compatibility</li>
+<li>browser compatibility</li>
+<li>mongoose compatibility</li>
+</ul><h2>Installation</h2>
+
+<pre><code>$ npm install mquery
+</code></pre>
+
+<h2>License</h2>
+
+<p><a href="https://github.com/aheckmann/mquery/blob/master/LICENSE">MIT</a></p>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">mquery maintained by <a href="https://github.com/aheckmann">aheckmann</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
+</html>
