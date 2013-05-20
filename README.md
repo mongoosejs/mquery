@@ -14,6 +14,8 @@
   - [debug](https://github.com/visionmedia/debug) support
   - separated collection implementations for maximum flexibility
 
+[![Build Status](https://travis-ci.org/aheckmann/mquery.png)](https://travis-ci.org/aheckmann/mquery)
+
 ##Use
 
 ```js
