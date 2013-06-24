@@ -663,7 +663,7 @@ describe('mquery', function(){
       describe('after intersects()', function(){
         it('and arg quacks like geoJSON', function(done){
           var m = mquery().where('a').intersects().geometry(point);
-          assert.deepEqual({ a: { $intersects: { $geometry: point }}}, m._conditions);
+          assert.deepEqual({ a: { $geoIntersects: { $geometry: point }}}, m._conditions);
           done();
         })
       })
@@ -707,7 +707,7 @@ describe('mquery', function(){
 
     it('sets geo comparison to "$intersects"', function(done){
       var n = mquery().where('a').intersects();
-      assert.equal('$intersects', n._geoComparison);
+      assert.equal('$geoIntersects', n._geoComparison);
       done();
     })
 
