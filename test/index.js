@@ -2292,6 +2292,24 @@ describe('mquery', function(){
           })
         }, 200)
       })
+      it('preserves key ordering', function(done) {
+        var m = mquery(col);
+
+        var m2 = m.update({ _id : 'something' }, { '1' : 1, '2' : 2, '3' : 3});
+        var doc = m2._updateForExec().$set;
+        var count = 0;
+        for (var i in doc) {
+          if (count == 0) {
+            assert.equal('1', i);
+          } else if (count == 1) {
+            assert.equal('2', i);
+          } else if (count ==2) {
+            assert.equal('3', i);
+          }
+          count++;
+        }
+        done();
+      });
     })
 
     describe('remove', function(){
