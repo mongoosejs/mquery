@@ -1,4 +1,11 @@
 
+0.1.1 / 2013-06-24
+==================
+
+  * fixed; $intersects -> $geoIntersects #14 [ebensing](https://github.com/ebensing)
+  * fixed; Retain key order when copying objects #15 [ebensing](https://github.com/ebensing)
+  * bump mongodb dev dep
+
 0.1.0 / 2013-05-06
 ==================
 
