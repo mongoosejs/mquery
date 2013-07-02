@@ -533,6 +533,48 @@ describe('mquery', function(){
       })
     })
   })
+  describe('geoWithin', function(){
+    before(function(){
+      mquery.use$geoWithin = true;
+    })
+    after(function(){
+      mquery.use$geoWithin = false;
+    })
+    describe('when called with arguments', function(){
+      describe('of length 1', function(){
+        it('delegates to circle when center exists', function(){
+          var m = mquery().where('loc').within({ center: [10,10], radius: 3 });
+          assert.deepEqual({ $geoWithin: {$center:[[10,10], 3]}}, m._conditions.loc);
+        })
+        it('delegates to box when exists', function(){
+          var m = mquery().where('loc').within({ box: [[10,10], [11,14]] });
+          assert.deepEqual({ $geoWithin: {$box:[[10,10], [11,14]]}}, m._conditions.loc);
+        })
+        it('delegates to polygon when exists', function(){
+          var m = mquery().where('loc').within({ polygon: [[10,10], [11,14],[10,9]] });
+          assert.deepEqual({ $geoWithin: {$polygon:[[10,10], [11,14],[10,9]]}}, m._conditions.loc);
+        })
+        it('delegates to geometry when exists', function(){
+          var m = mquery().where('loc').within({ type: 'Polygon', coordinates: [[10,10], [11,14],[10,9]] });
+          assert.deepEqual({ $geoWithin: {$geometry: {type:'Polygon', coordinates: [[10,10], [11,14],[10,9]]}}}, m._conditions.loc);
+        })
+      })
+
+      describe('of length 2', function(){
+        it('delegates to box()', function(){
+          var m = mquery().where('loc').within([1,2],[2,5]);
+          assert.deepEqual(m._conditions.loc, { $geoWithin: { $box: [[1,2],[2,5]]}});
+        })
+      })
+
+      describe('of length > 2', function(){
+        it('delegates to polygon()', function(){
+          var m = mquery().where('loc').within([1,2],[2,5],[2,4],[1,3]);
+          assert.deepEqual(m._conditions.loc, { $geoWithin: { $polygon: [[1,2],[2,5],[2,4],[1,3]]}});
+        })
+      })
+    })
+  })
 
   describe('box', function(){
     describe('with 1 argument', function(){
