@@ -502,48 +502,6 @@ describe('mquery', function(){
         })
         it('delegates to circle when center exists', function(){
           var m = mquery().where('loc').within({ center: [10,10], radius: 3 });
-          assert.deepEqual({ $within: {$center:[[10,10], 3]}}, m._conditions.loc);
-        })
-        it('delegates to box when exists', function(){
-          var m = mquery().where('loc').within({ box: [[10,10], [11,14]] });
-          assert.deepEqual({ $within: {$box:[[10,10], [11,14]]}}, m._conditions.loc);
-        })
-        it('delegates to polygon when exists', function(){
-          var m = mquery().where('loc').within({ polygon: [[10,10], [11,14],[10,9]] });
-          assert.deepEqual({ $within: {$polygon:[[10,10], [11,14],[10,9]]}}, m._conditions.loc);
-        })
-        it('delegates to geometry when exists', function(){
-          var m = mquery().where('loc').within({ type: 'Polygon', coordinates: [[10,10], [11,14],[10,9]] });
-          assert.deepEqual({ $within: {$geometry: {type:'Polygon', coordinates: [[10,10], [11,14],[10,9]]}}}, m._conditions.loc);
-        })
-      })
-
-      describe('of length 2', function(){
-        it('delegates to box()', function(){
-          var m = mquery().where('loc').within([1,2],[2,5]);
-          assert.deepEqual(m._conditions.loc, { $within: { $box: [[1,2],[2,5]]}});
-        })
-      })
-
-      describe('of length > 2', function(){
-        it('delegates to polygon()', function(){
-          var m = mquery().where('loc').within([1,2],[2,5],[2,4],[1,3]);
-          assert.deepEqual(m._conditions.loc, { $within: { $polygon: [[1,2],[2,5],[2,4],[1,3]]}});
-        })
-      })
-    })
-  })
-  describe('geoWithin', function(){
-    before(function(){
-      mquery.use$geoWithin = true;
-    })
-    after(function(){
-      mquery.use$geoWithin = false;
-    })
-    describe('when called with arguments', function(){
-      describe('of length 1', function(){
-        it('delegates to circle when center exists', function(){
-          var m = mquery().where('loc').within({ center: [10,10], radius: 3 });
           assert.deepEqual({ $geoWithin: {$center:[[10,10], 3]}}, m._conditions.loc);
         })
         it('delegates to box when exists', function(){
@@ -576,6 +534,49 @@ describe('mquery', function(){
     })
   })
 
+  describe('geoWithin', function(){
+    before(function(){
+      mquery.use$geoWithin = false;
+    })
+    after(function(){
+      mquery.use$geoWithin = true;
+    })
+    describe('when called with arguments', function(){
+      describe('of length 1', function(){
+        it('delegates to circle when center exists', function(){
+          var m = mquery().where('loc').within({ center: [10,10], radius: 3 });
+          assert.deepEqual({ $within: {$center:[[10,10], 3]}}, m._conditions.loc);
+        })
+        it('delegates to box when exists', function(){
+          var m = mquery().where('loc').within({ box: [[10,10], [11,14]] });
+          assert.deepEqual({ $within: {$box:[[10,10], [11,14]]}}, m._conditions.loc);
+        })
+        it('delegates to polygon when exists', function(){
+          var m = mquery().where('loc').within({ polygon: [[10,10], [11,14],[10,9]] });
+          assert.deepEqual({ $within: {$polygon:[[10,10], [11,14],[10,9]]}}, m._conditions.loc);
+        })
+        it('delegates to geometry when exists', function(){
+          var m = mquery().where('loc').within({ type: 'Polygon', coordinates: [[10,10], [11,14],[10,9]] });
+          assert.deepEqual({ $within: {$geometry: {type:'Polygon', coordinates: [[10,10], [11,14],[10,9]]}}}, m._conditions.loc);
+        })
+      })
+
+      describe('of length 2', function(){
+        it('delegates to box()', function(){
+          var m = mquery().where('loc').within([1,2],[2,5]);
+          assert.deepEqual(m._conditions.loc, { $within: { $box: [[1,2],[2,5]]}});
+        })
+      })
+
+      describe('of length > 2', function(){
+        it('delegates to polygon()', function(){
+          var m = mquery().where('loc').within([1,2],[2,5],[2,4],[1,3]);
+          assert.deepEqual(m._conditions.loc, { $within: { $polygon: [[1,2],[2,5],[2,4],[1,3]]}});
+        })
+      })
+    })
+  })
+
   describe('box', function(){
     describe('with 1 argument', function(){
       it('throws', function(){
@@ -600,14 +601,14 @@ describe('mquery', function(){
       })
       it('works', function(){
         var m = mquery().where('loc').box([1,2],[3,4]);
-        assert.deepEqual(m._conditions.loc, { $within: { $box: [[1,2],[3,4]] }});
+        assert.deepEqual(m._conditions.loc, { $geoWithin: { $box: [[1,2],[3,4]] }});
       })
     })
 
     describe('with 3 arguments', function(){
       it('works', function(){
         var m = mquery().box('loc', [1,2],[3,4]);
-        assert.deepEqual(m._conditions.loc, { $within: { $box: [[1,2],[3,4]] }});
+        assert.deepEqual(m._conditions.loc, { $geoWithin: { $box: [[1,2],[3,4]] }});
       })
     })
   })
@@ -626,14 +627,14 @@ describe('mquery', function(){
 
       it('assigns arguments to within polygon condition', function(){
         var m = mquery().where('loc').polygon([1,2], [2,3], [3,6]);
-        assert.deepEqual(m._conditions, { loc: {$within: {$polygon: [[1,2],[2,3],[3,6]]}} });
+        assert.deepEqual(m._conditions, { loc: {$geoWithin: {$polygon: [[1,2],[2,3],[3,6]]}} });
       })
     })
 
     describe('when first arg is a string', function(){
       it('assigns remaining arguments to within polygon condition', function(){
         var m = mquery().polygon('loc', [1,2], [2,3], [3,6]);
-        assert.deepEqual(m._conditions, { loc: {$within: {$polygon: [[1,2],[2,3],[3,6]]}} });
+        assert.deepEqual(m._conditions, { loc: {$geoWithin: {$polygon: [[1,2],[2,3],[3,6]]}} });
       })
     })
   })
@@ -650,7 +651,7 @@ describe('mquery', function(){
       })
       it('works', function(){
         var m = mquery().where('loc').circle({center:[0,0], radius: 3 });
-        assert.deepEqual(m._conditions, { loc: { $within: {$center: [[0,0],3] }}});
+        assert.deepEqual(m._conditions, { loc: { $geoWithin: {$center: [[0,0],3] }}});
       })
     })
     describe('with 3 args', function(){
@@ -697,7 +698,7 @@ describe('mquery', function(){
       describe('after within()', function(){
         it('and arg quacks like geoJSON', function(done){
           var m = mquery().where('a').within().geometry(point);
-          assert.deepEqual({ a: { $within: { $geometry: point }}}, m._conditions);
+          assert.deepEqual({ a: { $geoWithin: { $geometry: point }}}, m._conditions);
           done();
         })
       })
