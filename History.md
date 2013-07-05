@@ -1,4 +1,16 @@
 
+0.2.0 / 2013-07-05
+==================
+
+  * use $geoWithin by default
+
+0.1.2 / 2013-07-02
+==================
+
+  * added use$geoWithin flag [ebensing](https://github.com/ebensing)
+  * fix read preferences typo [ebensing](https://github.com/ebensing)
+  * fix reference to old param name in exists() [ebensing](https://github.com/ebensing)
+
 0.1.1 / 2013-06-24
 ==================
 
