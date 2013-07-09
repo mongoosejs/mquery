@@ -881,10 +881,12 @@ describe('mquery', function(){
       assert.deepEqual(m._fields, { x: 1, y: 0 });
     })
 
-    it('accepts an array', function(){
-      var o = ['x', '-y'];
-      var m = mquery().select(o);
-      assert.deepEqual(m._fields, { x: 1, y: 0 });
+    it('does not accept an array', function(done){
+      assert.throws(function () {
+        var o = ['x', '-y'];
+        var m = mquery().select(o);
+      }, /Invalid select/);
+      done();
     })
 
     it('merges previous arguments', function(){
