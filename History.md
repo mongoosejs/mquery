@@ -1,4 +1,9 @@
 
+0.2.1 / 2013-07-08
+==================
+
+  * select no longer accepts arrays as parameters [ebensing](https://github.com/ebensing)
+
 0.2.0 / 2013-07-05
 ==================
 
