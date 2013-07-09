@@ -1,4 +1,14 @@
 
+0.2.3 / 2013-07-09
+==================
+
+  * now using a callback in collection.find instead of directly calling toArray() on the cursor [ebensing](https://github.com/ebensing)
+
+0.2.2 / 2013-07-09
+==================
+
+  * now exposing mongodb export to allow for better testing [ebensing](https://github.com/ebensing)
+
 0.2.1 / 2013-07-08
 ==================
 
