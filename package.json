@@ -15,7 +15,7 @@
     "query"
   ],
   "dependencies": {
-    "sliced": "0.0.3",
+    "sliced": "0.0.5",
     "debug": "0.7.0",
     "regexp-clone": "0.0.1"
   },
