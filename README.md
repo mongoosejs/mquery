@@ -311,12 +311,12 @@ Specifies a `$center` or `$centerSphere` condition.
 ```js
 var area = { center: [50, 50], radius: 10, unique: true }
 query.where('loc').within().circle(area)
-query.center('loc', area);
+query.circle('loc', area);
 
 // for spherical calculations
 var area = { center: [50, 50], radius: 10, unique: true, spherical: true }
 query.where('loc').within().circle(area)
-query.center('loc', area);
+query.circle('loc', area);
 ```
 
 - [MongoDB Documentation - center](http://docs.mongodb.org/manual/reference/operator/center/)
