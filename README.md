@@ -516,6 +516,25 @@ mquery().nor([{ color: 'green' }, { status: 'ok' }])
 
 [MongoDB Documentation](http://docs.mongodb.org/manual/reference/operator/nor/)
 
+###near()
+
+Specifies arguments for a `$near` or `$nearSphere` condition.
+
+These operators return documents sorted by distance.
+
+####Example
+
+```js
+query.where('loc').near({ center: [10, 10] });
+query.where('loc').near({ center: [10, 10], maxDistance: 5 });
+query.near('loc', { center: [10, 10], maxDistance: 5 });
+
+// For a $nearSphere condition, pass the `spherical` option.
+query.near({ center: [10, 10], maxDistance: 5, spherical: true });
+```
+
+[MongoDB Documentation](http://www.mongodb.org/display/DOCS/Geospatial+Indexing)
+
 ###or()
 
 Specifies arguments for an `$or` condition.
