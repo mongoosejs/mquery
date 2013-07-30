@@ -1003,11 +1003,11 @@ describe('mquery', function(){
     it('works', function(){
       var query = mquery();
       query.sort('a -c b');
-      assert.deepEqual(query.options.sort, [['a', 1], ['c', -1], ['b', 1]]);
+      assert.deepEqual(query.options.sort, { a : 1, b: 1, c : -1});
 
       query = mquery();
       query.sort({'a': 1, 'c': -1, 'b': 'asc', e: 'descending', f: 'ascending'});
-      assert.deepEqual(query.options.sort, [['a', 1], ['c', -1], ['b', 'asc'], ['e', 'descending'], ['f', 'ascending']]);
+      assert.deepEqual(query.options.sort, {'a': 1, 'c': -1, 'b': 'asc', 'e': 'descending', 'f': 'ascending'});
 
       query = mquery();
       var e= undefined;
@@ -2198,7 +2198,7 @@ describe('mquery', function(){
         var m = mquery(col);
         m.findOneAndRemove(n, { sort: { x: 1 }});
         assert.deepEqual({ name: name }, m._conditions);
-        assert.deepEqual({ sort: [[ 'x', 1 ]]}, m.options);
+        assert.deepEqual({ sort: { 'x': 1 }}, m.options);
       })
       it('conditions + callback', function(done){
         col.insert({ name: name }, { safe: true }, function (err) {
