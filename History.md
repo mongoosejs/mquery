@@ -1,4 +1,10 @@
 
+0.2.4 / 2013-07-30
+==================
+
+  * updated docs
+  * changed internal representation of `sort` to use objects instead of arrays
+
 0.2.4 / 2013-07-25
 ==================
 
