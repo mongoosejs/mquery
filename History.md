@@ -1,5 +1,10 @@
 
-0.2.4 / 2013-07-30
+0.2.6 / 2013-07-30
+==================
+
+  * internally, 'asc' and 'desc' for sorts are now converted into 1 and -1, respectively 
+
+0.2.5 / 2013-07-30
 ==================
 
   * updated docs
