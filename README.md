@@ -634,7 +634,7 @@ mquery().where('loc').within([], []) // box
 mquery().where('loc').within({ type: 'LineString', coordinates: [...] }); // geometry
 ```
 
-As of mquery 2.0, `$geoWithin` is used by default. This impacts you if running MongoDB < 2.4. To alter this behavior, see [mquery.use$geoWithin](#TODO).
+As of mquery 2.0, `$geoWithin` is used by default. This impacts you if running MongoDB < 2.4. To alter this behavior, see [mquery.use$geoWithin](#mqueryusegeowithin).
 
 **Must** be used after `where()`.
 
