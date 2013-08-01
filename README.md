@@ -618,7 +618,7 @@ mquery().where('comments').slice([-10, 5])
 
 ###within()
 
-Sets a `$within` argument for geo-spatial queries
+Sets a `$within` argument for geo-spatial queries.
 
 ```js
 mquery().within().box()
@@ -633,6 +633,8 @@ mquery().where('loc').within([], [], []) // polygon
 mquery().where('loc').within([], []) // box
 mquery().where('loc').within({ type: 'LineString', coordinates: [...] }); // geometry
 ```
+
+Must be used after `where()`.
 
 [MongoDB Documentation](http://docs.mongodb.org/manual/reference/operator/geoWithin/)
 
