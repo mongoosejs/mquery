@@ -618,7 +618,7 @@ mquery().where('comments').slice([-10, 5])
 
 ###within()
 
-Sets a `$within` argument for geo-spatial queries.
+Sets a `$geoWithin` or `$within` argument for geo-spatial queries.
 
 ```js
 mquery().within().box()
@@ -634,7 +634,9 @@ mquery().where('loc').within([], []) // box
 mquery().where('loc').within({ type: 'LineString', coordinates: [...] }); // geometry
 ```
 
-Must be used after `where()`.
+As of mquery 2.0, `$geoWithin` is used by default. This impacts you if running MongoDB < 2.4. To alter this behavior, see [mquery.use$geoWithin](#TODO).
+
+**Must** be used after `where()`.
 
 [MongoDB Documentation](http://docs.mongodb.org/manual/reference/operator/geoWithin/)
 
@@ -875,7 +877,7 @@ redDrum.count(function (err, n) {
 })
 ```
 
-Internally uses `Query.canMerge` to determine validity.
+Internally uses `mquery.canMerge` to determine validity.
 
 ###setOptions(options)
 
@@ -902,7 +904,7 @@ mquery().setOptions({ collection: coll, limit: 20 })
 
 _* denotes a query helper method is also available_
 
-###Query.canMerge(conditions)
+###mquery.canMerge(conditions)
 
 Determines if `conditions` can be merged using `mquery().merge()`.
 
@@ -912,6 +914,16 @@ var okToMerge = mquery.canMerge(anObject)
 if (okToMerge) {
   query.merge(anObject);
 }
+```
+
+##mquery.use$geoWithin
+
+MongoDB 2.4 introduced the `$geoWithin` operator which replaces and is 100% backward compatible with `$within`. As of mquery 0.2, we default to using `$geoWithin` for all `within()` calls.
+
+If you are running MongoDB < 2.4 this will be problematic. To force `mquery` to be backward compatible and always use `$within`, set the `mquery.use$geoWithin` flag to `false`.
+
+```js
+mquery.use$geoWithin = false;
 ```
 
 ##Custom Base Queries
