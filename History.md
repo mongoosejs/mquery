@@ -1,4 +1,9 @@
 
+0.2.7 / 2013-08-2
+==================
+
+  * Now support GeoJSON point values for Query#near
+
 0.2.6 / 2013-07-30
 ==================
 
