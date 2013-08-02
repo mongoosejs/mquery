@@ -857,6 +857,12 @@ describe('mquery', function(){
       var m = mquery().where('loc').near({ center: [1,2], maxDistance:4 }).find({ x: 1 });
       assert.deepEqual(m._conditions, { loc: { $near: [1,2], $maxDistance: 4}, x: 1});
     })
+    it('supports passing GeoJSON as an argument, gh-13', function(){
+      var m = mquery().where('loc').near({ center : { type : 'Point',
+        coordinates : [1,1] }, maxDistance: 2});
+      assert.deepEqual(m._conditions, { loc : { $near : { $geometry : { type :
+        'Point', coordinates : [1,1] } }, $maxDistance : 2 } });
+    })
   })
 
   // fields
