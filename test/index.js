@@ -2058,8 +2058,84 @@ describe('mquery', function(){
     })
   })
 
+  function validateFindAndModifyOptions (method) {
+    describe('validates its option', function(){
+      it('sort', function(done){
+        assert.doesNotThrow(function(){
+          var m = mquery().sort('x')[method]();
+        })
+        done();
+      })
+
+      it('select', function(done){
+        assert.doesNotThrow(function(){
+          var m = mquery().select('x')[method]();
+        })
+        done();
+      })
+
+      it('limit', function(done){
+        assert.throws(function(){
+          var m = mquery().limit(3)[method]();
+        }, new RegExp('limit cannot be used with ' + method));
+        done();
+      })
+
+      it('skip', function(done){
+        assert.throws(function(){
+          var m = mquery().skip(3)[method]();
+        }, new RegExp('skip cannot be used with ' + method));
+        done();
+      })
+
+      it('batchSize', function(done){
+        assert.throws(function(){
+          var m = mquery({}, { batchSize: 3 })[method]();
+        }, new RegExp('batchSize cannot be used with ' + method));
+        done();
+      })
+
+      it('maxScan', function(done){
+        assert.throws(function(){
+          var m = mquery().maxScan(300)[method]();
+        }, new RegExp('maxScan cannot be used with ' + method));
+        done();
+      })
+
+      it('snapshot', function(done){
+        assert.throws(function(){
+          var m = mquery().snapshot()[method]();
+        }, new RegExp('snapshot cannot be used with ' + method));
+        done();
+      })
+
+      it('hint', function(done){
+        assert.throws(function(){
+          var m = mquery().hint({ x: 1 })[method]();
+        }, new RegExp('hint cannot be used with ' + method));
+        done();
+      })
+
+      it('tailable', function(done){
+        assert.throws(function(){
+          var m = mquery().tailable()[method]();
+        }, new RegExp('tailable cannot be used with ' + method));
+        done();
+      })
+
+      it('comment', function(done){
+        assert.throws(function(){
+          var m = mquery().comment('mquery')[method]();
+        }, new RegExp('comment cannot be used with ' + method));
+        done();
+      })
+    })
+  }
+
   describe('findOneAndUpdate', function(){
     var name = 'findOneAndUpdate + fn'
+
+    validateFindAndModifyOptions('findOneAndUpdate');
 
     describe('with 0 args', function(){
       it('makes no changes', function(){
@@ -2156,6 +2232,8 @@ describe('mquery', function(){
 
   describe('findOneAndRemove', function(){
     var name = 'findOneAndRemove'
+
+    validateFindAndModifyOptions('findOneAndRemove');
 
     describe('with 0 args', function(){
       it('makes no changes', function(){
