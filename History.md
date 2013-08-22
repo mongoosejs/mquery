@@ -1,4 +1,12 @@
 
+0.3.0 / 2013-08-22
+==================
+
+  * less hardcoded isNode env detection #18 [vshulyak](https://github.com/vshulyak)
+  * added; validation of findAndModify varients
+  * clone update doc before execution
+  * stricter env checks
+
 0.2.7 / 2013-08-2
 ==================
 
