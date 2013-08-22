@@ -2511,4 +2511,31 @@ describe('mquery', function(){
       done();
     })
   }
+
+  // query internal
+
+  describe('_updateForExec', function(){
+    it('returns a clone of the update object with same key order #19', function(done){
+      var update = {};
+      update.$push = { n: { $each: [{x:10}], $slice: -1, $sort: {x:1}}};
+
+      var q = mquery().update({ x: 1 }, update);
+
+      // capture original key order
+      var order = [];
+      for (var key in q._update.$push.n) {
+        order.push(key);
+      }
+
+      // compare output
+      var doc = q._updateForExec();
+      var i = 0;
+      for (var key in doc.$push.n) {
+        assert.equal(key, order[i]);
+        i++;
+      }
+
+      done();
+    })
+  })
 })
