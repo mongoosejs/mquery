@@ -384,9 +384,12 @@ query.where('loc').within().geometry({ type: 'Point', coordinates: polyC })
 
 // or
 query.where('loc').intersects().geometry({ type: 'Point', coordinates: polyC })
+
+// or
+query.where('loc').near().geometry({ type: 'Point', coordinates: [3,5] })
 ```
 
-`geometry()` **must** come after either `intersects()` or `within()`.
+`geometry()` **must** come after `intersects()`, `within()`, or `near()`.
 
 The `object` argument must contain `type` and `coordinates` properties.
 
@@ -528,6 +531,11 @@ These operators return documents sorted by distance.
 query.where('loc').near({ center: [10, 10] });
 query.where('loc').near({ center: [10, 10], maxDistance: 5 });
 query.near('loc', { center: [10, 10], maxDistance: 5 });
+
+// GeoJSON
+query.where('loc').near({ center: { type: 'Point', coordinates: [10, 10] }});
+query.where('loc').near({ center: { type: 'Point', coordinates: [10, 10] }, maxDistance: 5, spherical: true });
+query.where('loc').near().geometry({ type: 'Point', coordinates: [10, 10] });
 
 // For a $nearSphere condition, pass the `spherical` option.
 query.near({ center: [10, 10], maxDistance: 5, spherical: true });

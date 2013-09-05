@@ -812,6 +812,14 @@ describe('mquery', function(){
 
   describe('near', function(){
     // near nearSphere
+    describe('with 0 args', function(){
+      it('is compatible with geometry()', function(done){
+        var q = mquery().where('x').near().geometry({ type: 'Point', coordinates: [180, 11] });
+        assert.deepEqual({ $near: {$geometry: {type:'Point', coordinates: [180,11]}}}, q._conditions.x);
+        done();
+      })
+    })
+
     describe('with 1 arg', function(){
       it('throws if not used after where()', function(){
         assert.throws(function () {
@@ -832,6 +840,11 @@ describe('mquery', function(){
       })
     })
 
+    it('creates $geometry args for GeoJSON', function(){
+      var m = mquery().where('loc').near({ center: { type: 'Point', coordinates: [10,10] }});
+      assert.deepEqual({ $near: {$geometry: {type:'Point', coordinates: [10,10]}}}, m._conditions.loc);
+    })
+
     it('expects `center`', function(){
       assert.throws(function () {
         mquery().near('loc', { maxDistance: 3 });
@@ -845,23 +858,43 @@ describe('mquery', function(){
       var m = mquery().where('loc').near({ center: [1,2], spherical: true });
       assert.deepEqual(m._conditions, { loc: { $nearSphere: [1,2]}});
     })
+
     it('is non-spherical by default', function(){
       var m = mquery().where('loc').near({ center: [1,2] });
       assert.deepEqual(m._conditions, { loc: { $near: [1,2]}});
     })
+
     it('supports maxDistance', function(){
       var m = mquery().where('loc').near({ center: [1,2], maxDistance:4 });
       assert.deepEqual(m._conditions, { loc: { $near: [1,2], $maxDistance: 4}});
     })
+
     it('is chainable', function(){
       var m = mquery().where('loc').near({ center: [1,2], maxDistance:4 }).find({ x: 1 });
       assert.deepEqual(m._conditions, { loc: { $near: [1,2], $maxDistance: 4}, x: 1});
     })
-    it('supports passing GeoJSON as an argument, gh-13', function(){
-      var m = mquery().where('loc').near({ center : { type : 'Point',
-        coordinates : [1,1] }, maxDistance: 2});
-      assert.deepEqual(m._conditions, { loc : { $near : { $geometry : { type :
-        'Point', coordinates : [1,1] } }, $maxDistance : 2 } });
+
+    describe('supports passing GeoJSON, gh-13', function(){
+      it('with center', function(){
+        var m = mquery().where('loc').near({
+            center: { type: 'Point', coordinates: [1,1] }
+          , maxDistance: 2
+        });
+
+        var expect = {
+            loc: {
+                $near: {
+                    $geometry: {
+                        type: 'Point'
+                      , coordinates : [1,1]
+                    }
+                }
+              , $maxDistance : 2
+            }
+        }
+
+        assert.deepEqual(m._conditions, expect);
+      })
     })
   })
 
