@@ -1,4 +1,9 @@
 
+0.3.3 / 2013-11-14
+==================
+
+ * Fix Mongo DB Dependency #20 [rschmukler](https://github.com/rschmukler)
+
 0.3.2 / 2013-09-06
 ==================
 
