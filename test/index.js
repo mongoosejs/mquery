@@ -1331,6 +1331,15 @@ describe('mquery', function(){
           done();
         });
       })
+      it('when query with including and excluding fields', function(done){
+        var m = mquery({ name: 'mquery' });
+        m.select({name: 1, save: 0});
+        mquery(col).find(m, function (err, docs) {
+          assert.ifError(err);
+          assert.equal(1, docs.length);
+          done();
+        })
+      })
     })
   })
 
