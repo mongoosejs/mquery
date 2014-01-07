@@ -983,11 +983,14 @@ describe('mquery', function(){
     describe('returns false', function(){
       it('when no fields have been selected', function(done) {
         assert.strictEqual(false, mquery().selectedInclusively());
+        assert.equal(false, mquery().select({}).selectedInclusively());
         done();
       });
-      it('when fields have been excluded', function(done) {
+      it('when any fields have been excluded', function(done) {
         assert.strictEqual(false, mquery().select('-name').selectedInclusively());
         assert.strictEqual(false, mquery().select({ name: 0 }).selectedInclusively());
+        assert.strictEqual(false, mquery().select('name bio -_id').selectedInclusively());
+        assert.strictEqual(false, mquery().select({ name: 1, _id: 0 }).selectedInclusively());
         done();
       });
     });
@@ -1005,9 +1008,10 @@ describe('mquery', function(){
     describe('returns false', function(){
       it('when no fields have been selected', function(done) {
         assert.equal(false, mquery().selectedExclusively());
+        assert.equal(false, mquery().select({}).selectedExclusively());
         done();
       });
-      it('when fields have been included', function(done) {
+      it('when fields have only been included', function(done) {
         assert.equal(false, mquery().select('name').selectedExclusively());
         assert.equal(false, mquery().select({ name: 1 }).selectedExclusively());
         done();
@@ -1015,9 +1019,12 @@ describe('mquery', function(){
     });
 
     describe('returns true', function() {
-      it('when fields have been excluded', function(done) {
+      it('when any field has been excluded', function(done) {
         assert.equal(true, mquery().select('-name').selectedExclusively());
         assert.equal(true, mquery().select({ name:0 }).selectedExclusively());
+        assert.equal(true, mquery().select('-_id').selectedExclusively());
+        assert.strictEqual(true, mquery().select('name bio -_id').selectedExclusively());
+        assert.strictEqual(true, mquery().select({ name: 1, _id: 0 }).selectedExclusively());
         done();
       });
     });
