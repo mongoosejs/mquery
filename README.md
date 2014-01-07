@@ -602,6 +602,47 @@ query.select({a: 1, b: 1, c: 0});
 
 _Cannot be used with `distinct()`._
 
+###selected()
+
+Determines if the query has selected any fields.
+
+```js
+var query = mquery();
+query.selected() // false
+query.select('-name');
+query.selected() // true
+```
+
+###selectedInclusively()
+
+Determines if the query has selected any fields inclusively.
+
+```js
+var query = mquery().select('name');
+query.selectedInclusively() // true
+
+var query = mquery();
+query.selected() // false
+query.select('-name');
+query.selectedInclusively() // false
+query.selectedExclusively() // true
+```
+
+###selectedExclusively()
+
+Determines if the query has selected any fields exclusively.
+
+```js
+var query = mquery().select('-name');
+query.selectedExclusively() // true
+
+var query = mquery();
+query.selected() // false
+query.select('name');
+query.selectedExclusively() // false
+query.selectedInclusively() // false
+```
+
 ###size()
 
 Specifies a `$size` query condition.

@@ -961,6 +961,68 @@ describe('mquery', function(){
     no('count', 'select');
   })
 
+  describe('selected', function() {
+    it('returns true when fields have been selected', function(done) {
+      var m = mquery().select({ name: 1 });
+      assert.ok(m.selected());
+
+      var m = mquery().select('name');
+      assert.ok(m.selected());
+
+      done();
+    });
+
+    it('returns false when no fields have been selected', function(done) {
+      var m = mquery();
+      assert.strictEqual(false, m.selected());
+      done();
+    });
+  });
+
+  describe('selectedInclusively', function() {
+    describe('returns false', function(){
+      it('when no fields have been selected', function(done) {
+        assert.strictEqual(false, mquery().selectedInclusively());
+        done();
+      });
+      it('when fields have been excluded', function(done) {
+        assert.strictEqual(false, mquery().select('-name').selectedInclusively());
+        assert.strictEqual(false, mquery().select({ name: 0 }).selectedInclusively());
+        done();
+      });
+    });
+
+    describe('returns true', function() {
+      it('when fields have been included', function(done) {
+        assert.equal(true, mquery().select('name').selectedInclusively());
+        assert.equal(true, mquery().select({ name:1 }).selectedInclusively());
+        done();
+      });
+    });
+  });
+
+  describe('selectedExclusively', function() {
+    describe('returns false', function(){
+      it('when no fields have been selected', function(done) {
+        assert.equal(false, mquery().selectedExclusively());
+        done();
+      });
+      it('when fields have been included', function(done) {
+        assert.equal(false, mquery().select('name').selectedExclusively());
+        assert.equal(false, mquery().select({ name: 1 }).selectedExclusively());
+        done();
+      });
+    });
+
+    describe('returns true', function() {
+      it('when fields have been excluded', function(done) {
+        assert.equal(true, mquery().select('-name').selectedExclusively());
+        assert.equal(true, mquery().select({ name:0 }).selectedExclusively());
+        done();
+      });
+    });
+  });
+
   describe('slice', function(){
     describe('with 0 args', function(){
       it('is chainable', function(){
