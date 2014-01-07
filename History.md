@@ -1,4 +1,11 @@
 
+0.4.0 / 2014-01-06
+==================
+
+ * added; selected()
+ * added; selectedInclusively()
+ * added; selectedExclusively()
+
 0.3.3 / 2013-11-14
 ==================
 
