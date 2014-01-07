@@ -640,7 +640,7 @@ var query = mquery();
 query.selected() // false
 query.select('name');
 query.selectedExclusively() // false
-query.selectedInclusively() // false
+query.selectedInclusively() // true
 ```
 
 ###size()
