@@ -1,4 +1,9 @@
 
+0.4.2 / 2014-01-08
+==================
+
+ * updated; debug module 0.7.4 [refack](https://github.com/refack)
+
 0.4.1 / 2014-01-07
 ==================
 
