@@ -1267,7 +1267,7 @@ describe('mquery', function(){
     no('count', 'tailable');
   })
 
-  // utils
+  // query utilities
 
   describe('merge', function(){
     describe('with falsy arg', function(){
