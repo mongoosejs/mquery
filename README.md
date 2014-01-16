@@ -839,8 +839,8 @@ mquery().read('sp') // same as secondaryPreferred
 mquery().read('nearest')
 mquery().read('n')  // same as nearest
 
-// specifying tags
-mquery().read('s', [{ dc:'sf', s: 1 },{ dc:'ma', s: 2 }])
+// you can also use mongodb.ReadPreference class to also specify tags
+mquery().read(mongodb.ReadPreference('secondary', [{ dc:'sf', s: 1 },{ dc:'ma', s: 2 }]))
 ```
 
 #####Preferences:
@@ -859,7 +859,7 @@ Aliases
 - `sp`  secondaryPreferred
 - `n`   nearest
 
-Read more about how to use read preferrences [here](http://docs.mongodb.org/manual/applications/replication/#read-preference) and [here](http://mongodb.github.com/node-mongodb-native/driver-articles/anintroductionto1_1and2_2.html#read-preferences).
+Read more about how to use read preferences [here](http://docs.mongodb.org/manual/applications/replication/#read-preference) and [here](http://mongodb.github.com/node-mongodb-native/driver-articles/anintroductionto1_1and2_2.html#read-preferences).
 
 ###slaveOk()
 

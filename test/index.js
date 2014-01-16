@@ -1237,7 +1237,7 @@ describe('mquery', function(){
     it('sets associated readPreference option', function(){
       var m = mquery();
       m.read('p');
-      assert.equal('primary', m.options.readPreference.mode);
+      assert.equal('primary', m.options.readPreference);
     })
     it('is chainable', function(){
       var m = mquery();
