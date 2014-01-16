@@ -838,9 +838,6 @@ mquery().read('sp') // same as secondaryPreferred
 
 mquery().read('nearest')
 mquery().read('n')  // same as nearest
-
-// you can also use mongodb.ReadPreference class to also specify tags
-mquery().read(mongodb.ReadPreference('secondary', [{ dc:'sf', s: 1 },{ dc:'ma', s: 2 }]))
 ```
 
 #####Preferences:
@@ -858,6 +855,21 @@ Aliases
 - `s`   secondary
 - `sp`  secondaryPreferred
 - `n`   nearest
+
+#####Preference Tags:
+
+To keep the separation of concerns between `mquery` and your driver
+clean, `mquery#read()` no longer handles specifying a second `tags` argument as of version 0.5.
+If you need to specify tags, pass any non-string argument as the first argument.
+`mquery` will pass this argument untouched to your collections methods later.
+For example:
+
+```js
+// example of specifying tags using the Node.js driver
+var ReadPref = require('mongodb').ReadPreference;
+var preference = new ReadPref('secondary', [{ dc:'sf', s: 1 },{ dc:'ma', s: 2 }]);
+mquery(..).read(preference).exec();
+```
 
 Read more about how to use read preferences [here](http://docs.mongodb.org/manual/applications/replication/#read-preference) and [here](http://mongodb.github.com/node-mongodb-native/driver-articles/anintroductionto1_1and2_2.html#read-preferences).
 
@@ -1004,11 +1016,33 @@ Debug mode is provided through the use of the [debug](https://github.com/visionm
 
 Read the debug module documentation for more details.
 
+## General compatibility
+
+#### ObjectIds
+
+`mquery` clones query arguments before passing them to a `collection` method for execution.
+This prevents accidental side-affects to the objects you pass.
+To clone `ObjectIds` we need to make some assumptions.
+
+First, to check if an object is an `ObjectId`, we check its constructors name. If it matches either
+`ObjectId` or `ObjectID` we clone it.
+
+To clone `ObjectIds`, we call its optional `clone` method. If a `clone` method does not exist, we fall
+back to calling `new obj.constructor(obj.id)`. We assume, for compatibility with the
+Node.js driver, that the `ObjectId` instance has a public `id` property and that
+when creating an `ObjectId` instance we can pass that `id` as an argument.
+
+#### Read Preferences
+
+`mquery` supports specifying [Read Preferences]() to control from which MongoDB node your query will read.
+The Read Preferences spec also support specifying tags. To pass tags, some
+drivers (Node.js driver) require passing a special constructor that handles both the read preference and its tags.
+If you need to specify tags, pass an instance of your drivers ReadPreference constructor or roll your own. `mquery` will store whatever you provide and pass later to your collection during execution.
+
 ##Future goals
 
   - mongo shell compatibility
   - browser compatibility
-  - mongoose compatibility
 
 ## Installation
 
