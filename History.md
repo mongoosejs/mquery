@@ -1,4 +1,13 @@
 
+0.5.0 / 2014-01-16
+==================
+
+ * removed; mongodb driver dependency #26 [ashtuchkin](https://github.com/ashtuchkin)
+ * removed; first class support of read preference tags #26 (still supported though) [ashtuchkin](https://github.com/ashtuchkin)
+ * added; better ObjectId clone support
+ * fixed; cloning objects that have no constructor #21
+ * docs; cleaned up [ashtuchkin](https://github.com/ashtuchkin)
+
 0.4.2 / 2014-01-08
 ==================
 
