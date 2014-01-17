@@ -1,4 +1,10 @@
 
+0.5.1 / 2014-01-17
+==================
+
+ * added; deprecation notice to tags parameter #27 [ashtuchkin](https://github.com/ashtuchkin)
+ * readme; add links
+
 0.5.0 / 2014-01-16
 ==================
 
