@@ -1,6 +1,7 @@
 
 var utils = require('../lib/utils');
 var assert = require('assert');
+var mongo = require('mongodb');
 
 describe('lib/utils', function() {
   describe('clone', function() {
@@ -49,6 +50,33 @@ describe('lib/utils', function() {
       assert.ok(o2 instanceof ObjectID);
       assert.equal(id, o2.id);
       assert.ok(o2.cloned);
+      done();
+    });
+
+    it('clones mongodb.ReadPreferences', function(done) {
+      var tags = [{dc: 'tag1'}];
+      var prefs = [
+        new mongo.ReadPreference("primary"),
+        new mongo.ReadPreference(mongo.ReadPreference.PRIMARY_PREFERRED),
+        new mongo.ReadPreference("primary", tags),
+        mongo.ReadPreference("primary", tags)
+      ];
+
+      var prefsCloned = utils.clone(prefs);
+      
+      for (var i = 0; i < prefsCloned.length; i++) {
+        assert.notEqual(prefs[i], prefsCloned[i]);
+        assert.ok(prefsCloned[i] instanceof mongo.ReadPreference);
+        assert.ok(prefsCloned[i].isValid());
+        if (prefs[i].tags) {
+          assert.ok(prefsCloned[i].tags);
+          assert.notEqual(prefs[i].tags, prefsCloned[i].tags);
+          assert.notEqual(prefs[i].tags[0], prefsCloned[i].tags[0]);
+        } else {
+          assert.equal(prefsCloned[i].tags, null);
+        }
+      }
+
       done();
     });
 
