@@ -1,8 +1,6 @@
-
 var mquery = require('../')
-var mongo = require('mongodb')
 var assert = require('assert')
-var slice = require('sliced')
+
 
 describe('mquery', function(){
   var col;
@@ -1864,9 +1862,11 @@ describe('mquery', function(){
     describe('executes', function(){
       var id;
       before(function (done) {
-        // TODO refactor to not use id
-        id = new mongo.ObjectID;
-        col.insert({ _id: id, name: 'mquery update', age: 1 }, { safe: true }, done);
+        col.insert({ name: 'mquery update', age: 1 }, { safe: true }, function (err, docs) {
+            var elem = docs[0];
+            id = elem._id;
+            done();
+        });
       });
 
       after(function(done){
