@@ -1,4 +1,11 @@
 
+0.4.3 / 2014-01-29
+==================
+
+ * updated; driver to 1.3.23
+ * added; better ObjectId clone support
+ * fixed; cloning objects that have no constructor
+
 0.4.2 / 2014-01-08
 ==================
 
