@@ -29,6 +29,18 @@ describe('lib/utils', function() {
       done();
     });
 
+    it('does not clone constructors named ObjectIdd', function(done) {
+      function ObjectIdd (id) {
+        this.id = id;
+      }
+
+      var o1 = new ObjectIdd('1234');
+      var o2 = utils.clone(o1);
+      assert.ok(!(o2 instanceof ObjectIdd));
+
+      done();
+    });
+
     it('optionally clones ObjectId constructors using its clone method', function(done) {
       function ObjectID (id) {
         this.id = id;
