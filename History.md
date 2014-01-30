@@ -1,4 +1,13 @@
 
+0.5.2 / 2014-01-30
+==================
+
+ * fixed; cloning ObjectId constructors
+ * fixed; cloning of ReadPreferences #30 [ashtuchkin](https://github.com/ashtuchkin)
+ * tests; use specific mongodb version #29 [AvianFlu](https://github.com/AvianFlu)
+ * tests; remove dependency on ObjectId #28 [refack](https://github.com/refack)
+ * tests; add failing ReadPref test
+
 0.5.1 / 2014-01-17
 ==================
 
