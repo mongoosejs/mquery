@@ -1,6 +1,6 @@
 var mquery = require('../')
 var assert = require('assert')
-
+var mongo = require('mongodb')
 
 describe('mquery', function(){
   var col;
@@ -1383,7 +1383,7 @@ describe('mquery', function(){
           done();
         })
       })
-      it('when Quer yis passed with a callback', function(done){
+      it('when Query is passed with a callback', function(done){
         var m = mquery({ name: 'mquery' });
         mquery(col).find(m, function (err, docs) {
           assert.ifError(err);
@@ -2442,14 +2442,27 @@ describe('mquery', function(){
       }, /Missing query type/);
     })
 
-    it('find', function(done){
-      var m = mquery(col).find({ name: 'exec' });
-      m.exec(function (err, docs) {
-        assert.ifError(err);
-        assert.equal(2, docs.length);
-        done();
+    describe('find', function() {
+      it('works', function(done){
+        var m = mquery(col).find({ name: 'exec' });
+        m.exec(function (err, docs) {
+          assert.ifError(err);
+          assert.equal(2, docs.length);
+          done();
+        })
       })
-    })
+
+      it('works with readPreferences', function(done){
+        var m = mquery(col).find({ name: 'exec' });
+        m.read(new mongo.ReadPreference('primary'));
+        m.exec(function (err, docs) {
+          assert.ifError(err);
+          assert.equal(2, docs.length);
+          done();
+        })
+      })
+    });
+
 
     it('findOne', function(done){
       var m = mquery(col).findOne({ age: 2 });
