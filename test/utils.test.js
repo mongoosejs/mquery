@@ -1,7 +1,6 @@
 
 var utils = require('../lib/utils');
 var assert = require('assert');
-var mongo = require('mongodb');
 
 describe('lib/utils', function() {
   describe('clone', function() {
@@ -65,8 +64,19 @@ describe('lib/utils', function() {
       done();
     });
 
-    it('clones mongodb.ReadPreferences', function(done) {
-      var tags = [{dc: 'tag1'}];
+    it('clones mongodb.ReadPreferences', function (done) {
+      try {
+        var mongo = new require('mongodb');
+      } catch (e) {
+        if (e.code === 'MODULE_NOT_FOUND')
+          e = null;
+        done(e);
+        return;
+      }
+
+      var tags = [
+        {dc: 'tag1'}
+      ];
       var prefs = [
         new mongo.ReadPreference("primary"),
         new mongo.ReadPreference(mongo.ReadPreference.PRIMARY_PREFERRED),
@@ -75,7 +85,7 @@ describe('lib/utils', function() {
       ];
 
       var prefsCloned = utils.clone(prefs);
-      
+
       for (var i = 0; i < prefsCloned.length; i++) {
         assert.notEqual(prefs[i], prefsCloned[i]);
         assert.ok(prefsCloned[i] instanceof mongo.ReadPreference);
