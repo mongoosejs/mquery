@@ -92,6 +92,16 @@ describe('lib/utils', function() {
       done();
     });
 
+    it('clones mongodb.Binary', function(done){
+      var buf = new Buffer('hi');
+      var binary= new mongo.Binary(buf, 2);
+      var clone = utils.clone(binary);
+      assert.equal(binary.sub_type, clone.sub_type);
+      assert.equal(String(binary.buffer), String(buf));
+      assert.ok(binary !== clone);
+      done();
+    })
+
     it('handles objects with no constructor', function(done) {
       var name ='335';
 
