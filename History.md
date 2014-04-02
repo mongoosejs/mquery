@@ -1,4 +1,9 @@
 
+0.6.0 / 2014-04-01
+==================
+
+ * fixed; Allow $meta args in sort() so text search sorting works #37 [vkarpov15](https://github.com/vkarpov15)
+
 0.5.3 / 2014-02-22
 ==================
 
