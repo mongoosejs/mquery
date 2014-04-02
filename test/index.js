@@ -1135,9 +1135,15 @@ describe('mquery', function(){
       assert.equal(e.message, 'Invalid sort() argument. Must be a string or object.');
     })
 
+    it('handles $meta sort options', function(){
+      var query = mquery();
+      query.sort({ score: { $meta : "textScore" } });
+      assert.deepEqual(query.options.sort, { score : { $meta : "textScore" } });
+    })
+
     no('count', 'sort');
   })
-
+  
   function simpleOption (type) {
     describe(type, function(){
       it('sets the ' + type + ' option', function(){
