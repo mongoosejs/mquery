@@ -75,7 +75,7 @@ describe('lib/utils', function() {
       ];
 
       var prefsCloned = utils.clone(prefs);
-      
+
       for (var i = 0; i < prefsCloned.length; i++) {
         assert.notEqual(prefs[i], prefsCloned[i]);
         assert.ok(prefsCloned[i] instanceof mongo.ReadPreference);
@@ -115,6 +115,18 @@ describe('lib/utils', function() {
 
       assert.equal(name, clone.name);
       assert.ok(o != clone);
+      done();
+    });
+
+    it('handles buffers', function(done){
+      var buff = new Buffer(10);
+      buff.fill(1);
+      var clone = utils.clone(buff);
+
+      for (var i = 0; i < buff.length; i++) {
+        assert.equal(buff[i], clone[i]);
+      }
+
       done();
     });
   });
