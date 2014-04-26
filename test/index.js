@@ -1,6 +1,5 @@
-var mquery = require('../')
-var assert = require('assert')
-var mongo = require('mongodb')
+var mquery = require('../');
+var assert = require('assert');
 
 describe('mquery', function(){
   var col;
@@ -2458,9 +2457,17 @@ describe('mquery', function(){
         })
       })
 
-      it('works with readPreferences', function(done){
+      it('works with readPreferences', function (done) {
         var m = mquery(col).find({ name: 'exec' });
-        m.read(new mongo.ReadPreference('primary'));
+        try {
+          var rp = new require('mongodb').ReadPreference('primary');
+          m.read(rp);
+        } catch (e) {
+          if (e.code === 'MODULE_NOT_FOUND')
+            e = null;
+          done(e);
+          return;
+        }
         m.exec(function (err, docs) {
           assert.ifError(err);
           assert.equal(2, docs.length);
@@ -2496,8 +2503,8 @@ describe('mquery', function(){
         assert.ifError(err);
         assert.ok(Array.isArray(array));
         assert.equal(2, array.length);
-        assert.equal(1, array[0]);
-        assert.equal(2, array[1]);
+        assert(~array.indexOf(1));
+        assert(~array.indexOf(2));
         done();
       });
     })
