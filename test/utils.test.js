@@ -2,6 +2,11 @@
 var utils = require('../lib/utils');
 var assert = require('assert');
 
+var mongo;
+try {
+  mongo = new require('mongodb');
+} catch (e) {}
+
 describe('lib/utils', function() {
   describe('clone', function() {
     it('clones constructors named ObjectId', function(done) {
@@ -65,14 +70,7 @@ describe('lib/utils', function() {
     });
 
     it('clones mongodb.ReadPreferences', function (done) {
-      try {
-        var mongo = new require('mongodb');
-      } catch (e) {
-        if (e.code === 'MODULE_NOT_FOUND')
-          e = null;
-        done(e);
-        return;
-      }
+      if (!mongo) return done();
 
       var tags = [
         {dc: 'tag1'}
@@ -103,6 +101,8 @@ describe('lib/utils', function() {
     });
 
     it('clones mongodb.Binary', function(done){
+      if (!mongo) return done();
+
       var buf = new Buffer('hi');
       var binary= new mongo.Binary(buf, 2);
       var clone = utils.clone(binary);
