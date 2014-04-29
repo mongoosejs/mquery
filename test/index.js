@@ -886,8 +886,8 @@ describe('mquery', function(){
                         type: 'Point'
                       , coordinates : [1,1]
                     }
+                  , $maxDistance : 2
                 }
-              , $maxDistance : 2
             }
         }
 
