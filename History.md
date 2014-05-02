@@ -1,4 +1,11 @@
 
+0.7.0 / 2014-05-02
+==================
+
+ * fixed; pass $maxDistance in $near object as described in docs #43 [vkarpov15](https://github.com/vkarpov15)
+ * fixed; cloning buffers #42 [gjohnson](https://github.com/gjohnson)
+ * tests; a little bit more `mongodb` agnostic #34 [refack](https://github.com/refack)
+
 0.6.0 / 2014-04-01
 ==================
 
