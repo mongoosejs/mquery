@@ -1,4 +1,10 @@
 
+0.8.0 / 2014-05-15
+==================
+
+ * added; support for maxTimeMS #44 [yoitsro](https://github.com/yoitsro)
+ * updated; devDependency (driver to 1.4.4)
+
 0.7.0 / 2014-05-02
 ==================
 
