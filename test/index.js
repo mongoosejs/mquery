@@ -1142,8 +1142,8 @@ describe('mquery', function(){
 
     no('count', 'sort');
   })
-  
-  function simpleOption (type) {
+
+  function simpleOption (type, options) {
     describe(type, function(){
       it('sets the ' + type + ' option', function(){
         var m = mquery()[type](2);
@@ -1154,14 +1154,22 @@ describe('mquery', function(){
         assert.equal(m[type](3), m);
       })
 
-      noDistinct(type);
-
-      if ('limit' == type || 'skip' == type) return;
-      no('count', type);
+      if (!options.distinct) noDistinct(type);
+      if (!options.count) no('count', type);
     })
   }
 
-  'limit skip maxScan maxTimeMS batchSize comment'.split(' ').forEach(simpleOption);
+  var negated = {
+      limit: {distinct: false, count: true}
+    , skip: {distinct: false, count: true}
+    , maxScan: {distinct: false, count: false}
+    , batchSize: {distinct: false, count: false}
+    , maxTimeMS: {distinct: true, count: true}
+    , comment: {distinct: false, count: false}
+  };
+  Object.keys(negated).forEach(function (key) {
+    simpleOption(key, negated[key]);
+  })
 
   describe('snapshot', function(){
     it('works', function(){
@@ -2475,7 +2483,6 @@ describe('mquery', function(){
         })
       })
     });
-
 
     it('findOne', function(done){
       var m = mquery(col).findOne({ age: 2 });
