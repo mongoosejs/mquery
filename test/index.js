@@ -1161,7 +1161,7 @@ describe('mquery', function(){
     })
   }
 
-  'limit skip maxScan batchSize comment'.split(' ').forEach(simpleOption);
+  'limit skip maxScan maxTimeMS batchSize comment'.split(' ').forEach(simpleOption);
 
   describe('snapshot', function(){
     it('works', function(){
