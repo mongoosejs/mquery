@@ -1147,7 +1147,8 @@ describe('mquery', function(){
     describe(type, function(){
       it('sets the ' + type + ' option', function(){
         var m = mquery()[type](2);
-        assert.equal(2, m.options[type]);
+        var optionName = options.name || type;
+        assert.equal(2, m.options[optionName]);
       })
       it('is chainable', function(){
         var m = mquery();
@@ -1164,7 +1165,7 @@ describe('mquery', function(){
     , skip: {distinct: false, count: true}
     , maxScan: {distinct: false, count: false}
     , batchSize: {distinct: false, count: false}
-    , maxTimeMS: {distinct: true, count: true}
+    , maxTime: {distinct: true, count: true, name: 'maxTimeMS' }
     , comment: {distinct: false, count: false}
   };
   Object.keys(negated).forEach(function (key) {
