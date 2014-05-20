@@ -37,6 +37,13 @@ require('mongodb').connect(uri, function (err, db) {
 })
 ```
 
+`mquery` also supports [co](http://github.com/visionmedia/co) style thunks...
+
+```js
+var users = yield mquery(userCollection).find(..).where(..);
+console.log(users);
+```
+
 `mquery` requires a collection object to work with. In the example above we just pass the collection object created using the official [MongoDB driver](https://github.com/mongodb/node-mongodb-native).
 
 
