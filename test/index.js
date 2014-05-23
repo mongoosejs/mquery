@@ -50,6 +50,18 @@ describe('mquery', function(){
         assert.deepEqual({ safe: true }, m.options);
       })
     })
+    describe('thunking', function() {
+      it('is an executable thunk', function(done) {
+        var m = mquery(col);
+        m.exec = function(cb) {
+          cb(null, 3);
+        };
+        m(function(err, result) {
+          assert.equal(result, 3);
+          done();
+        });
+      });
+    });
   })
 
   describe('toConstructor', function(){
