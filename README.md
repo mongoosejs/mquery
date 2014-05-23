@@ -99,6 +99,7 @@ require('mongodb').connect(uri, function (err, db) {
 ## Helpers
 
 - [collection](#collection)
+- [thunk](#thunk)
 - [merge](#mergeobject)
 - [setOptions](#setoptionsoptions)
 - [mquery.canMerge](#mquerycanmerge)
@@ -998,6 +999,26 @@ Sets the querys collection.
 mquery().collection(aCollection)
 ```
 
+###thunk()
+
+Returns a thunk which when called runs the query's `exec` method passing the results to the callback.
+
+```js
+var thunk = mquery(collection).find({..}).thunk();
+
+thunk(function(err, results) {
+
+})
+```
+
+This is useful for example when used with [co](https://github.com/visionmedia/co) or [koa](https://github.com/koajs/koa).
+
+```js
+co(function *(){
+  var update = { $set: { name: 'thunkify' }}
+  yield mquery(collection).findOneAndUpdate({ _id: 3 }, update).thunk();
+})
+```
 
 ###merge(object)
 

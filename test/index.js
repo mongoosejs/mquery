@@ -2630,6 +2630,26 @@ describe('mquery', function(){
     })
   })
 
+  describe('thunk', function() {
+    it('returns a function', function(done) {
+      assert.equal('function', typeof mquery().thunk());
+      done();
+    });
+
+    it('passes the fn arg to `exec`', function(done) {
+      function cb() {}
+      var m = mquery();
+
+      m.exec = function testing(fn) {
+        assert.equal(this, m);
+        assert.equal(cb, fn);
+        done();
+      }
+
+      m.thunk()(cb);
+    });
+  });
+
   function noDistinct (type) {
     it('cannot be used with distinct()', function(done){
       assert.throws(function () {
