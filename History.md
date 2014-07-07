@@ -1,4 +1,9 @@
 
+1.0.0 / 2014-07-07
+==================
+
+ * Remove broken require() calls until they're actually implemented #48 [vkarpov15](https://github.com/vkarpov15)
+
 0.9.0 / 2014-05-22
 ==================
 
