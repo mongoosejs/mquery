@@ -11,9 +11,10 @@
     "url": "git://github.com/aheckmann/mquery.git"
   },
   "dependencies": {
-    "sliced": "0.0.5",
+    "bluebird": "2.3.2",
     "debug": "0.7.4",
-    "regexp-clone": "0.0.1"
+    "regexp-clone": "0.0.1",
+    "sliced": "0.0.5"
   },
   "devDependencies": {
     "mongodb": "1.4.4",

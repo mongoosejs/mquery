@@ -99,6 +99,7 @@ require('mongodb').connect(uri, function (err, db) {
 ## Helpers
 
 - [collection](#collection)
+- [then](#then)
 - [thunk](#thunk)
 - [merge](#mergeobject)
 - [setOptions](#setoptionsoptions)
@@ -999,6 +1000,28 @@ Sets the querys collection.
 mquery().collection(aCollection)
 ```
 
+###then()
+
+Executes the query and returns a promise which will be resolved with the query results or rejected if the query responds with an error.
+
+```js
+mquery().find(..).then(success, error);
+```
+
+This is very useful when combined with [co](https://github.com/visionmedia/co) or [koa](https://github.com/koajs/koa), which automatically resolve promise-like objects for you.
+
+```js
+co(function*(){
+  var doc = yield mquery().findOne({ _id: 499 });
+  console.log(doc); // { _id: 499, name: 'amazing', .. }
+})();
+```
+
+_NOTE_:
+The returned promise is a [bluebird](https://github.com/petkaantonov/bluebird/) promise but this is customizable. If you want to
+use your favorite promise library, simply set `mquery.Promise = YourPromiseConstructor`.
+Your `Promise` must be [promises A+](http://promisesaplus.com/) compliant.
+
 ###thunk()
 
 Returns a thunk which when called runs the query's `exec` method passing the results to the callback.
@@ -1008,15 +1031,6 @@ var thunk = mquery(collection).find({..}).thunk();
 
 thunk(function(err, results) {
 
-})
-```
-
-This is useful for example when used with [co](https://github.com/visionmedia/co) or [koa](https://github.com/koajs/koa).
-
-```js
-co(function *(){
-  var update = { $set: { name: 'thunkify' }}
-  yield mquery(collection).findOneAndUpdate({ _id: 3 }, update).thunk();
 })
 ```
 

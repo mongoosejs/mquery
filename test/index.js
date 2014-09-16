@@ -2650,6 +2650,46 @@ describe('mquery', function(){
     });
   });
 
+  describe('then', function() {
+    before(function(done){
+      col.insert([{ name: 'then', age: 1 }, { name: 'then', age: 2 }], done);
+    })
+
+    after(function(done){
+      mquery(col).remove({ name: 'then' }).exec(done);
+    })
+
+    it('returns a promise A+ compat object', function(done) {
+      var m = mquery(col).find();
+      assert.equal('function', typeof m.then);
+      done();
+    });
+
+    it('creates a promise that is resolved on success', function(done) {
+      var promise = mquery(col).count({ name: 'then' }).then();
+      promise.then(function(count){
+        assert.equal(2, count);
+        done();
+      }, done);
+    });
+
+    it('supports other Promise libs', function(done) {
+      var bluebird = mquery.Promise;
+
+      // hack for testing
+      mquery.Promise = function P() {
+        mquery.Promise = bluebird;
+        this.then = function(x, y) {
+          return x + y;
+        }
+      }
+
+      var val = mquery(col).count({ name: 'exec' }).then(1, 2);
+      assert.equal(val, 3);
+      done();
+    });
+  });
+
   function noDistinct (type) {
     it('cannot be used with distinct()', function(done){
       assert.throws(function () {
