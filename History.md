@@ -1,4 +1,10 @@
 
+1.1.0 / 2014-09-15
+==================
+
+ * add #then for co / koa support
+ * start checking code coverage
+
 1.0.0 / 2014-07-07
 ==================
 
