@@ -18,13 +18,18 @@
   },
   "devDependencies": {
     "mongodb": "1.4.4",
-    "mocha": "1.9.x"
+    "mocha": "1.9.x",
+    "istanbul": "0.3.2"
   },
   "bugs": {
-    "url":"https://github.com/aheckmann/mquery/issues/new"
+    "url": "https://github.com/aheckmann/mquery/issues/new"
   },
   "author": "Aaron Heckmann <aaron.heckmann+github@gmail.com>",
   "license": "MIT",
-  "keywords": ["mongodb","query","builder"],
+  "keywords": [
+    "mongodb",
+    "query",
+    "builder"
+  ],
   "homepage": "https://github.com/aheckmann/mquery/"
 }
