@@ -2690,6 +2690,82 @@ describe('mquery', function(){
     });
   });
 
+  describe('stream', function() {
+    before(function(done){
+      col.insert([{ name: 'stream', age: 1 }, { name: 'stream', age: 2 }], done);
+    })
+
+    after(function(done){
+      mquery(col).remove({ name: 'stream' }).exec(done);
+    })
+
+    describe('throws', function() {
+      describe('if used with non-find operations', function() {
+        var ops = ['update', 'findOneAndUpdate', 'remove', 'count', 'distinct'];
+
+        ops.forEach(function(op) {
+          assert.throws(function(){
+            mquery(col)[op]().stream();
+          });
+        });
+      });
+    });
+
+    it('returns a stream', function(done) {
+      var stream = mquery(col).find({ name: 'stream' }).stream();
+      var count = 0;
+      var err;
+
+      stream.on('data', function(doc){
+        assert.equal('stream', doc.name);
+        ++count;
+      });
+
+      stream.on('error', function(er) {
+        err = er;
+      });
+
+      stream.on('close', function(){
+        if (err) return done(err);
+        assert.equal(2, count);
+        done();
+      });
+    });
+
+    it('supports find options', function(done) {
+      var stream = mquery(col)
+                  .find({ name: 'stream' })
+                  .limit(1)
+                  .select('-_id')
+                  .stream({ transform: xform });
+
+      function xform(doc) {
+        doc.name = doc.name + '-xformed';
+        return doc;
+      }
+
+      var count = 0;
+      var err;
+
+      stream.on('data', function(doc){
+        assert(!doc._id);
+        assert.equal('stream-xformed', doc.name);
+        ++count;
+      });
+
+      stream.on('error', function(er) {
+        err = er;
+      });
+
+      stream.on('close', function(){
+        if (err) return done(err);
+        assert.equal(1, count);
+        done();
+      });
+    });
+
+  });
+
   function noDistinct (type) {
     it('cannot be used with distinct()', function(done){
       assert.throws(function () {

@@ -51,6 +51,7 @@ require('mongodb').connect(uri, function (err, db) {
 - [findOneAndRemove](#findoneandremove)
 - [distinct](#distinct)
 - [exec](#exec)
+- [stream](#stream)
 - [all](#all)
 - [and](#and)
 - [box](#box)
@@ -332,6 +333,20 @@ Executes the query.
 ```js
 mquery().findOne().where('route').intersects(polygon).exec(function (err, docs){})
 ```
+
+###stream()
+
+Executes the query and returns a stream.
+
+```js
+var stream = mquery().find().stream(options);
+stream.on('data', cb);
+stream.on('close', fn);
+```
+
+Note: this only works with `find()` operations.
+
+Note: returns the stream object directly from the node-mongodb-native driver. (currently streams1 type stream). Any options will be passed along to the [driver method](http://mongodb.github.io/node-mongodb-native/api-generated/cursor.html#stream).
 
 -------------
 

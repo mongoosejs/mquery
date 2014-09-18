@@ -17,7 +17,7 @@
     "sliced": "0.0.5"
   },
   "devDependencies": {
-    "mongodb": "1.4.4",
+    "mongodb": "1.4.12",
     "mocha": "1.9.x",
     "istanbul": "0.3.2"
   },
