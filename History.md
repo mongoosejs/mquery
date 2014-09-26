@@ -1,4 +1,9 @@
 
+1.2.1 / 2014-09-26
+==================
+
+ * fixed; distinct assignment in toConstructor() #51 from [esco](https://github.com/esco)
+
 1.2.0 / 2014-09-18
 ==================
 
