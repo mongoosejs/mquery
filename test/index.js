@@ -2630,6 +2630,54 @@ describe('mquery', function(){
     })
   })
 
+  describe('setTraceFunction', function() {
+    beforeEach(function(done){
+      col.insert([{ name: 'trace', age: 93 }], done);
+    })
+
+    it('calls trace function when executing query', function(done) {
+      var m = mquery(col);
+
+      var resultTraceCalled;
+
+      m.setTraceFunction(function (method, queryInfo) {
+        try {
+          assert.equal('findOne', method);
+          assert.equal('trace', queryInfo.conditions.name);
+        } catch (e) {
+          done(e);
+        }
+
+        return function(err, result, millis) {
+          try {
+            assert.equal(93, result.age);
+          } catch (e) {
+            done(e);
+          }
+          resultTraceCalled = true;
+        };
+      });
+
+      m.findOne({name: 'trace'}, function (err, doc) {
+        assert.ifError(err);
+        assert.equal(resultTraceCalled, true);
+        assert.equal(93, doc.age);
+        done();
+      });
+    });
+
+    it('inherits trace function when calling toConstructor', function(done) {
+      function traceFunction () { return function() {} };
+
+      var tracedQuery = mquery().setTraceFunction(traceFunction).toConstructor();
+
+      var query = tracedQuery();
+      assert.equal(traceFunction, query._traceFunction);
+
+      done();
+    });
+  });
+
   describe('thunk', function() {
     it('returns a function', function(done) {
       assert.equal('function', typeof mquery().thunk());
