@@ -1,4 +1,9 @@
 
+1.3.0 / 2014-11-06
+==================
+
+ * added; setTraceFunction() #53 from [jlai](https://github.com/jlai)
+
 1.2.1 / 2014-09-26
 ==================
 
