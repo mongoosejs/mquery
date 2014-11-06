@@ -104,6 +104,8 @@ require('mongodb').connect(uri, function (err, db) {
 - [thunk](#thunk)
 - [merge](#mergeobject)
 - [setOptions](#setoptionsoptions)
+- [setTraceFunction](#settracefunctionfunc)
+- [mquery.setGlobalTraceFunction](#mquerysetglobaltracefunctionfunc)
 - [mquery.canMerge](#mquerycanmerge)
 - [mquery.use$geoWithin](#mqueryusegeowithin)
 
@@ -1088,6 +1090,46 @@ mquery().setOptions({ collection: coll, limit: 20 })
 - [collection](#collection): the collection to query against
 
 _* denotes a query helper method is also available_
+
+###setTraceFunction(func)
+
+Set a function to trace this query. Useful for profiling or logging.
+
+```js
+function traceFunction (method, queryInfo, query) {
+  console.log('starting ' + method + ' query');
+
+  return function (err, result, millis) {
+    console.log('finished ' + method + ' query in ' + millis + 'ms');
+  };
+}
+
+mquery().setTraceFunction(traceFunction).findOne({name: 'Joe'}, cb);
+```
+
+The trace function is passed (method, queryInfo, query)
+
+- method is the name of the method being called (e.g. findOne)
+- queryInfo contains information about the query:
+ - conditions: query conditions/criteria
+ - options: options such as sort, fields, etc
+ - doc: document being updated
+- query is the query object
+
+The trace function should return a callback function which accepts:
+- err: error, if any
+- result: result, if any
+- millis: time spent waiting for query result
+
+NOTE: stream requests are not traced.
+
+###mquery.setGlobalTraceFunction(func)
+
+Similar to `setTraceFunction()` but automatically applied to all queries.
+
+```js
+mquery.setTraceFunction(traceFunction);
+```
 
 ###mquery.canMerge(conditions)
 
