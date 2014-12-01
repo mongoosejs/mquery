@@ -4,7 +4,8 @@
   "description": "Expressive query building for MongoDB",
   "main": "lib/mquery.js",
   "scripts": {
-    "test": "make test"
+    "test": "make test",
+    "test-harmony": "NODE_ENV=test node ./node_modules/.bin/mocha --harmony"
   },
   "repository": {
     "type": "git",
@@ -13,6 +14,7 @@
   "dependencies": {
     "bluebird": "2.3.2",
     "debug": "0.7.4",
+    "native-or-bluebird": "1.1.2",
     "regexp-clone": "0.0.1",
     "sliced": "0.0.5"
   },
