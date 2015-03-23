@@ -1058,6 +1058,11 @@ describe('mquery', function(){
         query.where('collection').slice([5,10]);
         assert.deepEqual(query._fields, {collection: {$slice: [5,10]}});
       })
+      it('that is an object', function() {
+        var query = mquery();
+        query.slice({ collection: [5, 10] });
+        assert.deepEqual(query._fields, {collection: {$slice: [5,10]}});
+      })
     })
 
     describe('with 2 args', function(){
