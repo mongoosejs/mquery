@@ -1,4 +1,10 @@
 
+1.4.0 / 2015-03-29
+==================
+
+ * added; object support to slice() #60 [vkarpov15](https://github.com/vkarpov15)
+ * debug; improved output #57 [flyvictor](https://github.com/flyvictor)
+
 1.3.0 / 2014-11-06
 ==================
 
