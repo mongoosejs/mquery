@@ -1231,7 +1231,6 @@ describe('mquery', function(){
     })
 
     noDistinct('hint');
-    no('count', 'hint');
   })
 
   describe('slaveOk', function(){
