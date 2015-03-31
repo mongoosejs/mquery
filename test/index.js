@@ -1231,7 +1231,6 @@ describe('mquery', function(){
     })
 
     noDistinct('hint');
-    no('count', 'hint');
   })
 
   describe('slaveOk', function(){
@@ -1615,13 +1614,6 @@ describe('mquery', function(){
         assert.throws(function(){
           var m = mquery().snapshot().count();
         }, /snapshot cannot be used with count/);
-        done();
-      })
-
-      it('hint', function(done){
-        assert.throws(function(){
-          var m = mquery().hint({ x: 1 }).count();
-        }, /hint cannot be used with count/);
         done();
       })
 
