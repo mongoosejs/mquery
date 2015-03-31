@@ -1618,13 +1618,6 @@ describe('mquery', function(){
         done();
       })
 
-      it('hint', function(done){
-        assert.throws(function(){
-          var m = mquery().hint({ x: 1 }).count();
-        }, /hint cannot be used with count/);
-        done();
-      })
-
       it('tailable', function(done){
         assert.throws(function(){
           var m = mquery().tailable().count();
