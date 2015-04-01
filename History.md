@@ -1,4 +1,10 @@
 
+1.5.0 / 2015-03-31
+==================
+
+ * fixed; debug output
+ * fixed; allow hint usage with count #61 [trueinsider](https://github.com/trueinsider)
+
 1.4.0 / 2015-03-29
 ==================
 
