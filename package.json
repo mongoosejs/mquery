@@ -11,8 +11,8 @@
     "url": "git://github.com/aheckmann/mquery.git"
   },
   "dependencies": {
-    "bluebird": "2.9.9",
-    "debug": "0.7.4",
+    "bluebird": "~2.9.9",
+    "debug": "~2.2.0",
     "regexp-clone": "0.0.1",
     "sliced": "0.0.5"
   },
