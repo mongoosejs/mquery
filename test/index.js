@@ -990,6 +990,10 @@ describe('mquery', function(){
         assert.strictEqual(false, mquery().select({ name: 1, _id: 0 }).selectedInclusively());
         done();
       });
+      it('when using $meta', function(done) {
+        assert.strictEqual(false, mquery().select({ name: { $meta: 'textScore' } }).selectedInclusively());
+        done();
+      });
     });
 
     describe('returns true', function() {
