@@ -1,4 +1,9 @@
 
+1.6.1 / 2015-06-16
+==================
+
+ * fixed; do not treat $meta projection as inclusive [vkarpov15](https://github.com/vkarpov15)
+
 1.6.0 / 2015-05-27
 ==================
 
