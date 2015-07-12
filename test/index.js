@@ -2722,6 +2722,19 @@ describe('mquery', function(){
       }, done);
     });
 
+    it('supports exec() cb being called synchronously #66', function(done) {
+      var query = mquery(col).count({ name: 'then' });
+      query.exec = function(cb) {
+        cb(null, 66);
+      }
+
+      query.then(success, done);
+      function success(count){
+        assert.equal(66, count);
+        done();
+      }
+    });
+
     it('supports other Promise libs', function(done) {
       var bluebird = mquery.Promise;
 
