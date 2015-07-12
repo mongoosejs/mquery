@@ -1,4 +1,9 @@
 
+1.6.2 / 2015-07-12
+==================
+
+ * fixed; support exec cb being called synchronously #66
+
 1.6.1 / 2015-06-16
 ==================
 
