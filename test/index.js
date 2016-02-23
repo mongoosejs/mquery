@@ -945,7 +945,7 @@ describe('mquery', function(){
       }, /Invalid select\(\) argument/);
     })
 
-    it('accepts aguments objects', function(){
+    it('accepts arguments objects', function(){
       var m = mquery();
       function t () {
         m.select(arguments);
