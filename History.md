@@ -1,3 +1,8 @@
+1.7.0 / 2016-02-23
+==================
+ * fixed; don't treat objects with a length property as argument objects #70
+ * added; `.findCursor()` method #69 [nswbmw](https://github.com/nswbmw)
+ * added; `_compiledUpdate` property #68 [nswbmw](https://github.com/nswbmw) 
 
 1.6.2 / 2015-07-12
 ==================
@@ -153,7 +158,7 @@
 0.2.6 / 2013-07-30
 ==================
 
-  * internally, 'asc' and 'desc' for sorts are now converted into 1 and -1, respectively 
+  * internally, 'asc' and 'desc' for sorts are now converted into 1 and -1, respectively
 
 0.2.5 / 2013-07-30
 ==================
