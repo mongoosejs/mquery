@@ -1958,7 +1958,7 @@ describe('mquery', function(){
           m._collection.update = function (conds, doc, opts, cb) {
             m._collection.update = update;
 
-            assert.ok(!opts.safe);
+            assert.ok(opts.safe);
             assert.ok(true === opts.multi);
             assert.equal('forced', doc.$set.name);
             done();
