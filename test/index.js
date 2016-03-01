@@ -955,7 +955,6 @@ describe('mquery', function(){
     })
 
     noDistinct('select');
-    no('count', 'select');
   })
 
   describe('selected', function() {
@@ -1148,8 +1147,6 @@ describe('mquery', function(){
       query.sort({ score: { $meta : "textScore" } });
       assert.deepEqual(query.options.sort, { score : { $meta : "textScore" } });
     })
-
-    no('count', 'sort');
   })
 
   function simpleOption (type, options) {
@@ -1559,9 +1556,9 @@ describe('mquery', function(){
 
     describe('validates its option', function(){
       it('sort', function(done){
-        assert.throws(function(){
+        assert.doesNotThrow(function(){
           var m = mquery().sort('x').count();
-        }, /sort cannot be used with count/);
+        });
         done();
       })
 
