@@ -1,8 +1,12 @@
+1.8.0 / 2016-03-01
+==================
+ * fixed; dont throw an error if count used with sort or select Automattic/mongoose#3914
+
 1.7.0 / 2016-02-23
 ==================
  * fixed; don't treat objects with a length property as argument objects #70
  * added; `.findCursor()` method #69 [nswbmw](https://github.com/nswbmw)
- * added; `_compiledUpdate` property #68 [nswbmw](https://github.com/nswbmw) 
+ * added; `_compiledUpdate` property #68 [nswbmw](https://github.com/nswbmw)
 
 1.6.2 / 2015-07-12
 ==================
