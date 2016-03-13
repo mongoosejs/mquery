@@ -175,7 +175,6 @@ describe('mquery', function(){
       assert.equal(m, n);
     })
   })
-
   describe('equals', function(){
     it('must be called after where()', function(){
       var m = mquery();
@@ -194,7 +193,13 @@ describe('mquery', function(){
       assert.equal(m, n);
     })
   })
-
+  describe('eq', function(){
+    it('is alias of equals', function(){
+      var m = mquery();
+      m.where('age').eq(1000);
+      assert.deepEqual({ age: 1000 }, m._conditions);
+    })
+  })
   describe('or', function(){
     it('pushes onto the internal $or condition', function(){
       var m = mquery();
