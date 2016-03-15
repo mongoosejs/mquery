@@ -1,3 +1,8 @@
+1.9.0 / 2016-03-15
+==================
+ * added; `.eq` as a shortcut for `.equals` #72 [Fonger](https://github.com/Fonger)
+ * added; ability to use array syntax for sort re: https://jira.mongodb.org/browse/NODE-578 #67
+
 1.8.0 / 2016-03-01
 ==================
  * fixed; dont throw an error if count used with sort or select Automattic/mongoose#3914
