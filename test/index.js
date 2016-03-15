@@ -1116,7 +1116,7 @@ describe('mquery', function(){
         var m = mquery();
         assert.equal(m.options.sort, undefined);
       })
-    })
+    });
 
     it('works', function(){
       var query = mquery();
@@ -1129,13 +1129,6 @@ describe('mquery', function(){
 
       query = mquery();
       var e= undefined;
-      try {
-        query.sort(['a', 1]);
-      } catch (err) {
-        e=  err;
-      }
-      assert.ok(e, 'uh oh. no error was thrown');
-      assert.equal(e.message, 'Invalid sort() argument. Must be a string or object.');
 
       e= undefined;
       try {
@@ -1144,14 +1137,30 @@ describe('mquery', function(){
         e= err;
       }
       assert.ok(e, 'uh oh. no error was thrown');
-      assert.equal(e.message, 'Invalid sort() argument. Must be a string or object.');
-    })
+      assert.equal(e.message, 'Invalid sort() argument. Must be a string, object, or array.');
+    });
 
     it('handles $meta sort options', function(){
       var query = mquery();
       query.sort({ score: { $meta : "textScore" } });
       assert.deepEqual(query.options.sort, { score : { $meta : "textScore" } });
-    })
+    });
+
+    it('array syntax', function(){
+      var query = mquery();
+      query.sort([['field', 1], ['test', -1]]);
+      assert.deepEqual(query.options.sort, [['field', 1], ['test', -1]]);
+    });
+
+    it('throws with mixed array/object syntax', function(){
+      var query = mquery();
+      assert.throws(function() {
+        query.sort({ field: 1 }).sort([['test', -1]]);
+      }, /Can't mix sort syntaxes/);
+      assert.throws(function() {
+        query.sort([['field', 1]]).sort({ test: 1 });
+      }, /Can't mix sort syntaxes/);
+    });
   })
 
   function simpleOption (type, options) {
