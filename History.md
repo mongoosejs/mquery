@@ -1,3 +1,9 @@
+
+1.10.0 / 2016-03-16
+==================
+
+ * updated; bluebird to latest 2.10.2 version #74 [matskiv](https://github.com/matskiv)
+
 1.9.0 / 2016-03-15
 ==================
  * added; `.eq` as a shortcut for `.equals` #72 [Fonger](https://github.com/Fonger)
