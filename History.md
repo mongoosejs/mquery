@@ -1,3 +1,6 @@
+1.10.1 / 2016-04-26
+===================
+ * fixed; ensure conditions is an object before assigning #75
 
 1.10.0 / 2016-03-16
 ==================
