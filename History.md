@@ -1,3 +1,7 @@
+1.11.0 / 2016-06-04
+===================
+ * added; `.minDistance()` helper and minDistance for `.near()` Automattic/mongoose#4179
+
 1.10.1 / 2016-04-26
 ===================
  * fixed; ensure conditions is an object before assigning #75
