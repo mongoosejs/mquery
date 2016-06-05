@@ -315,7 +315,7 @@ describe('mquery', function(){
     }
   }
 
-  'gt gte lt lte ne in nin regex size maxDistance'.split(' ').forEach(function (type) {
+  'gt gte lt lte ne in nin regex size maxDistance minDistance'.split(' ').forEach(function (type) {
     describe(type, generalCondition(type))
   })
 
@@ -869,6 +869,11 @@ describe('mquery', function(){
     it('supports maxDistance', function(){
       var m = mquery().where('loc').near({ center: [1,2], maxDistance:4 });
       assert.deepEqual(m._conditions, { loc: { $near: [1,2], $maxDistance: 4}});
+    })
+
+    it('supports minDistance', function(){
+      var m = mquery().where('loc').near({ center: [1,2], minDistance:4 });
+      assert.deepEqual(m._conditions, { loc: { $near: [1,2], $minDistance: 4}});
     })
 
     it('is chainable', function(){
