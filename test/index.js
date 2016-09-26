@@ -1893,10 +1893,9 @@ describe('mquery', function(){
     describe('executes', function(){
       var id;
       before(function (done) {
-        col.insert({ name: 'mquery update', age: 1 }, { safe: true }, function (err, docs) {
-            var elem = docs[0];
-            id = elem._id;
-            done();
+        col.insert({ name: 'mquery update', age: 1 }, { safe: true }, function (err, res) {
+          id = res.insertedIds[0];
+          done();
         });
       });
 
@@ -1907,9 +1906,9 @@ describe('mquery', function(){
       describe('when conds + doc + opts + callback passed', function(){
         it('works', function(done){
           var m = mquery(col).where({ _id: id })
-          m.update({}, { name: 'Sparky' }, { safe: true }, function (err, num) {
+          m.update({}, { name: 'Sparky' }, { safe: true }, function (err, res) {
             assert.ifError(err);
-            assert.ok(1 === num);
+            assert.equal(res.result.n, 1);
             m.findOne(function (err, doc) {
               assert.ifError(err);
               assert.equal(doc.name, 'Sparky');
@@ -1952,9 +1951,9 @@ describe('mquery', function(){
           var m = mquery(col).where({ _id: id });
           m.setOptions({ safe: true });
           m.update({ name: 'Frankenweenie' });
-          m.update(function (err, num) {
+          m.update(function (err, res) {
             assert.ifError(err);
-            assert.ok(1 === num);
+            assert.equal(res.result.n, 1);
             m.findOne(function (err, doc) {
               assert.ifError(err);
               assert.equal(doc.name, 'Frankenweenie');
@@ -2008,9 +2007,9 @@ describe('mquery', function(){
         it('works', function (done) {
           var m = mquery(col).where({ _id: id });
           m.setOptions({ safe: true, overwrite: true });
-          m.update({ all: 'yep', two: 2 }, function (err, num) {
+          m.update({ all: 'yep', two: 2 }, function (err, res) {
             assert.ifError(err);
-            assert.ok(1 === num);
+            assert.equal(res.result.n, 1);
             m.findOne(function (err, doc) {
               assert.ifError(err);
               assert.equal(3, mquery.utils.keys(doc).length);
@@ -2027,9 +2026,9 @@ describe('mquery', function(){
         it('works', function (done) {
           var m = mquery(col).where({ _id: id });
           m.setOptions({ safe: true, overwrite: true });
-          m.update({ }, function (err, num) {
+          m.update({ }, function (err, res) {
             assert.ifError(err);
-            assert.ok(1 === num);
+            assert.equal(res.result.n, 1);
             m.findOne(function (err, doc) {
               assert.ifError(err);
               assert.equal(1, mquery.utils.keys(doc).length);
@@ -2298,10 +2297,10 @@ describe('mquery', function(){
           var m = mquery({ name: name }).collection(col);
           name = '1 arg';
           var n = m.update({ $set: { name: name }});
-          n.findOneAndUpdate(function (err, doc) {
+          n.findOneAndUpdate(function (err, res) {
             assert.ifError(err);
-            assert.ok(doc);
-            assert.equal(name, doc.name);
+            assert.ok(res.value);
+            assert.equal(name, res.value.name);
             done();
           });
         })
@@ -2323,9 +2322,9 @@ describe('mquery', function(){
       })
       it('update + callback', function(done){
         var m = mquery(col).where({ name: name });
-        m.findOneAndUpdate({ $inc: { age: 10 }}, function (err, doc) {
+        m.findOneAndUpdate({}, { $inc: { age: 10 }}, { new: true }, function (err, res) {
           assert.ifError(err);
-          assert.equal(10, doc.age);
+          assert.equal(10, res.value.age);
           done();
         });
       })
@@ -2340,11 +2339,11 @@ describe('mquery', function(){
       })
       it('conditions + update + callback', function(done){
         var m = mquery(col);
-        m.findOneAndUpdate({ name: name }, { works: true }, function (err, doc) {
+        m.findOneAndUpdate({ name: name }, { works: true }, { new: true }, function (err, res) {
           assert.ifError(err);
-          assert.ok(doc);
-          assert.equal(name, doc.name);
-          assert.ok(true === doc.works);
+          assert.ok(res.value);
+          assert.equal(name, res.value.name);
+          assert.ok(true === res.value.works);
           done();
         });
       })
@@ -2352,11 +2351,11 @@ describe('mquery', function(){
     describe('with 4 args', function(){
       it('conditions + update + options + callback', function(done){
         var m = mquery(col);
-        m.findOneAndUpdate({ name: name }, { works: false }, { new: false },  function (err, doc) {
+        m.findOneAndUpdate({ name: name }, { works: false }, { new: false },  function (err, res) {
           assert.ifError(err);
-          assert.ok(doc);
-          assert.equal(name, doc.name);
-          assert.ok(true === doc.works);
+          assert.ok(res.value);
+          assert.equal(name, res.value.name);
+          assert.ok(true === res.value.works);
           done();
         });
       })
@@ -2394,10 +2393,10 @@ describe('mquery', function(){
         col.insert({ name: name }, { safe: true }, function (err) {
           assert.ifError(err);
           var m = mquery({ name: name }).collection(col);
-          m.findOneAndRemove(function (err, doc) {
+          m.findOneAndRemove(function (err, res) {
             assert.ifError(err);
-            assert.ok(doc);
-            assert.equal(name, doc.name);
+            assert.ok(res.value);
+            assert.equal(name, res.value.name);
             done();
           });
         })
@@ -2421,9 +2420,9 @@ describe('mquery', function(){
         col.insert({ name: name }, { safe: true }, function (err) {
           assert.ifError(err);
           var m = mquery(col);
-          m.findOneAndRemove({ name: name }, function (err, doc) {
+          m.findOneAndRemove({ name: name }, function (err, res) {
             assert.ifError(err);
-            assert.equal(name, doc.name);
+            assert.equal(name, res.value.name);
             done();
           });
         });
@@ -2433,9 +2432,9 @@ describe('mquery', function(){
           assert.ifError(err);
           var n = mquery({ name: name })
           var m = mquery(col);
-          m.findOneAndRemove(n, function (err, doc) {
+          m.findOneAndRemove(n, function (err, res) {
             assert.ifError(err);
-            assert.equal(name, doc.name);
+            assert.equal(name, res.value.name);
             done();
           });
         });
@@ -2447,10 +2446,10 @@ describe('mquery', function(){
         col.insert([{ name: name }, { name: 'a' }], { safe: true }, function (err) {
           assert.ifError(err);
           var m = mquery(col);
-          m.findOneAndRemove({ name: name }, { sort: { name: 1 }}, function (err, doc) {
+          m.findOneAndRemove({ name: name }, { sort: { name: 1 }}, function (err, res) {
             assert.ifError(err);
-            assert.ok(doc);
-            assert.equal(name, doc.name);
+            assert.ok(res.value);
+            assert.equal(name, res.value.name);
             done();
           });
         })
@@ -2548,7 +2547,7 @@ describe('mquery', function(){
           m.update({ name: 'exec + update' });
           m.exec(function (err, res) {
             assert.ifError(err);
-            assert.equal(num, res);
+            assert.equal(num, res.result.n);
             mquery(col).find({ name: 'exec + update' }, function (err, docs) {
               assert.ifError(err);
               assert.equal(num, docs.length);
@@ -2597,9 +2596,9 @@ describe('mquery', function(){
     describe('remove', function(){
       it('with a callback', function(done){
         var m = mquery(col).where({ age: 2 }).remove();
-        m.exec(function (err, num) {
+        m.exec(function (err, res) {
           assert.ifError(err);
-          assert.equal(1, num);
+          assert.equal(1, res.result.n);
           done();
         })
       })
@@ -2621,9 +2620,9 @@ describe('mquery', function(){
       it('with a callback', function(done){
         var m = mquery(col);
         m.findOneAndUpdate({ name: 'exec', age: 1 }, { $set: { name: 'findOneAndUpdate' }});
-        m.exec(function (err, doc) {
+        m.exec(function (err, res) {
           assert.ifError(err);
-          assert.equal('findOneAndUpdate', doc.name);
+          assert.equal('findOneAndUpdate', res.value.name);
           done();
         });
       })
@@ -2633,10 +2632,10 @@ describe('mquery', function(){
       it('with a callback', function(done){
         var m = mquery(col);
         m.findOneAndRemove({ name: 'exec', age: 2 });
-        m.exec(function (err, doc) {
+        m.exec(function (err, res) {
           assert.ifError(err);
-          assert.equal('exec', doc.name);
-          assert.equal(2, doc.age);
+          assert.equal('exec', res.value.name);
+          assert.equal(2, res.value.age);
           mquery(col).count({ name: 'exec' }, function (err, num) {
             assert.ifError(err);
             assert.equal(1, num);
@@ -2803,45 +2802,12 @@ describe('mquery', function(){
         err = er;
       });
 
-      stream.on('close', function(){
+      stream.on('end', function(){
         if (err) return done(err);
         assert.equal(2, count);
         done();
       });
     });
-
-    it('supports find options', function(done) {
-      var stream = mquery(col)
-                  .find({ name: 'stream' })
-                  .limit(1)
-                  .select('-_id')
-                  .stream({ transform: xform });
-
-      function xform(doc) {
-        doc.name = doc.name + '-xformed';
-        return doc;
-      }
-
-      var count = 0;
-      var err;
-
-      stream.on('data', function(doc){
-        assert(!doc._id);
-        assert.equal('stream-xformed', doc.name);
-        ++count;
-      });
-
-      stream.on('error', function(er) {
-        err = er;
-      });
-
-      stream.on('close', function(){
-        if (err) return done(err);
-        assert.equal(1, count);
-        done();
-      });
-    });
-
   });
 
   function noDistinct (type) {
