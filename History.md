@@ -1,3 +1,11 @@
+2.0.0 / 2016-09-25
+==================
+ * added; support for mongodb driver 2.0 streams
+
+1.12.0 / 2016-09-25
+===================
+ * added; `retainKeyOrder` option re: Automattic/mongoose#4542
+
 1.11.0 / 2016-06-04
 ===================
  * added; `.minDistance()` helper and minDistance for `.near()` Automattic/mongoose#4179
