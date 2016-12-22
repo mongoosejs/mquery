@@ -1,3 +1,7 @@
+2.1.0 / 2016-12-22
+==================
+ * added; ability to pass an array to select() #81 [dciccale](https://github.com/dciccale)
+
 2.0.0 / 2016-09-25
 ==================
  * added; support for mongodb driver 2.0 streams
