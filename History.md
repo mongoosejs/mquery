@@ -1,3 +1,7 @@
+2.2.0 / 2017-01-08
+==================
+ * added; updateOne and updateMany functions
+
 2.1.0 / 2016-12-22
 ==================
  * added; ability to pass an array to select() #81 [dciccale](https://github.com/dciccale)
