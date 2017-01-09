@@ -2555,6 +2555,34 @@ describe('mquery', function(){
         })
       })
 
+      describe('updateMany', function() {
+        it('works', function(done) {
+          mquery(col).updateMany({ name: 'exec' }, { name: 'test' }).
+            exec(function(error) {
+              assert.ifError(error);
+              mquery(col).count({ name: 'test' }).exec(function(error, res) {
+                assert.ifError(error);
+                assert.equal(res, 2);
+                done();
+              });
+            });
+        });
+      });
+
+      describe('updateOne', function() {
+        it('works', function(done) {
+          mquery(col).updateOne({ name: 'exec' }, { name: 'test' }).
+            exec(function(error) {
+              assert.ifError(error);
+              mquery(col).count({ name: 'test' }).exec(function(error, res) {
+                assert.ifError(error);
+                assert.equal(res, 1);
+                done();
+              });
+            });
+        });
+      });
+
       it('without a callback', function(done){
         var m = mquery(col)
         m.where({ name: 'exec + update' }).setOptions({ multi: true })
