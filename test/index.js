@@ -1220,10 +1220,13 @@ describe('mquery', function(){
       assert.deepEqual(query2.options.hint, {'a': 1, 'b': -1});
     })
 
+    it('accepts a string', function(){
+      var query2 = mquery();
+      query2.hint('a');
+      assert.deepEqual(query2.options.hint, 'a');
+    })
+
     it('rejects everything else', function(){
-      assert.throws(function(){
-        mquery().hint('c');
-      }, /Invalid hint./);
       assert.throws(function(){
         mquery().hint(['c']);
       }, /Invalid hint./);
