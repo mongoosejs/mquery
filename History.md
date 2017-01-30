@@ -1,3 +1,7 @@
+2.2.1 / 2017-01-29
+==================
+ * fixed; allow passing string to hint()
+
 2.2.0 / 2017-01-08
 ==================
  * added; updateOne and updateMany functions
