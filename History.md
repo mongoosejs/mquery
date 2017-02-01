@@ -1,3 +1,11 @@
+2.2.3 / 2017-01-31
+==================
+ * fixed; throw correct error when passing incorrectly formatted array to sort()
+
+2.2.2 / 2017-01-31
+==================
+ * fixed; allow passing maps to sort()
+
 2.2.1 / 2017-01-29
 ==================
  * fixed; allow passing string to hint()

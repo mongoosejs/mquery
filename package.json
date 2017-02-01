@@ -1,6 +1,6 @@
 {
   "name": "mquery",
-  "version": "2.2.2",
+  "version": "2.2.3",
   "description": "Expressive query building for MongoDB",
   "main": "lib/mquery.js",
   "scripts": {
