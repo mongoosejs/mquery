@@ -1164,6 +1164,15 @@ describe('mquery', function(){
         query.sort([['field', 1]]).sort({ test: 1 });
       }, /Can't mix sort syntaxes/);
     });
+
+    it('works with maps', function() {
+      if (typeof Map === 'undefined') {
+        return this.skip();
+      }
+      var query = mquery();
+      query.sort(new Map().set('field', 1).set('test', -1));
+      assert.deepEqual(query.options.sort, new Map().set('field', 1).set('test', -1));
+    });
   })
 
   function simpleOption (type, options) {
