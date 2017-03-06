@@ -2669,6 +2669,40 @@ describe('mquery', function(){
       })
     })
 
+    describe('deleteOne', function(){
+      it('with a callback', function(done){
+        var m = mquery(col).where({ age: { $gte: 0 } }).deleteOne();
+        m.exec(function (err, res) {
+          assert.ifError(err);
+          assert.equal(res.result.n, 1);
+          done();
+        })
+      })
+
+      it('with justOne set', function(done){
+        var m = mquery(col).where({ age: { $gte: 0 } }).
+          // Should ignore `justOne`
+          setOptions({ justOne: false }).
+          deleteOne();
+        m.exec(function (err, res) {
+          assert.ifError(err);
+          assert.equal(res.result.n, 1);
+          done();
+        })
+      })
+    })
+
+    describe('deleteMany', function(){
+      it('with a callback', function(done){
+        var m = mquery(col).where({ age: { $gte: 0 } }).deleteMany();
+        m.exec(function (err, res) {
+          assert.ifError(err);
+          assert.equal(res.result.n, 2);
+          done();
+        })
+      })
+    })
+
     describe('findOneAndUpdate', function(){
       it('with a callback', function(done){
         var m = mquery(col);
