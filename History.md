@@ -1,3 +1,8 @@
+2.3.0 / 2017-03-05
+==================
+ * added; replaceOne function
+ * added; deleteOne and deleteMany functions
+
 2.2.3 / 2017-01-31
 ==================
  * fixed; throw correct error when passing incorrectly formatted array to sort()
