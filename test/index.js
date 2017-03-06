@@ -2595,6 +2595,21 @@ describe('mquery', function(){
         });
       });
 
+      describe('replaceOne', function() {
+        it('works', function(done) {
+          mquery(col).replaceOne({ name: 'exec' }, { name: 'test' }).
+            exec(function(error) {
+              assert.ifError(error);
+              mquery(col).findOne({ name: 'test' }).exec(function(error, res) {
+                assert.ifError(error);
+                assert.equal(res.name, 'test');
+                assert.ok(res.age == null);
+                done();
+              });
+            });
+        });
+      });
+
       it('without a callback', function(done){
         var m = mquery(col)
         m.where({ name: 'exec + update' }).setOptions({ multi: true })
