@@ -152,7 +152,7 @@ describe('mquery', function(){
         var m = mquery({ name: 'first' });
         var n = mquery({ name: 'changed' });
         m.where(n);
-        assert.strictEqual(m._conditions.name, 'changed');
+        assert.strictEqual(m._conditions.$and[1].name, 'changed');
       })
       it('that is a string', function(){
         var m = mquery();
@@ -1405,7 +1405,17 @@ describe('mquery', function(){
       assert.deepEqual(m._conditions, {x:1,y:2});
     })
 
-    it('merges other queries', function(){
+    it('merges conditions\' matching properties with $and',function(){
+      var m = mquery().find({z:1}).find({x:1}).find({y:1}).find({x:2}).find({y:2}).find({x:3});
+      assert.deepEqual(m._conditions,{z:1, $and:[{x:1},{x:2},{y:1},{y:2},{x:3}]});
+    })
+
+    it('merges $and condition',function(){
+      var m = mquery().find({z:1,}).find({$and:[{x:1}]}).find({$and:[{x:2}]});
+      assert.deepEqual(m._conditions,{z:1, $and:[{x:1},{x:2}]});
+    })
+
+	it('merges other queries', function(){
       var m = mquery({ name: 'mquery' });
       m.tailable();
       m.select('_id');
@@ -2396,7 +2406,7 @@ describe('mquery', function(){
         it('updates the doc', function(){
           var m = mquery({ name: name });
           var n = m.findOneAndRemove(m);
-          assert.deepEqual(n._conditions, { name: name });
+          assert.deepEqual(n._conditions, { $and:[{ name: name },{ name: name }]});
         })
       })
       it('that is a function', function(done){
