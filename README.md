@@ -1052,11 +1052,11 @@ thunk(function(err, results) {
 
 ###merge(object)
 
-Merges other mquery or match condition objects into this one. When an muery instance is passed, its match conditions, field selection and options are merged.
+Merges other mquery or match condition objects into this one. When an mquery instance is passed, its match conditions, field selection and options are merged.
 
 ```js
 var drum = mquery({ type: 'drum' }).collection(instruments);
-var redDrum = mqery({ color: 'red' }).merge(drum);
+var redDrum = mquery({ color: 'red' }).merge(drum);
 redDrum.count(function (err, n) {
   console.log('there are %d red drums', n);
 })
