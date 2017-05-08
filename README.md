@@ -280,13 +280,13 @@ query.findOneAndUpdate(match, updateDocument, options, function (err, doc) {
 })
  ```
 
-###findOneAndRemove()
+### findOneAndRemove()
 
 Declares this query a _findAndModify_ with remove query. Optionally pass a match clause, options, or callback. If a callback is passed, the query is executed.
 
 When executed, the first matching document (if found) is modified according to the update document, removed from the collection and passed to the callback.
 
-#####options
+##### options
 
 Options are passed to the `setOptions()` method.
 
