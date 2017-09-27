@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "bluebird": "^3.5.0",
-    "debug": "^2.6.8",
+    "debug": "^2.6.9",
     "regexp-clone": "^0.0.1",
     "sliced": "0.0.5"
   },
