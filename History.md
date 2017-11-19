@@ -1,3 +1,7 @@
+2.3.3 / 2017-11-19
+==================
+ * fixed; catch sync errors in cursor.toArray() re: Automattic/mongoose#5812
+
 2.3.2 / 2017-09-27
 ==================
  * fixed; bumped debug -> 2.6.9 re: #89
