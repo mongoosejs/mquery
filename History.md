@@ -1,3 +1,8 @@
+3.0.0-rc0 / 2017-12-06
+======================
+ * BREAKING CHANGE: remove support for node < 4
+ * BREAKING CHANGE: remove support for retainKeyOrder, will always be true by default re: Automattic/mongoose#2749
+
 2.3.3 / 2017-11-19
 ==================
  * fixed; catch sync errors in cursor.toArray() re: Automattic/mongoose#5812
