@@ -1,3 +1,7 @@
+3.0.0 / 2017-01-20
+==================
+ * chore: upgrade deps and add nsp
+
 3.0.0-rc0 / 2017-12-06
 ======================
  * BREAKING CHANGE: remove support for node < 4
