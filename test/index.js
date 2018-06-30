@@ -1131,13 +1131,26 @@ describe('mquery', function(){
       assert.deepEqual(query.options.sort, {'a': 1, 'c': -1, 'b': 1, 'e': -1, 'f': 1});
 
       query = mquery();
-      var e= undefined;
+      query.sort([['a', -1], ['c', 1], ['b', 'desc'], ['e', 'ascending'], ['f', 'descending']]);
+      assert.deepEqual(query.options.sort, [['a', -1], ['c', 1], ['b', -1], ['e', 1], ['f', -1]]);
 
-      e= undefined;
+      query = mquery();
+      var e = undefined;
+      try {
+        query.sort([['a', 1], { 'b': 5 }]);
+      } catch (err) {
+        e = err;
+      }
+      assert.ok(e, 'uh oh. no error was thrown');
+      assert.equal(e.message, "Invalid sort() argument, must be array of arrays")
+
+      query = mquery();
+      e = undefined;
+
       try {
         query.sort('a', 1, 'c', -1, 'b', 1);
       } catch (err) {
-        e= err;
+        e = err;
       }
       assert.ok(e, 'uh oh. no error was thrown');
       assert.equal(e.message, 'Invalid sort() argument. Must be a string, object, or array.');
