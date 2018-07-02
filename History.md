@@ -1,4 +1,8 @@
-3.0.0 / 2017-01-20
+3.0.1 / 2018-07-02
+==================
+ * fix: parse sort array options correctly #103 #102 [Fonger](https://github.com/Fonger)
+
+3.0.0 / 2018-01-20
 ==================
  * chore: upgrade deps and add nsp
 
