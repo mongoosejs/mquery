@@ -2551,6 +2551,23 @@ describe('mquery', function(){
           done();
         })
       })
+
+      it('works with collation', function (done) {
+        var m = mquery(col).find({ name: 'EXEC' });
+        try {
+          m.collation({ locale: "en_US", strength: 1 })
+        } catch (e) {
+          if (e.code === 'MODULE_NOT_FOUND')
+            e = null;
+          done(e);
+          return;
+        }
+        m.exec(function (err, docs) {
+          assert.ifError(err);
+          assert.equal(2, docs.length);
+          done();
+        })
+      })
     });
 
     it('findOne', function(done){
