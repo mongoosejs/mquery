@@ -103,7 +103,7 @@ describe('lib/utils', function() {
     it('clones mongodb.Binary', function(done){
       if (!mongo) return done();
 
-      var buf = new Buffer('hi');
+      var buf = Buffer.from('hi');
       var binary= new mongo.Binary(buf, 2);
       var clone = utils.clone(binary);
       assert.equal(binary.sub_type, clone.sub_type);
@@ -129,7 +129,7 @@ describe('lib/utils', function() {
     });
 
     it('handles buffers', function(done){
-      var buff = new Buffer(10);
+      var buff = Buffer.alloc(10);
       buff.fill(1);
       var clone = utils.clone(buff);
 
