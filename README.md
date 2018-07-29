@@ -89,9 +89,11 @@ require('mongodb').connect(uri, function (err, db) {
 - [limit](#limit)
 - [maxScan](#maxscan)
 - [maxTime](#maxtime)
+- [maxTimeMS](#maxtime)
 - [skip](#skip)
 - [sort](#sort)
 - [read](#read)
+- [readConcern](#readconcern)
 - [slaveOk](#slaveok)
 - [snapshot](#snapshot)
 - [tailable](#tailable)
@@ -875,6 +877,7 @@ Specifies the maxTimeMS option.
 
 ```js
 query.maxTime(100)
+query.maxTimeMS(100)
 ```
 
 [MongoDB documentation](http://docs.mongodb.org/manual/reference/method/cursor.maxTimeMS/)
@@ -963,6 +966,46 @@ mquery(..).read(preference).exec();
 ```
 
 Read more about how to use read preferences [here](http://docs.mongodb.org/manual/applications/replication/#read-preference) and [here](http://mongodb.github.com/node-mongodb-native/driver-articles/anintroductionto1_1and2_2.html#read-preferences).
+
+
+### readConcern()
+
+Sets the readConcern option for the query.
+
+```js
+mquery().readConcern('local')
+mquery().readConcern('l')  // same as local
+
+mquery().readConcern('available')
+mquery().readConcern('a')  // same as available
+
+mquery().readConcern('majority')
+mquery().readConcern('m')  // same as majority
+
+mquery().readConcern('linearizable')
+mquery().readConcern('lz') // same as linearizable
+
+mquery().readConcern('snapshot')
+mquery().readConcern('s')  // same as snapshot
+```
+
+##### Read Concern Level:
+
+- `local` - The query returns from the instance with no guarantee guarantee that the data has been written to a majority of the replica set members (i.e. may be rolled back). (MongoDB 3.2+)
+- `available` - The query returns from the instance with no guarantee guarantee that the data has been written to a majority of the replica set members (i.e. may be rolled back). (MongoDB 3.6+)
+- `majority` - The query returns the data that has been acknowledged by a majority of the replica set members. The documents returned by the read operation are durable, even in the event of failure. (MongoDB 3.2+)
+- `linearizable` - Read from a secondary if available, otherwise read from the primary. (MongoDB 3.4+)
+- `snapshot` - The query returns data that reflects all successful majority-acknowledged writes that completed prior to the start of the read operation. The query may wait for concurrently executing writes to propagate to a majority of replica set members before returning results. (MongoDB 4.0+)
+
+Aliases
+
+- `l`   local
+- `a`   available
+- `m`   majority
+- `lz`  linearizable
+- `s`   snapshot
+
+Read more about how to use read concern [here](https://docs.mongodb.com/manual/reference/read-concern/).
 
 ### slaveOk()
 
