@@ -1,3 +1,9 @@
+3.1.0 / 2018-07-29
+==================
+ * feat: add `readConcern()` helper #105 [Fonger](https://github.com/Fonger)
+ * feat: add `maxTimeMS()` as alias of `maxTime()` #105 [Fonger](https://github.com/Fonger)
+ * feat: add `collation()` helper #105 [Fonger](https://github.com/Fonger)
+
 3.0.1 / 2018-07-02
 ==================
  * fix: parse sort array options correctly #103 #102 [Fonger](https://github.com/Fonger)
