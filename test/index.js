@@ -1304,6 +1304,18 @@ describe('mquery', function(){
     })
   })
 
+  describe('readConcern', function(){
+    it('sets associated readConcern option', function(){
+      var m = mquery();
+      m.readConcern('s');
+      assert.deepEqual({ level: 'snapshot' }, m.options.readConcern);
+    })
+    it('is chainable', function(){
+      var m = mquery();
+      assert.equal(m, m.readConcern('lz'));
+    })
+  })
+
   describe('tailable', function(){
     it('works', function(){
       var query = mquery();
@@ -2510,6 +2522,40 @@ describe('mquery', function(){
         try {
           var rp = new require('mongodb').ReadPreference('primary');
           m.read(rp);
+        } catch (e) {
+          if (e.code === 'MODULE_NOT_FOUND')
+            e = null;
+          done(e);
+          return;
+        }
+        m.exec(function (err, docs) {
+          assert.ifError(err);
+          assert.equal(2, docs.length);
+          done();
+        })
+      })
+
+      it('works with readConcern', function (done) {
+        var m = mquery(col).find({ name: 'exec' });
+        try {
+          m.readConcern('l');
+        } catch (e) {
+          if (e.code === 'MODULE_NOT_FOUND')
+            e = null;
+          done(e);
+          return;
+        }
+        m.exec(function (err, docs) {
+          assert.ifError(err);
+          assert.equal(2, docs.length);
+          done();
+        })
+      })
+
+      it('works with collation', function (done) {
+        var m = mquery(col).find({ name: 'EXEC' });
+        try {
+          m.collation({ locale: "en_US", strength: 1 })
         } catch (e) {
           if (e.code === 'MODULE_NOT_FOUND')
             e = null;
