@@ -84,6 +84,7 @@ require('mongodb').connect(uri, function (err, db) {
 - [where](#where)
 - [$where](#where-1)
 - [batchSize](#batchsize)
+- [collation](#collation)
 - [comment](#comment)
 - [hint](#hint)
 - [limit](#limit)
@@ -822,6 +823,16 @@ query.batchSize(100)
 _Cannot be used with `distinct()`._
 
 [MongoDB documentation](http://docs.mongodb.org/manual/reference/method/cursor.batchSize/)
+
+### collation()
+
+Specifies the collation option.
+
+```js
+query.collation({ locale: "en_US", strength: 1 })
+```
+
+[MongoDB documentation](https://docs.mongodb.com/manual/reference/method/cursor.collation/#cursor.collation)
 
 ### comment()
 
