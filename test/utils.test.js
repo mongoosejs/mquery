@@ -1,16 +1,19 @@
 
 var utils = require('../lib/utils');
 var assert = require('assert');
+var debug = require('debug');
 
 var mongo;
 try {
   mongo = new require('mongodb');
-} catch (e) {}
+} catch (e) {
+  debug('mongo', 'cannot construct mongodb instance');
+}
 
 describe('lib/utils', function() {
   describe('clone', function() {
     it('clones constructors named ObjectId', function(done) {
-      function ObjectId (id) {
+      function ObjectId(id) {
         this.id = id;
       }
 
@@ -22,7 +25,7 @@ describe('lib/utils', function() {
     });
 
     it('clones constructors named ObjectID', function(done) {
-      function ObjectID (id) {
+      function ObjectID(id) {
         this.id = id;
       }
 
@@ -34,7 +37,7 @@ describe('lib/utils', function() {
     });
 
     it('does not clone constructors named ObjectIdd', function(done) {
-      function ObjectIdd (id) {
+      function ObjectIdd(id) {
         this.id = id;
       }
 
@@ -46,16 +49,16 @@ describe('lib/utils', function() {
     });
 
     it('optionally clones ObjectId constructors using its clone method', function(done) {
-      function ObjectID (id) {
+      function ObjectID(id) {
         this.id = id;
         this.cloned = false;
       }
 
-      ObjectID.prototype.clone = function () {
+      ObjectID.prototype.clone = function() {
         var ret = new ObjectID(this.id);
         ret.cloned = true;
         return ret;
-      }
+      };
 
       var id = 1234;
       var o1 = new ObjectID(id);
@@ -69,17 +72,17 @@ describe('lib/utils', function() {
       done();
     });
 
-    it('clones mongodb.ReadPreferences', function (done) {
+    it('clones mongodb.ReadPreferences', function(done) {
       if (!mongo) return done();
 
       var tags = [
         {dc: 'tag1'}
       ];
       var prefs = [
-        new mongo.ReadPreference("primary"),
+        new mongo.ReadPreference('primary'),
         new mongo.ReadPreference(mongo.ReadPreference.PRIMARY_PREFERRED),
-        new mongo.ReadPreference("primary", tags),
-        mongo.ReadPreference("primary", tags)
+        new mongo.ReadPreference('primary', tags),
+        mongo.ReadPreference('primary', tags)
       ];
 
       var prefsCloned = utils.clone(prefs);
@@ -100,20 +103,20 @@ describe('lib/utils', function() {
       done();
     });
 
-    it('clones mongodb.Binary', function(done){
+    it('clones mongodb.Binary', function(done) {
       if (!mongo) return done();
 
       var buf = Buffer.from('hi');
-      var binary= new mongo.Binary(buf, 2);
+      var binary = new mongo.Binary(buf, 2);
       var clone = utils.clone(binary);
       assert.equal(binary.sub_type, clone.sub_type);
       assert.equal(String(binary.buffer), String(buf));
       assert.ok(binary !== clone);
       done();
-    })
+    });
 
     it('handles objects with no constructor', function(done) {
-      var name ='335';
+      var name = '335';
 
       var o = Object.create(null);
       o.name = name;
@@ -128,7 +131,7 @@ describe('lib/utils', function() {
       done();
     });
 
-    it('handles buffers', function(done){
+    it('handles buffers', function(done) {
       var buff = Buffer.alloc(10);
       buff.fill(1);
       var clone = utils.clone(buff);

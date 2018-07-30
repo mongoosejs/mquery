@@ -2,6 +2,11 @@
 
 `mquery` is a fluent mongodb query builder designed to run in multiple environments.
 
+[![Build Status](https://travis-ci.org/aheckmann/mquery.svg?branch=master)](https://travis-ci.org/aheckmann/mquery)
+[![NPM version](https://badge.fury.io/js/mquery.svg)](http://badge.fury.io/js/mquery)
+
+[![npm](https://nodei.co/npm/mquery.png)](https://www.npmjs.com/package/mquery)
+
 ## Features
 
   - fluent query builder api
@@ -12,8 +17,6 @@
   - environment detection
   - [debug](https://github.com/visionmedia/debug) support
   - separated collection implementations for maximum flexibility
-
-[![Build Status](https://travis-ci.org/aheckmann/mquery.png)](https://travis-ci.org/aheckmann/mquery)
 
 ## Use
 
@@ -89,8 +92,7 @@ require('mongodb').connect(uri, function (err, db) {
 - [hint](#hint)
 - [limit](#limit)
 - [maxScan](#maxscan)
-- [maxTime](#maxtime)
-- [maxTimeMS](#maxtime)
+- [maxTime, maxTimeMS](#maxtime)
 - [skip](#skip)
 - [sort](#sort)
 - [read](#read)
