@@ -1,3 +1,8 @@
+3.1.1 / 2018-07-30
+==================
+ * chore: add eslint #107 [Fonger](https://github.com/Fonger)
+ * docs: clean up readConcern docs #106 [Fonger](https://github.com/Fonger)
+
 3.1.0 / 2018-07-29
 ==================
  * feat: add `readConcern()` helper #105 [Fonger](https://github.com/Fonger)
