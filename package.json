@@ -4,7 +4,7 @@
   "description": "Expressive query building for MongoDB",
   "main": "lib/mquery.js",
   "scripts": {
-    "test": "nsp check && mocha test/index.js test/*.test.js",
+    "test": "mocha test/index.js test/*.test.js",
     "fix-lint": "eslint . --fix",
     "lint": "eslint ."
   },
@@ -16,17 +16,16 @@
     "node": ">=4.0.0"
   },
   "dependencies": {
-    "bluebird": "3.5.0",
-    "debug": "2.6.9",
+    "bluebird": "3.5.1",
+    "debug": "3.1.0",
     "eslint": "4.14.0",
     "regexp-clone": "0.0.1",
-    "sliced": "0.0.5"
+    "sliced": "1.0.1"
   },
   "devDependencies": {
     "istanbul": "^0.4.5",
-    "mocha": "3.2.0",
-    "mongodb": "~2.2",
-    "nsp": "^2.8.1"
+    "mocha": "4.1.0",
+    "mongodb": "~2.2"
   },
   "bugs": {
     "url": "https://github.com/aheckmann/mquery/issues/new"
