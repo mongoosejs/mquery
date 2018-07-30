@@ -1005,8 +1005,8 @@ mquery().readConcern('s')  // same as snapshot
 - `local` - The query returns from the instance with no guarantee guarantee that the data has been written to a majority of the replica set members (i.e. may be rolled back). (MongoDB 3.2+)
 - `available` - The query returns from the instance with no guarantee guarantee that the data has been written to a majority of the replica set members (i.e. may be rolled back). (MongoDB 3.6+)
 - `majority` - The query returns the data that has been acknowledged by a majority of the replica set members. The documents returned by the read operation are durable, even in the event of failure. (MongoDB 3.2+)
-- `linearizable` - Read from a secondary if available, otherwise read from the primary. (MongoDB 3.4+)
-- `snapshot` - The query returns data that reflects all successful majority-acknowledged writes that completed prior to the start of the read operation. The query may wait for concurrently executing writes to propagate to a majority of replica set members before returning results. (MongoDB 4.0+)
+- `linearizable` - The query returns data that reflects all successful majority-acknowledged writes that completed prior to the start of the read operation. The query may wait for concurrently executing writes to propagate to a majority of replica set members before returning results. (MongoDB 3.4+)
+- `snapshot` - Only available for operations within multi-document transactions. Upon transaction commit with write concern "majority", the transaction operations are guaranteed to have read from a snapshot of majority-committed data. (MongoDB 4.0+)
 
 Aliases
 
