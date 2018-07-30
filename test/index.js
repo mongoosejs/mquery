@@ -1287,6 +1287,13 @@ describe('mquery', function() {
     noDistinct('hint');
   });
 
+  describe('j', function() {
+    it('works', function() {
+      var m = mquery().j(true);
+      assert.equal(true, m.options.j);
+    });
+  });
+
   describe('slaveOk', function() {
     it('works', function() {
       var query;
@@ -1319,9 +1326,15 @@ describe('mquery', function() {
 
   describe('readConcern', function() {
     it('sets associated readConcern option', function() {
-      var m = mquery();
+      var m;
+
+      m = mquery();
       m.readConcern('s');
       assert.deepEqual({ level: 'snapshot' }, m.options.readConcern);
+
+      m = mquery();
+      m.r('local');
+      assert.deepEqual({ level: 'local' }, m.options.readConcern);
     });
     it('is chainable', function() {
       var m = mquery();
@@ -1351,6 +1364,40 @@ describe('mquery', function() {
     });
     noDistinct('tailable');
     no('count', 'tailable');
+  });
+
+  describe('writeConcern', function() {
+    it('sets associated writeConcern option', function() {
+      var m;
+      m = mquery();
+      m.writeConcern('majority');
+      assert.equal('majority', m.options.w);
+
+      m = mquery();
+      m.writeConcern('m'); // m is alias of majority
+      assert.equal('majority', m.options.w);
+
+      m = mquery();
+      m.writeConcern(1);
+      assert.equal(1, m.options.w);
+    });
+    it('accepts object', function() {
+      var m;
+
+      m = mquery().writeConcern({ w: 'm', j: true, wtimeout: 1000 });
+      assert.equal('m', m.options.w); // check it does not convert m to majority
+      assert.equal(true, m.options.j);
+      assert.equal(1000, m.options.wtimeout);
+
+      m = mquery().w('m').w({j: false, wtimeout: 0 });
+      assert.equal('majority', m.options.w);
+      assert.strictEqual(false, m.options.j);
+      assert.strictEqual(0, m.options.wtimeout);
+    });
+    it('is chainable', function() {
+      var m = mquery();
+      assert.equal(m, m.writeConcern('majority'));
+    });
   });
 
   // query utilities
@@ -2639,6 +2686,18 @@ describe('mquery', function() {
         it('works', function(done) {
           mquery(col).updateMany({ name: 'exec' }, { name: 'test' }).
             exec(function(error) {
+              assert.ifError(error);
+              mquery(col).count({ name: 'test' }).exec(function(error, res) {
+                assert.ifError(error);
+                assert.equal(res, 2);
+                done();
+              });
+            });
+        });
+        it('works with write concern', function(done) {
+          mquery(col).updateMany({ name: 'exec' }, { name: 'test' })
+            .w(1).j(true).wtimeout(1000)
+            .exec(function(error) {
               assert.ifError(error);
               mquery(col).count({ name: 'test' }).exec(function(error, res) {
                 assert.ifError(error);
