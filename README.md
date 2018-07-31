@@ -50,7 +50,7 @@ require('mongodb').connect(uri, function (err, db) {
 - [remove](#remove)
 - [update](#update)
 - [findOneAndUpdate](#findoneandupdate)
-- [findOneAndRemove](#findoneandremove)
+- [findOneAndDelete, findOneAndRemove](#findoneandremove)
 - [distinct](#distinct)
 - [exec](#exec)
 - [stream](#stream)
@@ -290,7 +290,8 @@ query.findOneAndUpdate(match, updateDocument, options, function (err, doc) {
 
 ### findOneAndRemove()
 
-Declares this query a _findAndModify_ with remove query. Optionally pass a match clause, options, or callback. If a callback is passed, the query is executed.
+Declares this query a _findAndModify_ with remove query. Alias of findOneAndDelete.
+Optionally pass a match clause, options, or callback. If a callback is passed, the query is executed.
 
 When executed, the first matching document (if found) is modified according to the update document, removed from the collection and passed to the callback.
 
@@ -301,6 +302,7 @@ Options are passed to the `setOptions()` method.
 - `sort`: if multiple docs are found by the condition, sets the sort order to choose which doc to modify and remove
 
 ```js
+A.where().findOneAndDelete()
 A.where().findOneAndRemove()
 A.where().findOneAndRemove(match)
 A.where().findOneAndRemove(match, options)
