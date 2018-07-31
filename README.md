@@ -50,7 +50,7 @@ require('mongodb').connect(uri, function (err, db) {
 - [remove](#remove)
 - [update](#update)
 - [findOneAndUpdate](#findoneandupdate)
-- [findOneAndRemove](#findoneandremove)
+- [findOneAndDelete, findOneAndRemove](#findoneandremove)
 - [distinct](#distinct)
 - [exec](#exec)
 - [stream](#stream)
@@ -90,16 +90,19 @@ require('mongodb').connect(uri, function (err, db) {
 - [collation](#collation)
 - [comment](#comment)
 - [hint](#hint)
+- [j](#j)
 - [limit](#limit)
 - [maxScan](#maxscan)
 - [maxTime, maxTimeMS](#maxtime)
 - [skip](#skip)
 - [sort](#sort)
-- [read](#read)
-- [readConcern](#readconcern)
+- [read, setReadPreference](#read)
+- [readConcern, r](#readconcern)
 - [slaveOk](#slaveok)
 - [snapshot](#snapshot)
 - [tailable](#tailable)
+- [writeConcern, w](#writeconcern)
+- [wtimeout, wTimeout](#wtimeout)
 
 ## Helpers
 
@@ -287,7 +290,8 @@ query.findOneAndUpdate(match, updateDocument, options, function (err, doc) {
 
 ### findOneAndRemove()
 
-Declares this query a _findAndModify_ with remove query. Optionally pass a match clause, options, or callback. If a callback is passed, the query is executed.
+Declares this query a _findAndModify_ with remove query. Alias of findOneAndDelete.
+Optionally pass a match clause, options, or callback. If a callback is passed, the query is executed.
 
 When executed, the first matching document (if found) is modified according to the update document, removed from the collection and passed to the callback.
 
@@ -298,6 +302,7 @@ Options are passed to the `setOptions()` method.
 - `sort`: if multiple docs are found by the condition, sets the sort order to choose which doc to modify and remove
 
 ```js
+A.where().findOneAndDelete()
 A.where().findOneAndRemove()
 A.where().findOneAndRemove(match)
 A.where().findOneAndRemove(match, options)
@@ -860,6 +865,27 @@ _Cannot be used with `distinct()`._
 
 [MongoDB documentation](http://docs.mongodb.org/manual/reference/operator/hint/)
 
+### j()
+
+Requests acknowledgement that this operation has been persisted to MongoDB's on-disk journal.
+
+This option is only valid for operations that write to the database:
+
+- `deleteOne()`
+- `deleteMany()`
+- `findOneAndDelete()`
+- `findOneAndUpdate()`
+- `remove()`
+- `update()`
+- `updateOne()`
+- `updateMany()`
+
+Defaults to the `j` value if it is specified in [writeConcern](#writeconcern)
+
+```js
+mquery().j(true);
+```
+
 ### limit()
 
 Specifies the limit option.
@@ -945,6 +971,8 @@ mquery().read('sp') // same as secondaryPreferred
 
 mquery().read('nearest')
 mquery().read('n')  // same as nearest
+
+mquery().setReadPreference('primary') // alias of .read()
 ```
 
 ##### Preferences:
@@ -986,20 +1014,30 @@ Read more about how to use read preferences [here](http://docs.mongodb.org/manua
 Sets the readConcern option for the query.
 
 ```js
+// local
 mquery().readConcern('local')
-mquery().readConcern('l')  // same as local
+mquery().readConcern('l')
+mquery().r('l')
 
+// available
 mquery().readConcern('available')
-mquery().readConcern('a')  // same as available
+mquery().readConcern('a')
+mquery().r('a')
 
+// majority
 mquery().readConcern('majority')
-mquery().readConcern('m')  // same as majority
+mquery().readConcern('m')
+mquery().r('m')
 
+// linearizable
 mquery().readConcern('linearizable')
-mquery().readConcern('lz') // same as linearizable
+mquery().readConcern('lz')
+mquery().r('lz')
 
+// snapshot
 mquery().readConcern('snapshot')
-mquery().readConcern('s')  // same as snapshot
+mquery().readConcern('s')
+mquery().r('s')
 ```
 
 ##### Read Concern Level:
@@ -1019,6 +1057,45 @@ Aliases
 - `s`   snapshot
 
 Read more about how to use read concern [here](https://docs.mongodb.com/manual/reference/read-concern/).
+
+### writeConcern()
+
+Sets the writeConcern option for the query.
+
+This option is only valid for operations that write to the database:
+
+- `deleteOne()`
+- `deleteMany()`
+- `findOneAndDelete()`
+- `findOneAndUpdate()`
+- `remove()`
+- `update()`
+- `updateOne()`
+- `updateMany()`
+
+```js
+mquery().writeConcern(0)
+mquery().writeConcern(1)
+mquery().writeConcern({ w: 1, j: true, wtimeout: 2000 })
+mquery().writeConcern('majority')
+mquery().writeConcern('m') // same as majority
+mquery().writeConcern('tagSetName') // if the tag set is 'm', use .writeConcern({ w: 'm' }) instead
+mquery().w(1) // w is alias of writeConcern
+```
+
+##### Write Concern:
+
+writeConcern({ w: `<value>`, j: `<boolean>`, wtimeout: `<number>` }`)
+
+- the w option to request acknowledgement that the write operation has propagated to a specified number of mongod instances or to mongod instances with specified tags
+- the j option to request acknowledgement that the write operation has been written to the journal
+- the wtimeout option to specify a time limit to prevent write operations from blocking indefinitely
+
+Can be break down to use the following syntax:
+
+mquery().w(`<value>`).j(`<boolean>`).wtimeout(`<number>`)
+
+Read more about how to use write concern [here](https://docs.mongodb.com/manual/reference/write-concern/)
 
 ### slaveOk()
 
@@ -1061,6 +1138,29 @@ mquery().tailable(false)
 _Cannot be used with `distinct()`._
 
 [MongoDB Documentation](http://docs.mongodb.org/manual/tutorial/create-tailable-cursor/)
+
+### wtimeout()
+
+Specifies a time limit, in milliseconds, for the write concern. If `w > 1`, it is maximum amount of time to
+wait for this write to propagate through the replica set before this operation fails. The default is `0`, which means no timeout.
+
+This option is only valid for operations that write to the database:
+
+- `deleteOne()`
+- `deleteMany()`
+- `findOneAndDelete()`
+- `findOneAndUpdate()`
+- `remove()`
+- `update()`
+- `updateOne()`
+- `updateMany()`
+
+Defaults to `wtimeout` value if it is specified in [writeConcern](#writeconcern)
+
+```js
+mquery().wtimeout(2000)
+mquery().wTimeout(2000)
+```
 
 ## Helpers
 
