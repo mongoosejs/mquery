@@ -2595,14 +2595,22 @@ describe('mquery', function() {
         });
       });
 
+      it('works with hint', function(done) {
+        mquery(col).hint({ _id: 1 }).find({ name: 'exec' }).exec(function(err, docs) {
+          assert.ifError(err);
+          assert.equal(2, docs.length);
+
+          mquery(col).hint('_id_').find({ age: 1 }).exec(function(err, docs) {
+            assert.ifError(err);
+            assert.equal(1, docs.length);
+            done();
+          });
+        });
+      });
+
       it('works with readConcern', function(done) {
         var m = mquery(col).find({ name: 'exec' });
-        try {
-          m.readConcern('l');
-        } catch (e) {
-          done(e.code === 'MODULE_NOT_FOUND' ? null : e);
-          return;
-        }
+        m.readConcern('l');
         m.exec(function(err, docs) {
           assert.ifError(err);
           assert.equal(2, docs.length);
@@ -2612,12 +2620,7 @@ describe('mquery', function() {
 
       it('works with collation', function(done) {
         var m = mquery(col).find({ name: 'EXEC' });
-        try {
-          m.collation({ locale: 'en_US', strength: 1 });
-        } catch (e) {
-          done(e.code === 'MODULE_NOT_FOUND' ? null : e);
-          return;
-        }
+        m.collation({ locale: 'en_US', strength: 1 });
         m.exec(function(err, docs) {
           assert.ifError(err);
           assert.equal(2, docs.length);
