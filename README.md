@@ -96,7 +96,7 @@ require('mongodb').connect(uri, function (err, db) {
 - [maxTime, maxTimeMS](#maxtime)
 - [skip](#skip)
 - [sort](#sort)
-- [read](#read)
+- [read, setReadPreference](#read)
 - [readConcern, r](#readconcern)
 - [slaveOk](#slaveok)
 - [snapshot](#snapshot)
@@ -969,6 +969,8 @@ mquery().read('sp') // same as secondaryPreferred
 
 mquery().read('nearest')
 mquery().read('n')  // same as nearest
+
+mquery().setReadPreference('primary') // alias of .read()
 ```
 
 ##### Preferences:
