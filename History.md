@@ -1,3 +1,7 @@
+3.1.2 / 2018-08-01
+==================
+ * chore: move eslint to devDependencies #110 [jakesjews](https://github.com/jakesjews)
+
 3.1.1 / 2018-07-30
 ==================
  * chore: add eslint #107 [Fonger](https://github.com/Fonger)
