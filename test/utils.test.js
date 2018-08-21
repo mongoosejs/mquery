@@ -81,8 +81,7 @@ describe('lib/utils', function() {
       var prefs = [
         new mongo.ReadPreference('primary'),
         new mongo.ReadPreference(mongo.ReadPreference.PRIMARY_PREFERRED),
-        new mongo.ReadPreference('primary', tags),
-        mongo.ReadPreference('primary', tags)
+        new mongo.ReadPreference('secondary', tags)
       ];
 
       var prefsCloned = utils.clone(prefs);

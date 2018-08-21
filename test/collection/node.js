@@ -3,12 +3,14 @@ var assert = require('assert');
 var mongo = require('mongodb');
 
 var uri = process.env.MQUERY_URI || 'mongodb://localhost/mquery';
+var client;
 var db;
 
 exports.getCollection = function(cb) {
-  mongo.MongoClient.connect(uri, function(err, db_) {
+  mongo.MongoClient.connect(uri, function(err, _client) {
     assert.ifError(err);
-    db = db_;
+    client = _client;
+    db = client.db();
 
     var collection = db.collection('stuff');
 
@@ -21,6 +23,6 @@ exports.getCollection = function(cb) {
 
 exports.dropCollection = function(cb) {
   db.dropDatabase(function() {
-    db.close(cb);
+    client.close(cb);
   });
 };
