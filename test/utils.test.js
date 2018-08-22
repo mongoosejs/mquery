@@ -1,4 +1,6 @@
+'use strict';
 
+var Buffer = require('safe-buffer').Buffer;
 var utils = require('../lib/utils');
 var assert = require('assert');
 var debug = require('debug');
@@ -88,8 +90,6 @@ describe('lib/utils', function() {
 
       for (var i = 0; i < prefsCloned.length; i++) {
         assert.notEqual(prefs[i], prefsCloned[i]);
-        assert.ok(prefsCloned[i] instanceof mongo.ReadPreference);
-        assert.ok(prefsCloned[i].isValid());
         if (prefs[i].tags) {
           assert.ok(prefsCloned[i].tags);
           assert.notEqual(prefs[i].tags, prefsCloned[i].tags);
@@ -104,7 +104,6 @@ describe('lib/utils', function() {
 
     it('clones mongodb.Binary', function(done) {
       if (!mongo) return done();
-
       var buf = Buffer.from('hi');
       var binary = new mongo.Binary(buf, 2);
       var clone = utils.clone(binary);
