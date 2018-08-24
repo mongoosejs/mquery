@@ -1,3 +1,7 @@
+3.2.0 / 2018-08-24
+==================
+ * feat: add $useProjection to opt in to using `projection` instead of `fields` re: MongoDB deprecation warnings Automattic/mongoose#6880
+
 3.1.2 / 2018-08-01
 ==================
  * chore: move eslint to devDependencies #110 [jakesjews](https://github.com/jakesjews)
