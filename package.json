@@ -23,7 +23,7 @@
     "safe-buffer": "5.1.2"
   },
   "devDependencies": {
-    "eslint": "^4.14.0",
+    "eslint": "^5.16.0",
     "istanbul": "^0.4.5",
     "mocha": "4.1.0",
     "mongodb": "3.1.1"
