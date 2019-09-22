@@ -1,3 +1,7 @@
+3.2.2 / 2019-09-22
+==================
+ * fix: dont re-call setOptions() when pulling base class options Automattic/mongoose#8159
+
 3.2.1 / 2018-08-24
 ==================
  * chore: upgrade deps
