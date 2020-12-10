@@ -1,3 +1,7 @@
+3.2.3 / 2020-12-10
+==================
+ * fix(utils): avoid copying special properties like `__proto__` when merging and cloning
+
 3.2.2 / 2019-09-22
 ==================
  * fix: dont re-call setOptions() when pulling base class options Automattic/mongoose#8159
