@@ -140,5 +140,23 @@ describe('lib/utils', function() {
 
       done();
     });
+
+    it('skips __proto__', function() {
+      var payload = JSON.parse('{"__proto__": {"polluted": "vulnerable"}}');
+      var res = utils.clone(payload);
+
+      assert.strictEqual({}.polluted, void 0);
+      assert.strictEqual(res.__proto__, Object.prototype);
+    });
+  });
+
+  describe('merge', function() {
+    it('avoids prototype pollution', function() {
+      var payload = JSON.parse('{"__proto__": {"polluted": "vulnerable"}}');
+      var obj = {};
+      utils.merge(obj, payload);
+
+      assert.strictEqual({}.polluted, void 0);
+    });
   });
 });
