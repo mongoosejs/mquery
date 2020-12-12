@@ -1,6 +1,6 @@
 3.2.3 / 2020-12-10
 ==================
- * fix(utils): avoid copying special properties like `__proto__` when merging and cloning
+ * fix(utils): avoid copying special properties like `__proto__` when merging and cloning. Fix CVE-2020-35149
 
 3.2.2 / 2019-09-22
 ==================
