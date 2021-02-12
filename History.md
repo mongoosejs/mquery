@@ -1,3 +1,7 @@
+3.2.4 / 2021-02-12
+==================
+ * fix(utils): make clone() only copy own properties Automattic/mongoose#9876
+
 3.2.3 / 2020-12-10
 ==================
  * fix(utils): avoid copying special properties like `__proto__` when merging and cloning. Fix CVE-2020-35149
