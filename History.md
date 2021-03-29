@@ -1,3 +1,7 @@
+3.2.5 / 2021-03-29
+==================
+ * fix(utils): make `mergeClone()` skip special properties like `__proto__` #121 [zpbrent](https://github.com/zpbrent)
+
 3.2.4 / 2021-02-12
 ==================
  * fix(utils): make clone() only copy own properties Automattic/mongoose#9876
