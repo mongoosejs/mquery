@@ -66,7 +66,7 @@ describe('mquery', function() {
       var q = mquery().setOptions(opts);
       q.where(match);
       q.select(select);
-      q.update(update);
+      q.updateOne(update);
       q.where(path);
       q.find();
 
@@ -1436,9 +1436,9 @@ describe('mquery', function() {
         });
         it('clones update arguments', function(done) {
           var original = { $set: { iTerm: true }};
-          var m = mquery().update(original);
+          var m = mquery().updateOne(original);
           var n = mquery().merge(m);
-          m.update({ $set: { x: 2 }});
+          m.updateOne({ $set: { x: 2 }});
           assert.notDeepEqual(m._update, n._update);
           done();
         });
@@ -1457,9 +1457,9 @@ describe('mquery', function() {
         });
         it('clones update arguments', function(done) {
           var original = { $set: { iTerm: true }};
-          var m = mquery().update(original);
+          var m = mquery().updateOne(original);
           var n = mquery().merge(original);
-          m.update({ $set: { x: 2 }});
+          m.updateOne({ $set: { x: 2 }});
           assert.notDeepEqual(m._update, n._update);
           done();
         });
@@ -1940,37 +1940,37 @@ describe('mquery', function() {
       it('does not execute', function() {
         var m = mquery();
         assert.doesNotThrow(function() {
-          m.update({ name: 'old' }, { name: 'updated' }, { multi: true });
+          m.updateOne({ name: 'old' }, { name: 'updated' }, { multi: true });
         });
         assert.doesNotThrow(function() {
-          m.update({ name: 'old' }, { name: 'updated' });
+          m.updateOne({ name: 'old' }, { name: 'updated' });
         });
         assert.doesNotThrow(function() {
-          m.update({ name: 'updated' });
+          m.updateOne({ name: 'updated' });
         });
         assert.doesNotThrow(function() {
-          m.update();
+          m.updateOne();
         });
       });
     });
 
     it('is chainable', function() {
-      var m = mquery({x:1}).update({ y: 2 });
+      var m = mquery({x:1}).updateOne({ y: 2 });
       var n = m.where({y:2});
       assert.equal(m, n);
       assert.deepEqual(n._conditions, {x:1, y:2});
       assert.deepEqual({ y: 2 }, n._update);
-      assert.equal('update', n.op);
+      assert.equal('updateOne', n.op);
     });
 
     it('merges update doc arg', function() {
       var a = [1,2];
-      var m = mquery().where({ name: 'mquery' }).update({ x: 'stuff', a: a });
-      m.update({ z: 'stuff' });
+      var m = mquery().where({ name: 'mquery' }).updateOne({ x: 'stuff', a: a });
+      m.updateOne({ z: 'stuff' });
       assert.deepEqual(m._update, { z: 'stuff', x: 'stuff', a: a });
       assert.deepEqual(m._conditions, { name: 'mquery' });
       assert.ok(!m.options.overwrite);
-      m.update({}, { z: 'renamed' }, { overwrite: true });
+      m.updateOne({}, { z: 'renamed' }, { overwrite: true });
       assert.ok(m.options.overwrite === true);
       assert.deepEqual(m._conditions, { name: 'mquery' });
       assert.deepEqual(m._update, { z: 'renamed', x: 'stuff', a: a });
@@ -1978,19 +1978,10 @@ describe('mquery', function() {
       assert.notDeepEqual(m._update, { z: 'renamed', x: 'stuff', a: a });
     });
 
-    it('merges other options', function() {
-      var m = mquery();
-      m.setOptions({ overwrite: true });
-      m.update({ age: 77 }, { name: 'pagemill' }, { multi: true });
-      assert.deepEqual({ age: 77 }, m._conditions);
-      assert.deepEqual({ name: 'pagemill' }, m._update);
-      assert.deepEqual({ overwrite: true, multi: true }, m.options);
-    });
-
     describe('executes', function() {
       var id;
       before(function(done) {
-        col.insert({ name: 'mquery update', age: 1 }, { safe: true }, function(err, res) {
+        col.insert({ name: 'mquery update', age: 1 }, {}, function(err, res) {
           id = res.insertedIds[0];
           done();
         });
@@ -2003,9 +1994,10 @@ describe('mquery', function() {
       describe('when conds + doc + opts + callback passed', function() {
         it('works', function(done) {
           var m = mquery(col).where({ _id: id });
-          m.update({}, { name: 'Sparky' }, { safe: true }, function(err, res) {
+          m.updateOne({}, { name: 'Sparky' }, {}, function(err, res) {
             assert.ifError(err);
-            assert.equal(res.result.n, 1);
+            console.log(res);
+            assert.equal(res.modifiedCount, 1);
             m.findOne(function(err, doc) {
               assert.ifError(err);
               assert.equal(doc.name, 'Sparky');
@@ -2017,7 +2009,7 @@ describe('mquery', function() {
 
       describe('when conds + doc + callback passed', function() {
         it('works', function(done) {
-          var m = mquery(col).update({ _id: id }, { name: 'fairgrounds' }, function(err, num) {
+          var m = mquery(col).updateOne({ _id: id }, { name: 'fairgrounds' }, function(err, num) {
             assert.ifError(err);
             assert.ok(1, num);
             m.findOne(function(err, doc) {
@@ -2031,7 +2023,7 @@ describe('mquery', function() {
 
       describe('when doc + callback passed', function() {
         it('works', function(done) {
-          var m = mquery(col).where({ _id: id }).update({ name: 'changed' }, function(err, num) {
+          var m = mquery(col).where({ _id: id }).updateOne({ name: 'changed' }, function(err, num) {
             assert.ifError(err);
             assert.ok(1, num);
             m.findOne(function(err, doc) {
@@ -2047,10 +2039,10 @@ describe('mquery', function() {
         it('works', function(done) {
           var m = mquery(col).where({ _id: id });
           m.setOptions({ safe: true });
-          m.update({ name: 'Frankenweenie' });
-          m.update(function(err, res) {
+          m.updateOne({ name: 'Frankenweenie' });
+          m.updateOne(function(err, res) {
             assert.ifError(err);
-            assert.equal(res.result.n, 1);
+            assert.equal(res.modifiedCount, 1);
             m.findOne(function(err, doc) {
               assert.ifError(err);
               assert.equal(doc.name, 'Frankenweenie');
@@ -2064,10 +2056,10 @@ describe('mquery', function() {
         it('when forced by exec()', function(done) {
           var m = mquery(col).where({ _id: id });
           m.setOptions({ safe: true, multi: true });
-          m.update({ name: 'forced' });
+          m.updateOne({ name: 'forced' });
 
           var update = m._collection.update;
-          m._collection.update = function(conds, doc, opts) {
+          m._collection.updateOne = function(conds, doc, opts) {
             m._collection.update = update;
 
             assert.ok(opts.safe);
@@ -2084,7 +2076,7 @@ describe('mquery', function() {
         it('works', function(done) {
           var m = mquery(col).where({ _id: id });
           m.setOptions({ safe: true });
-          m.update({ }, function(err, num) {
+          m.updateOne({ }, function(err, num) {
             assert.ifError(err);
             assert.ok(0 === num);
             setTimeout(function() {
@@ -2100,46 +2092,10 @@ describe('mquery', function() {
         });
       });
 
-      describe('when update doc is set with overwrite flag', function() {
-        it('works', function(done) {
-          var m = mquery(col).where({ _id: id });
-          m.setOptions({ safe: true, overwrite: true });
-          m.update({ all: 'yep', two: 2 }, function(err, res) {
-            assert.ifError(err);
-            assert.equal(res.result.n, 1);
-            m.findOne(function(err, doc) {
-              assert.ifError(err);
-              assert.equal(3, mquery.utils.keys(doc).length);
-              assert.equal('yep', doc.all);
-              assert.equal(2, doc.two);
-              assert.equal(id, doc._id.toString());
-              done();
-            });
-          });
-        });
-      });
-
-      describe('when update doc is empty with overwrite flag', function() {
-        it('works', function(done) {
-          var m = mquery(col).where({ _id: id });
-          m.setOptions({ safe: true, overwrite: true });
-          m.update({ }, function(err, res) {
-            assert.ifError(err);
-            assert.equal(res.result.n, 1);
-            m.findOne(function(err, doc) {
-              assert.ifError(err);
-              assert.equal(1, mquery.utils.keys(doc).length);
-              assert.equal(id, doc._id.toString());
-              done();
-            });
-          });
-        });
-      });
-
       describe('when boolean (true) - exec()', function() {
         it('works', function(done) {
           var m = mquery(col).where({ _id: id });
-          m.update({ name: 'bool' }).update(true);
+          m.updateOne({ name: 'bool' }).updateOne(true);
           setTimeout(function() {
             m.findOne(function(err, doc) {
               assert.ifError(err);
@@ -2383,21 +2339,21 @@ describe('mquery', function() {
       });
       describe('that is a query', function() {
         it('updates the doc', function() {
-          var m = mquery({ name: name }).update({ x: 1 });
+          var m = mquery({ name: name }).updateOne({ x: 1 });
           var n = mquery().findOneAndUpdate(m);
           assert.deepEqual(n._update, { x: 1 });
         });
       });
       it('that is a function', function(done) {
-        col.insert({ name: name }, { safe: true }, function(err) {
+        col.insert({ name: name }, {}, function(err) {
           assert.ifError(err);
           var m = mquery({ name: name }).collection(col);
           name = '1 arg';
-          var n = m.update({ $set: { name: name }});
+          var n = m.updateOne({ $set: { name: name } }).setOptions({ returnDocument: 'after' });
           n.findOneAndUpdate(function(err, res) {
             assert.ifError(err);
             assert.ok(res.value);
-            assert.equal(name, res.value.name);
+            assert.equal(res.value.name, name);
             done();
           });
         });
@@ -2419,7 +2375,7 @@ describe('mquery', function() {
       });
       it('update + callback', function(done) {
         var m = mquery(col).where({ name: name });
-        m.findOneAndUpdate({}, { $inc: { age: 10 }}, { new: true }, function(err, res) {
+        m.findOneAndUpdate({}, { $inc: { age: 10 }}, { returnDocument: 'after' }, function(err, res) {
           assert.ifError(err);
           assert.equal(10, res.value.age);
           done();
@@ -2429,14 +2385,14 @@ describe('mquery', function() {
     describe('with 3 args', function() {
       it('conditions + update + options', function() {
         var m = mquery();
-        var n = m.findOneAndUpdate({ name: name }, { works: true }, { new: false });
+        var n = m.findOneAndUpdate({ name: name }, { works: true }, { returnDocument: 'before' });
         assert.deepEqual({ name: name}, n._conditions);
         assert.deepEqual({ works: true }, n._update);
-        assert.deepEqual({ new: false }, n.options);
+        assert.deepEqual({ returnDocument: 'before' }, n.options);
       });
       it('conditions + update + callback', function(done) {
         var m = mquery(col);
-        m.findOneAndUpdate({ name: name }, { works: true }, { new: true }, function(err, res) {
+        m.findOneAndUpdate({ name: name }, { works: true }, { returnDocument: 'after' }, function(err, res) {
           assert.ifError(err);
           assert.ok(res.value);
           assert.equal(name, res.value.name);
@@ -2582,7 +2538,8 @@ describe('mquery', function() {
       it('works with readPreferences', function(done) {
         var m = mquery(col).find({ name: 'exec' });
         try {
-          var rp = new require('mongodb').ReadPreference('primary');
+          var ReadPreference = require('mongodb').ReadPreference;
+          var rp = new ReadPreference('primary');
           m.read(rp);
         } catch (e) {
           done(e.code === 'MODULE_NOT_FOUND' ? null : e);
@@ -2662,29 +2619,6 @@ describe('mquery', function() {
     });
 
     describe('update', function() {
-      var num;
-
-      it('with a callback', function(done) {
-        var m = mquery(col);
-        m.where({ name: 'exec' });
-
-        m.count(function(err, _num) {
-          assert.ifError(err);
-          num = _num;
-          m.setOptions({ multi: true });
-          m.update({ name: 'exec + update' });
-          m.exec(function(err, res) {
-            assert.ifError(err);
-            assert.equal(num, res.result.n);
-            mquery(col).find({ name: 'exec + update' }, function(err, docs) {
-              assert.ifError(err);
-              assert.equal(num, docs.length);
-              done();
-            });
-          });
-        });
-      });
-
       describe('updateMany', function() {
         it('works', function(done) {
           mquery(col).updateMany({ name: 'exec' }, { name: 'test' }).
@@ -2739,41 +2673,6 @@ describe('mquery', function() {
             });
         });
       });
-
-      it('without a callback', function(done) {
-        var m = mquery(col);
-        m.where({ name: 'exec + update' }).setOptions({ multi: true });
-        m.update({ name: 'exec' });
-
-        // unsafe write
-        m.exec();
-
-        setTimeout(function() {
-          mquery(col).find({ name: 'exec' }, function(err, docs) {
-            assert.ifError(err);
-            assert.equal(2, docs.length);
-            done();
-          });
-        }, 200);
-      });
-      it('preserves key ordering', function(done) {
-        var m = mquery(col);
-
-        var m2 = m.update({ _id : 'something' }, { '1' : 1, '2' : 2, '3' : 3});
-        var doc = m2._updateForExec().$set;
-        var count = 0;
-        for (var i in doc) {
-          if (count == 0) {
-            assert.equal('1', i);
-          } else if (count == 1) {
-            assert.equal('2', i);
-          } else if (count == 2) {
-            assert.equal('3', i);
-          }
-          count++;
-        }
-        done();
-      });
     });
 
     describe('remove', function() {
@@ -2781,7 +2680,8 @@ describe('mquery', function() {
         var m = mquery(col).where({ age: 2 }).remove();
         m.exec(function(err, res) {
           assert.ifError(err);
-          assert.equal(1, res.result.n);
+          console.log(res)
+          assert.equal(1, res.deletedCount);
           done();
         });
       });
@@ -2804,7 +2704,7 @@ describe('mquery', function() {
         var m = mquery(col).where({ age: { $gte: 0 } }).deleteOne();
         m.exec(function(err, res) {
           assert.ifError(err);
-          assert.equal(res.result.n, 1);
+          assert.equal(res.deletedCount, 1);
           done();
         });
       });
@@ -2816,7 +2716,7 @@ describe('mquery', function() {
           deleteOne();
         m.exec(function(err, res) {
           assert.ifError(err);
-          assert.equal(res.result.n, 1);
+          assert.equal(res.deletedCount, 1);
           done();
         });
       });
@@ -2827,7 +2727,7 @@ describe('mquery', function() {
         var m = mquery(col).where({ age: { $gte: 0 } }).deleteMany();
         m.exec(function(err, res) {
           assert.ifError(err);
-          assert.equal(res.result.n, 2);
+          assert.equal(res.deletedCount, 2);
           done();
         });
       });
@@ -2836,7 +2736,7 @@ describe('mquery', function() {
     describe('findOneAndUpdate', function() {
       it('with a callback', function(done) {
         var m = mquery(col);
-        m.findOneAndUpdate({ name: 'exec', age: 1 }, { $set: { name: 'findOneAndUpdate' }});
+        m.findOneAndUpdate({ name: 'exec', age: 1 }, { $set: { name: 'findOneAndUpdate' } }, { returnDocument: 'after' });
         m.exec(function(err, res) {
           assert.ifError(err);
           assert.equal('findOneAndUpdate', res.value.name);
@@ -3037,7 +2937,7 @@ describe('mquery', function() {
       var update = {};
       update.$push = { n: { $each: [{x:10}], $slice: -1, $sort: {x:1}}};
 
-      var q = mquery().update({ x: 1 }, update);
+      var q = mquery().updateOne({ x: 1 }, update);
 
       // capture original key order
       var order = [];
