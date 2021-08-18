@@ -2967,22 +2967,6 @@ describe('mquery', function() {
         done();
       }
     });
-
-    it('supports other Promise libs', function(done) {
-      var bluebird = mquery.Promise;
-
-      // hack for testing
-      mquery.Promise = function P() {
-        mquery.Promise = bluebird;
-        this.then = function(x, y) {
-          return x + y;
-        };
-      };
-
-      var val = mquery(col).count({ name: 'exec' }).then(1, 2);
-      assert.equal(val, 3);
-      done();
-    });
   });
 
   describe('stream', function() {
