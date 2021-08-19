@@ -1,9 +1,10 @@
+'use strict';
 
-var env = require('../').env;
+const env = require('../').env;
 
 console.log('environment: %s', env.type);
 
-var col;
+let col;
 switch (env.type) {
   case 'node':
     col = require('./collection/node');

@@ -1,10 +1,12 @@
-var mquery = require('../');
-var assert = require('assert');
+'use strict';
+
+const mquery = require('../');
+const assert = require('assert');
 
 /* global Map */
 
 describe('mquery', function() {
-  var col;
+  let col;
 
   before(function(done) {
     // get the env specific collection interface
@@ -28,50 +30,50 @@ describe('mquery', function() {
     });
     describe('defaults', function() {
       it('are set', function() {
-        var m = mquery();
+        const m = mquery();
         assert.strictEqual(undefined, m.op);
         assert.deepEqual({}, m.options);
       });
     });
     describe('criteria', function() {
       it('if collection-like is used as collection', function() {
-        var m = mquery(col);
+        const m = mquery(col);
         assert.equal(col, m._collection.collection);
       });
       it('non-collection-like is used as criteria', function() {
-        var m = mquery({ works: true });
+        const m = mquery({ works: true });
         assert.ok(!m._collection);
         assert.deepEqual({ works: true }, m._conditions);
       });
     });
     describe('options', function() {
       it('are merged when passed', function() {
-        var m;
-        m = mquery(col, { safe: true });
-        assert.deepEqual({ safe: true }, m.options);
-        m = mquery({ name: 'mquery' }, { safe: true });
-        assert.deepEqual({ safe: true }, m.options);
+        let m;
+        m = mquery(col, { w: 'majority' });
+        assert.deepEqual({ w: 'majority' }, m.options);
+        m = mquery({ name: 'mquery' }, { w: 'majority' });
+        assert.deepEqual({ w: 'majority' }, m.options);
       });
     });
   });
 
   describe('toConstructor', function() {
     it('creates subclasses of mquery', function() {
-      var opts = { safe: { w: 'majority' }, readPreference: 'p' };
-      var match = { name: 'test', count: { $gt: 101 }};
-      var select = { name: 1, count: 0 };
-      var update = { $set: { x: true }};
-      var path = 'street';
+      const opts = { safe: { w: 'majority' }, readPreference: 'p' };
+      const match = { name: 'test', count: { $gt: 101 } };
+      const select = { name: 1, count: 0 };
+      const update = { $set: { x: true } };
+      const path = 'street';
 
-      var q = mquery().setOptions(opts);
+      const q = mquery().setOptions(opts);
       q.where(match);
       q.select(select);
-      q.update(update);
+      q.updateOne(update);
       q.where(path);
       q.find();
 
-      var M = q.toConstructor();
-      var m = M();
+      const M = q.toConstructor();
+      const m = M();
 
       assert.ok(m instanceof mquery);
       assert.deepEqual(opts, m.options);
@@ -85,20 +87,20 @@ describe('mquery', function() {
 
   describe('setOptions', function() {
     it('calls associated methods', function() {
-      var m = mquery();
+      const m = mquery();
       assert.equal(m._collection, null);
       m.setOptions({ collection: col });
       assert.equal(m._collection.collection, col);
     });
     it('directly sets option when no method exists', function() {
-      var m = mquery();
+      const m = mquery();
       assert.equal(m.options.woot, null);
       m.setOptions({ woot: 'yay' });
       assert.equal(m.options.woot, 'yay');
     });
     it('is chainable', function() {
-      var m = mquery(),
-          n;
+      const m = mquery();
+      let n;
 
       n = m.setOptions();
       assert.equal(m, n);
@@ -109,39 +111,39 @@ describe('mquery', function() {
 
   describe('collection', function() {
     it('sets the _collection', function() {
-      var m = mquery();
+      const m = mquery();
       m.collection(col);
       assert.equal(m._collection.collection, col);
     });
     it('is chainable', function() {
-      var m = mquery();
-      var n = m.collection(col);
+      const m = mquery();
+      const n = m.collection(col);
       assert.equal(m, n);
     });
   });
 
   describe('$where', function() {
     it('sets the $where condition', function() {
-      var m = mquery();
+      const m = mquery();
       function go() {}
       m.$where(go);
       assert.ok(go === m._conditions.$where);
     });
     it('is chainable', function() {
-      var m = mquery();
-      var n = m.$where('x');
+      const m = mquery();
+      const n = m.$where('x');
       assert.equal(m, n);
     });
   });
 
   describe('where', function() {
     it('without arguments', function() {
-      var m = mquery();
+      const m = mquery();
       m.where();
       assert.deepEqual({}, m._conditions);
     });
     it('with non-string/object argument', function() {
-      var m = mquery();
+      const m = mquery();
 
       assert.throws(function() {
         m.where([]);
@@ -149,34 +151,33 @@ describe('mquery', function() {
     });
     describe('with one argument', function() {
       it('that is an object', function() {
-        var m = mquery();
+        const m = mquery();
         m.where({ name: 'flawed' });
         assert.strictEqual(m._conditions.name, 'flawed');
       });
       it('that is a query', function() {
-        var m = mquery({ name: 'first' });
-        var n = mquery({ name: 'changed' });
+        const m = mquery({ name: 'first' });
+        const n = mquery({ name: 'changed' });
         m.where(n);
         assert.strictEqual(m._conditions.name, 'changed');
       });
       it('that is a string', function() {
-        var m = mquery();
+        const m = mquery();
         m.where('name');
         assert.equal('name', m._path);
         assert.strictEqual(m._conditions.name, undefined);
       });
     });
     it('with two arguments', function() {
-      var m = mquery();
+      const m = mquery();
       m.where('name', 'The Great Pumpkin');
       assert.equal('name', m._path);
       assert.strictEqual(m._conditions.name, 'The Great Pumpkin');
     });
     it('is chainable', function() {
-      var m = mquery(),
-          n;
+      const m = mquery();
 
-      n = m.where('x', 'y');
+      let n = m.where('x', 'y');
       assert.equal(m, n);
       n = m.where();
       assert.equal(m, n);
@@ -184,106 +185,106 @@ describe('mquery', function() {
   });
   describe('equals', function() {
     it('must be called after where()', function() {
-      var m = mquery();
+      const m = mquery();
       assert.throws(function() {
         m.equals();
       }, /must be used after where/);
     });
     it('sets value of path set with where()', function() {
-      var m = mquery();
+      const m = mquery();
       m.where('age').equals(1000);
       assert.deepEqual({ age: 1000 }, m._conditions);
     });
     it('is chainable', function() {
-      var m = mquery();
-      var n = m.where('x').equals(3);
+      const m = mquery();
+      const n = m.where('x').equals(3);
       assert.equal(m, n);
     });
   });
   describe('eq', function() {
     it('is alias of equals', function() {
-      var m = mquery();
+      const m = mquery();
       m.where('age').eq(1000);
       assert.deepEqual({ age: 1000 }, m._conditions);
     });
   });
   describe('or', function() {
     it('pushes onto the internal $or condition', function() {
-      var m = mquery();
+      const m = mquery();
       m.or({ 'Nightmare Before Christmas': true });
-      assert.deepEqual([{'Nightmare Before Christmas': true }], m._conditions.$or);
+      assert.deepEqual([{ 'Nightmare Before Christmas': true }], m._conditions.$or);
     });
     it('allows passing arrays', function() {
-      var m = mquery();
-      var arg = [{ 'Nightmare Before Christmas': true }, { x: 1 }];
+      const m = mquery();
+      const arg = [{ 'Nightmare Before Christmas': true }, { x: 1 }];
       m.or(arg);
       assert.deepEqual(arg, m._conditions.$or);
     });
     it('allows calling multiple times', function() {
-      var m = mquery();
-      var arg = [{ looper: true }, { x: 1 }];
+      const m = mquery();
+      const arg = [{ looper: true }, { x: 1 }];
       m.or(arg);
       m.or({ y: 1 });
-      m.or([{ w: 'oo' }, { z: 'oo'} ]);
-      assert.deepEqual([{looper:true},{x:1},{y:1},{w:'oo'},{z:'oo'}], m._conditions.$or);
+      m.or([{ w: 'oo' }, { z: 'oo' }]);
+      assert.deepEqual([{ looper: true }, { x: 1 }, { y: 1 }, { w: 'oo' }, { z: 'oo' }], m._conditions.$or);
     });
     it('is chainable', function() {
-      var m = mquery();
-      m.or({ o: 'k'}).where('name', 'table');
+      const m = mquery();
+      m.or({ o: 'k' }).where('name', 'table');
       assert.deepEqual({ name: 'table', $or: [{ o: 'k' }] }, m._conditions);
     });
   });
 
   describe('nor', function() {
     it('pushes onto the internal $nor condition', function() {
-      var m = mquery();
+      const m = mquery();
       m.nor({ 'Nightmare Before Christmas': true });
-      assert.deepEqual([{'Nightmare Before Christmas': true }], m._conditions.$nor);
+      assert.deepEqual([{ 'Nightmare Before Christmas': true }], m._conditions.$nor);
     });
     it('allows passing arrays', function() {
-      var m = mquery();
-      var arg = [{ 'Nightmare Before Christmas': true }, { x: 1 }];
+      const m = mquery();
+      const arg = [{ 'Nightmare Before Christmas': true }, { x: 1 }];
       m.nor(arg);
       assert.deepEqual(arg, m._conditions.$nor);
     });
     it('allows calling multiple times', function() {
-      var m = mquery();
-      var arg = [{ looper: true }, { x: 1 }];
+      const m = mquery();
+      const arg = [{ looper: true }, { x: 1 }];
       m.nor(arg);
       m.nor({ y: 1 });
-      m.nor([{ w: 'oo' }, { z: 'oo'} ]);
-      assert.deepEqual([{looper:true},{x:1},{y:1},{w:'oo'},{z:'oo'}], m._conditions.$nor);
+      m.nor([{ w: 'oo' }, { z: 'oo' }]);
+      assert.deepEqual([{ looper: true }, { x: 1 }, { y: 1 }, { w: 'oo' }, { z: 'oo' }], m._conditions.$nor);
     });
     it('is chainable', function() {
-      var m = mquery();
-      m.nor({ o: 'k'}).where('name', 'table');
+      const m = mquery();
+      m.nor({ o: 'k' }).where('name', 'table');
       assert.deepEqual({ name: 'table', $nor: [{ o: 'k' }] }, m._conditions);
     });
   });
 
   describe('and', function() {
     it('pushes onto the internal $and condition', function() {
-      var m = mquery();
+      const m = mquery();
       m.and({ 'Nightmare Before Christmas': true });
-      assert.deepEqual([{'Nightmare Before Christmas': true }], m._conditions.$and);
+      assert.deepEqual([{ 'Nightmare Before Christmas': true }], m._conditions.$and);
     });
     it('allows passing arrays', function() {
-      var m = mquery();
-      var arg = [{ 'Nightmare Before Christmas': true }, { x: 1 }];
+      const m = mquery();
+      const arg = [{ 'Nightmare Before Christmas': true }, { x: 1 }];
       m.and(arg);
       assert.deepEqual(arg, m._conditions.$and);
     });
     it('allows calling multiple times', function() {
-      var m = mquery();
-      var arg = [{ looper: true }, { x: 1 }];
+      const m = mquery();
+      const arg = [{ looper: true }, { x: 1 }];
       m.and(arg);
       m.and({ y: 1 });
-      m.and([{ w: 'oo' }, { z: 'oo'} ]);
-      assert.deepEqual([{looper:true},{x:1},{y:1},{w:'oo'},{z:'oo'}], m._conditions.$and);
+      m.and([{ w: 'oo' }, { z: 'oo' }]);
+      assert.deepEqual([{ looper: true }, { x: 1 }, { y: 1 }, { w: 'oo' }, { z: 'oo' }], m._conditions.$and);
     });
     it('is chainable', function() {
-      var m = mquery();
-      m.and({ o: 'k'}).where('name', 'table');
+      const m = mquery();
+      m.and({ o: 'k' }).where('name', 'table');
       assert.deepEqual({ name: 'table', $and: [{ o: 'k' }] }, m._conditions);
     });
   });
@@ -291,14 +292,14 @@ describe('mquery', function() {
   function generalCondition(type) {
     return function() {
       it('accepts 2 args', function() {
-        var m = mquery()[type]('count', 3);
-        var check = {};
+        const m = mquery()[type]('count', 3);
+        const check = {};
         check['$' + type] = 3;
         assert.deepEqual(m._conditions.count, check);
       });
       it('uses previously set `where` path if 1 arg passed', function() {
-        var m = mquery().where('count')[type](3);
-        var check = {};
+        const m = mquery().where('count')[type](3);
+        const check = {};
         check['$' + type] = 3;
         assert.deepEqual(m._conditions.count, check);
       });
@@ -308,14 +309,14 @@ describe('mquery', function() {
         }, /must be used after where/);
       });
       it('is chainable', function() {
-        var m = mquery().where('count')[type](3).where('x', 8);
-        var check = {x: 8, count: {}};
+        const m = mquery().where('count')[type](3).where('x', 8);
+        const check = { x: 8, count: {} };
         check.count['$' + type] = 3;
         assert.deepEqual(m._conditions, check);
       });
       it('overwrites previous value', function() {
-        var m = mquery().where('count')[type](3)[type](8);
-        var check = {};
+        const m = mquery().where('count')[type](3)[type](8);
+        const check = {};
         check['$' + type] = 8;
         assert.deepEqual(m._conditions.count, check);
       });
@@ -334,8 +335,8 @@ describe('mquery', function() {
         }, /must be used after where/);
       });
       it('works', function() {
-        var m = mquery().where('madmen').mod([10,20]);
-        assert.deepEqual(m._conditions, { madmen: { $mod: [10,20] }});
+        const m = mquery().where('madmen').mod([10, 20]);
+        assert.deepEqual(m._conditions, { madmen: { $mod: [10, 20] } });
       });
     });
 
@@ -346,24 +347,24 @@ describe('mquery', function() {
         }, /must be used after where/);
       });
       it('works', function() {
-        var m = mquery().where('madmen').mod(10, 20);
-        assert.deepEqual(m._conditions, { madmen: { $mod: [10,20] }});
+        const m = mquery().where('madmen').mod(10, 20);
+        assert.deepEqual(m._conditions, { madmen: { $mod: [10, 20] } });
       });
     });
 
     it('with 2 arguments and second is an array', function() {
-      var m = mquery().mod('madmen', [10,20]);
-      assert.deepEqual(m._conditions, { madmen: { $mod: [10,20] }});
+      const m = mquery().mod('madmen', [10, 20]);
+      assert.deepEqual(m._conditions, { madmen: { $mod: [10, 20] } });
     });
 
     it('with 3 arguments', function() {
-      var m = mquery().mod('madmen', 10, 20);
-      assert.deepEqual(m._conditions, { madmen: { $mod: [10,20] }});
+      const m = mquery().mod('madmen', 10, 20);
+      assert.deepEqual(m._conditions, { madmen: { $mod: [10, 20] } });
     });
 
     it('is chainable', function() {
-      var m = mquery().mod('madmen', 10, 20).where('x', 8);
-      var check = { madmen: { $mod: [10,20] }, x: 8};
+      const m = mquery().mod('madmen', 10, 20).where('x', 8);
+      const check = { madmen: { $mod: [10, 20] }, x: 8 };
       assert.deepEqual(m._conditions, check);
     });
   });
@@ -376,8 +377,8 @@ describe('mquery', function() {
         }, /must be used after where/);
       });
       it('works', function() {
-        var m = mquery().where('name').exists();
-        var check = { name: { $exists: true }};
+        const m = mquery().where('name').exists();
+        const check = { name: { $exists: true } };
         assert.deepEqual(m._conditions, check);
       });
     });
@@ -390,15 +391,15 @@ describe('mquery', function() {
           }, /must be used after where/);
         });
         it('works', function() {
-          var m = mquery().exists('name', false);
-          var check = { name: { $exists: false }};
+          const m = mquery().exists('name', false);
+          const check = { name: { $exists: false } };
           assert.deepEqual(m._conditions, check);
         });
       });
       describe('that is not boolean', function() {
         it('sets the value to `true`', function() {
-          var m = mquery().where('name').exists('yummy');
-          var check = { yummy: { $exists: true }};
+          const m = mquery().where('name').exists('yummy');
+          const check = { yummy: { $exists: true } };
           assert.deepEqual(m._conditions, check);
         });
       });
@@ -406,15 +407,15 @@ describe('mquery', function() {
 
     describe('with 2 args', function() {
       it('works', function() {
-        var m = mquery().exists('yummy', false);
-        var check = { yummy: { $exists: false }};
+        const m = mquery().exists('yummy', false);
+        const check = { yummy: { $exists: false } };
         assert.deepEqual(m._conditions, check);
       });
     });
 
     it('is chainable', function() {
-      var m = mquery().where('name').exists().find({ x: 1 });
-      var check = { name: { $exists: true }, x: 1};
+      const m = mquery().where('name').exists().find({ x: 1 });
+      const check = { name: { $exists: true }, x: 1 };
       assert.deepEqual(m._conditions, check);
     });
   });
@@ -446,8 +447,8 @@ describe('mquery', function() {
           }, /must be used after where/);
         });
         it('works', function() {
-          var m = mquery().where('comment').elemMatch({ author: 'joe', votes: {$gte: 3 }});
-          assert.deepEqual({ comment: { $elemMatch: { author: 'joe', votes: {$gte: 3}}}}, m._conditions);
+          const m = mquery().where('comment').elemMatch({ author: 'joe', votes: { $gte: 3 } });
+          assert.deepEqual({ comment: { $elemMatch: { author: 'joe', votes: { $gte: 3 } } } }, m._conditions);
         });
       });
       describe('that is a function', function() {
@@ -457,10 +458,10 @@ describe('mquery', function() {
           }, /must be used after where/);
         });
         it('works', function() {
-          var m = mquery().where('comment').elemMatch(function(query) {
-            query.where({ author: 'joe', votes: {$gte: 3 }});
+          const m = mquery().where('comment').elemMatch(function(query) {
+            query.where({ author: 'joe', votes: { $gte: 3 } });
           });
-          assert.deepEqual({ comment: { $elemMatch: { author: 'joe', votes: {$gte: 3}}}}, m._conditions);
+          assert.deepEqual({ comment: { $elemMatch: { author: 'joe', votes: { $gte: 3 } } } }, m._conditions);
         });
       });
     });
@@ -468,16 +469,16 @@ describe('mquery', function() {
     describe('with 2 arguments', function() {
       describe('and the 2nd is an object', function() {
         it('works', function() {
-          var m = mquery().elemMatch('comment', { author: 'joe', votes: {$gte: 3 }});
-          assert.deepEqual({ comment: { $elemMatch: { author: 'joe', votes: {$gte: 3}}}}, m._conditions);
+          const m = mquery().elemMatch('comment', { author: 'joe', votes: { $gte: 3 } });
+          assert.deepEqual({ comment: { $elemMatch: { author: 'joe', votes: { $gte: 3 } } } }, m._conditions);
         });
       });
       describe('and the 2nd is a function', function() {
         it('works', function() {
-          var m = mquery().elemMatch('comment', function(query) {
-            query.where({ author: 'joe', votes: {$gte: 3 }});
+          const m = mquery().elemMatch('comment', function(query) {
+            query.where({ author: 'joe', votes: { $gte: 3 } });
           });
-          assert.deepEqual({ comment: { $elemMatch: { author: 'joe', votes: {$gte: 3}}}}, m._conditions);
+          assert.deepEqual({ comment: { $elemMatch: { author: 'joe', votes: { $gte: 3 } } } }, m._conditions);
         });
       });
       it('and the 2nd is not a function or object', function() {
@@ -490,7 +491,7 @@ describe('mquery', function() {
 
   describe('within', function() {
     it('is chainable', function() {
-      var m = mquery();
+      const m = mquery();
       assert.equal(m.where('a').within(), m);
     });
     describe('when called with arguments', function() {
@@ -510,34 +511,34 @@ describe('mquery', function() {
           }, /Invalid argument/);
         });
         it('delegates to circle when center exists', function() {
-          var m = mquery().where('loc').within({ center: [10,10], radius: 3 });
-          assert.deepEqual({ $geoWithin: {$center:[[10,10], 3]}}, m._conditions.loc);
+          const m = mquery().where('loc').within({ center: [10, 10], radius: 3 });
+          assert.deepEqual({ $geoWithin: { $center: [[10, 10], 3] } }, m._conditions.loc);
         });
         it('delegates to box when exists', function() {
-          var m = mquery().where('loc').within({ box: [[10,10], [11,14]] });
-          assert.deepEqual({ $geoWithin: {$box:[[10,10], [11,14]]}}, m._conditions.loc);
+          const m = mquery().where('loc').within({ box: [[10, 10], [11, 14]] });
+          assert.deepEqual({ $geoWithin: { $box: [[10, 10], [11, 14]] } }, m._conditions.loc);
         });
         it('delegates to polygon when exists', function() {
-          var m = mquery().where('loc').within({ polygon: [[10,10], [11,14],[10,9]] });
-          assert.deepEqual({ $geoWithin: {$polygon:[[10,10], [11,14],[10,9]]}}, m._conditions.loc);
+          const m = mquery().where('loc').within({ polygon: [[10, 10], [11, 14], [10, 9]] });
+          assert.deepEqual({ $geoWithin: { $polygon: [[10, 10], [11, 14], [10, 9]] } }, m._conditions.loc);
         });
         it('delegates to geometry when exists', function() {
-          var m = mquery().where('loc').within({ type: 'Polygon', coordinates: [[10,10], [11,14],[10,9]] });
-          assert.deepEqual({ $geoWithin: {$geometry: {type:'Polygon', coordinates: [[10,10], [11,14],[10,9]]}}}, m._conditions.loc);
+          const m = mquery().where('loc').within({ type: 'Polygon', coordinates: [[10, 10], [11, 14], [10, 9]] });
+          assert.deepEqual({ $geoWithin: { $geometry: { type: 'Polygon', coordinates: [[10, 10], [11, 14], [10, 9]] } } }, m._conditions.loc);
         });
       });
 
       describe('of length 2', function() {
         it('delegates to box()', function() {
-          var m = mquery().where('loc').within([1,2],[2,5]);
-          assert.deepEqual(m._conditions.loc, { $geoWithin: { $box: [[1,2],[2,5]]}});
+          const m = mquery().where('loc').within([1, 2], [2, 5]);
+          assert.deepEqual(m._conditions.loc, { $geoWithin: { $box: [[1, 2], [2, 5]] } });
         });
       });
 
       describe('of length > 2', function() {
         it('delegates to polygon()', function() {
-          var m = mquery().where('loc').within([1,2],[2,5],[2,4],[1,3]);
-          assert.deepEqual(m._conditions.loc, { $geoWithin: { $polygon: [[1,2],[2,5],[2,4],[1,3]]}});
+          const m = mquery().where('loc').within([1, 2], [2, 5], [2, 4], [1, 3]);
+          assert.deepEqual(m._conditions.loc, { $geoWithin: { $polygon: [[1, 2], [2, 5], [2, 4], [1, 3]] } });
         });
       });
     });
@@ -553,34 +554,34 @@ describe('mquery', function() {
     describe('when called with arguments', function() {
       describe('of length 1', function() {
         it('delegates to circle when center exists', function() {
-          var m = mquery().where('loc').within({ center: [10,10], radius: 3 });
-          assert.deepEqual({ $within: {$center:[[10,10], 3]}}, m._conditions.loc);
+          const m = mquery().where('loc').within({ center: [10, 10], radius: 3 });
+          assert.deepEqual({ $within: { $center: [[10, 10], 3] } }, m._conditions.loc);
         });
         it('delegates to box when exists', function() {
-          var m = mquery().where('loc').within({ box: [[10,10], [11,14]] });
-          assert.deepEqual({ $within: {$box:[[10,10], [11,14]]}}, m._conditions.loc);
+          const m = mquery().where('loc').within({ box: [[10, 10], [11, 14]] });
+          assert.deepEqual({ $within: { $box: [[10, 10], [11, 14]] } }, m._conditions.loc);
         });
         it('delegates to polygon when exists', function() {
-          var m = mquery().where('loc').within({ polygon: [[10,10], [11,14],[10,9]] });
-          assert.deepEqual({ $within: {$polygon:[[10,10], [11,14],[10,9]]}}, m._conditions.loc);
+          const m = mquery().where('loc').within({ polygon: [[10, 10], [11, 14], [10, 9]] });
+          assert.deepEqual({ $within: { $polygon: [[10, 10], [11, 14], [10, 9]] } }, m._conditions.loc);
         });
         it('delegates to geometry when exists', function() {
-          var m = mquery().where('loc').within({ type: 'Polygon', coordinates: [[10,10], [11,14],[10,9]] });
-          assert.deepEqual({ $within: {$geometry: {type:'Polygon', coordinates: [[10,10], [11,14],[10,9]]}}}, m._conditions.loc);
+          const m = mquery().where('loc').within({ type: 'Polygon', coordinates: [[10, 10], [11, 14], [10, 9]] });
+          assert.deepEqual({ $within: { $geometry: { type: 'Polygon', coordinates: [[10, 10], [11, 14], [10, 9]] } } }, m._conditions.loc);
         });
       });
 
       describe('of length 2', function() {
         it('delegates to box()', function() {
-          var m = mquery().where('loc').within([1,2],[2,5]);
-          assert.deepEqual(m._conditions.loc, { $within: { $box: [[1,2],[2,5]]}});
+          const m = mquery().where('loc').within([1, 2], [2, 5]);
+          assert.deepEqual(m._conditions.loc, { $within: { $box: [[1, 2], [2, 5]] } });
         });
       });
 
       describe('of length > 2', function() {
         it('delegates to polygon()', function() {
-          var m = mquery().where('loc').within([1,2],[2,5],[2,4],[1,3]);
-          assert.deepEqual(m._conditions.loc, { $within: { $polygon: [[1,2],[2,5],[2,4],[1,3]]}});
+          const m = mquery().where('loc').within([1, 2], [2, 5], [2, 4], [1, 3]);
+          assert.deepEqual(m._conditions.loc, { $within: { $polygon: [[1, 2], [2, 5], [2, 4], [1, 3]] } });
         });
       });
     });
@@ -597,7 +598,7 @@ describe('mquery', function() {
     describe('with > 3 arguments', function() {
       it('throws', function() {
         assert.throws(function() {
-          mquery().box(1,2,3,4);
+          mquery().box(1, 2, 3, 4);
         }, /Invalid argument/);
       });
     });
@@ -605,19 +606,19 @@ describe('mquery', function() {
     describe('with 2 arguments', function() {
       it('throws if not used after where()', function() {
         assert.throws(function() {
-          mquery().box([],[]);
+          mquery().box([], []);
         }, /must be used after where/);
       });
       it('works', function() {
-        var m = mquery().where('loc').box([1,2],[3,4]);
-        assert.deepEqual(m._conditions.loc, { $geoWithin: { $box: [[1,2],[3,4]] }});
+        const m = mquery().where('loc').box([1, 2], [3, 4]);
+        assert.deepEqual(m._conditions.loc, { $geoWithin: { $box: [[1, 2], [3, 4]] } });
       });
     });
 
     describe('with 3 arguments', function() {
       it('works', function() {
-        var m = mquery().box('loc', [1,2],[3,4]);
-        assert.deepEqual(m._conditions.loc, { $geoWithin: { $box: [[1,2],[3,4]] }});
+        const m = mquery().box('loc', [1, 2], [3, 4]);
+        assert.deepEqual(m._conditions.loc, { $geoWithin: { $box: [[1, 2], [3, 4]] } });
       });
     });
   });
@@ -630,20 +631,20 @@ describe('mquery', function() {
         }, /must be used after where/);
 
         assert.doesNotThrow(function() {
-          mquery().where('loc').polygon([1,2], [2,3], [3,6]);
+          mquery().where('loc').polygon([1, 2], [2, 3], [3, 6]);
         });
       });
 
       it('assigns arguments to within polygon condition', function() {
-        var m = mquery().where('loc').polygon([1,2], [2,3], [3,6]);
-        assert.deepEqual(m._conditions, { loc: {$geoWithin: {$polygon: [[1,2],[2,3],[3,6]]}} });
+        const m = mquery().where('loc').polygon([1, 2], [2, 3], [3, 6]);
+        assert.deepEqual(m._conditions, { loc: { $geoWithin: { $polygon: [[1, 2], [2, 3], [3, 6]] } } });
       });
     });
 
     describe('when first arg is a string', function() {
       it('assigns remaining arguments to within polygon condition', function() {
-        var m = mquery().polygon('loc', [1,2], [2,3], [3,6]);
-        assert.deepEqual(m._conditions, { loc: {$geoWithin: {$polygon: [[1,2],[2,3],[3,6]]}} });
+        const m = mquery().polygon('loc', [1, 2], [2, 3], [3, 6]);
+        assert.deepEqual(m._conditions, { loc: { $geoWithin: { $polygon: [[1, 2], [2, 3], [3, 6]] } } });
       });
     });
   });
@@ -655,18 +656,18 @@ describe('mquery', function() {
           mquery().circle('x');
         }, /must be used after where/);
         assert.doesNotThrow(function() {
-          mquery().where('loc').circle({center:[0,0], radius: 3 });
+          mquery().where('loc').circle({ center: [0, 0], radius: 3 });
         });
       });
       it('works', function() {
-        var m = mquery().where('loc').circle({center:[0,0], radius: 3 });
-        assert.deepEqual(m._conditions, { loc: { $geoWithin: {$center: [[0,0],3] }}});
+        const m = mquery().where('loc').circle({ center: [0, 0], radius: 3 });
+        assert.deepEqual(m._conditions, { loc: { $geoWithin: { $center: [[0, 0], 3] } } });
       });
     });
     describe('with 3 args', function() {
       it('throws', function() {
         assert.throws(function() {
-          mquery().where('loc').circle(1,2,3);
+          mquery().where('loc').circle(1, 2, 3);
         }, /Invalid argument/);
       });
     });
@@ -678,14 +679,14 @@ describe('mquery', function() {
         mquery().circle('loc', { radius: 1 });
       }, /center and radius are required/);
       assert.doesNotThrow(function() {
-        mquery().circle('loc', { center: [1,2], radius: 1 });
+        mquery().circle('loc', { center: [1, 2], radius: 1 });
       });
     });
   });
 
   describe('geometry', function() {
     // within + intersects
-    var point = { type: 'Point', coordinates: [[0,0],[1,1]] };
+    const point = { type: 'Point', coordinates: [[0, 0], [1, 1]] };
 
     it('must be called after within or intersects', function(done) {
       assert.throws(function() {
@@ -706,23 +707,23 @@ describe('mquery', function() {
     describe('when called with one argument', function() {
       describe('after within()', function() {
         it('and arg quacks like geoJSON', function(done) {
-          var m = mquery().where('a').within().geometry(point);
-          assert.deepEqual({ a: { $geoWithin: { $geometry: point }}}, m._conditions);
+          const m = mquery().where('a').within().geometry(point);
+          assert.deepEqual({ a: { $geoWithin: { $geometry: point } } }, m._conditions);
           done();
         });
       });
 
       describe('after intersects()', function() {
         it('and arg quacks like geoJSON', function(done) {
-          var m = mquery().where('a').intersects().geometry(point);
-          assert.deepEqual({ a: { $geoIntersects: { $geometry: point }}}, m._conditions);
+          const m = mquery().where('a').intersects().geometry(point);
+          assert.deepEqual({ a: { $geoIntersects: { $geometry: point } } }, m._conditions);
           done();
         });
       });
 
       it('and arg does not quack like geoJSON', function(done) {
         assert.throws(function() {
-          mquery().where('b').within().geometry({type:1, coordinates:2});
+          mquery().where('b').within().geometry({ type: 1, coordinates: 2 });
         }, /Invalid argument/);
         done();
       });
@@ -741,7 +742,7 @@ describe('mquery', function() {
     describe('when called with more than one arguments', function() {
       it('throws', function(done) {
         assert.throws(function() {
-          mquery().where('a').within().geometry({type:'a',coordinates:[]}, 2);
+          mquery().where('a').within().geometry({ type: 'a', coordinates: [] }, 2);
         }, /Invalid argument/);
         done();
       });
@@ -750,7 +751,7 @@ describe('mquery', function() {
 
   describe('intersects', function() {
     it('must be used after where()', function(done) {
-      var m = mquery();
+      const m = mquery();
       assert.throws(function() {
         m.intersects();
       }, /must be used after where/);
@@ -758,20 +759,20 @@ describe('mquery', function() {
     });
 
     it('sets geo comparison to "$intersects"', function(done) {
-      var n = mquery().where('a').intersects();
+      const n = mquery().where('a').intersects();
       assert.equal('$geoIntersects', n._geoComparison);
       done();
     });
 
     it('is chainable', function() {
-      var m = mquery();
+      const m = mquery();
       assert.equal(m.where('a').intersects(), m);
     });
 
     it('calls geometry if argument quacks like geojson', function(done) {
-      var m = mquery();
-      var o = { type: 'LineString', coordinates: [[0,1],[3,40]] };
-      var ran = false;
+      const m = mquery();
+      const o = { type: 'LineString', coordinates: [[0, 1], [3, 40]] };
+      let ran = false;
 
       m.geometry = function(arg) {
         ran = true;
@@ -785,7 +786,7 @@ describe('mquery', function() {
     });
 
     it('throws if argument is not geometry-like', function(done) {
-      var m = mquery().where('a');
+      const m = mquery().where('a');
 
       assert.throws(function() {
         m.intersects(null);
@@ -823,8 +824,8 @@ describe('mquery', function() {
     // near nearSphere
     describe('with 0 args', function() {
       it('is compatible with geometry()', function(done) {
-        var q = mquery().where('x').near().geometry({ type: 'Point', coordinates: [180, 11] });
-        assert.deepEqual({ $near: {$geometry: {type:'Point', coordinates: [180,11]}}}, q._conditions.x);
+        const q = mquery().where('x').near().geometry({ type: 'Point', coordinates: [180, 11] });
+        assert.deepEqual({ $near: { $geometry: { type: 'Point', coordinates: [180, 11] } } }, q._conditions.x);
         done();
       });
     });
@@ -837,21 +838,21 @@ describe('mquery', function() {
       });
       it('does not throw if used after where()', function() {
         assert.doesNotThrow(function() {
-          mquery().where('loc').near({center:[1,1]});
+          mquery().where('loc').near({ center: [1, 1] });
         });
       });
     });
     describe('with > 2 args', function() {
       it('throws', function() {
         assert.throws(function() {
-          mquery().near(1,2,3);
+          mquery().near(1, 2, 3);
         }, /Invalid argument/);
       });
     });
 
     it('creates $geometry args for GeoJSON', function() {
-      var m = mquery().where('loc').near({ center: { type: 'Point', coordinates: [10,10] }});
-      assert.deepEqual({ $near: {$geometry: {type:'Point', coordinates: [10,10]}}}, m._conditions.loc);
+      const m = mquery().where('loc').near({ center: { type: 'Point', coordinates: [10, 10] } });
+      assert.deepEqual({ $near: { $geometry: { type: 'Point', coordinates: [10, 10] } } }, m._conditions.loc);
     });
 
     it('expects `center`', function() {
@@ -859,50 +860,50 @@ describe('mquery', function() {
         mquery().near('loc', { maxDistance: 3 });
       }, /center is required/);
       assert.doesNotThrow(function() {
-        mquery().near('loc', { center: [3,4] });
+        mquery().near('loc', { center: [3, 4] });
       });
     });
 
     it('accepts spherical conditions', function() {
-      var m = mquery().where('loc').near({ center: [1,2], spherical: true });
-      assert.deepEqual(m._conditions, { loc: { $nearSphere: [1,2]}});
+      const m = mquery().where('loc').near({ center: [1, 2], spherical: true });
+      assert.deepEqual(m._conditions, { loc: { $nearSphere: [1, 2] } });
     });
 
     it('is non-spherical by default', function() {
-      var m = mquery().where('loc').near({ center: [1,2] });
-      assert.deepEqual(m._conditions, { loc: { $near: [1,2]}});
+      const m = mquery().where('loc').near({ center: [1, 2] });
+      assert.deepEqual(m._conditions, { loc: { $near: [1, 2] } });
     });
 
     it('supports maxDistance', function() {
-      var m = mquery().where('loc').near({ center: [1,2], maxDistance:4 });
-      assert.deepEqual(m._conditions, { loc: { $near: [1,2], $maxDistance: 4}});
+      const m = mquery().where('loc').near({ center: [1, 2], maxDistance: 4 });
+      assert.deepEqual(m._conditions, { loc: { $near: [1, 2], $maxDistance: 4 } });
     });
 
     it('supports minDistance', function() {
-      var m = mquery().where('loc').near({ center: [1,2], minDistance:4 });
-      assert.deepEqual(m._conditions, { loc: { $near: [1,2], $minDistance: 4}});
+      const m = mquery().where('loc').near({ center: [1, 2], minDistance: 4 });
+      assert.deepEqual(m._conditions, { loc: { $near: [1, 2], $minDistance: 4 } });
     });
 
     it('is chainable', function() {
-      var m = mquery().where('loc').near({ center: [1,2], maxDistance:4 }).find({ x: 1 });
-      assert.deepEqual(m._conditions, { loc: { $near: [1,2], $maxDistance: 4}, x: 1});
+      const m = mquery().where('loc').near({ center: [1, 2], maxDistance: 4 }).find({ x: 1 });
+      assert.deepEqual(m._conditions, { loc: { $near: [1, 2], $maxDistance: 4 }, x: 1 });
     });
 
     describe('supports passing GeoJSON, gh-13', function() {
       it('with center', function() {
-        var m = mquery().where('loc').near({
-          center: { type: 'Point', coordinates: [1,1] },
+        const m = mquery().where('loc').near({
+          center: { type: 'Point', coordinates: [1, 1] },
           maxDistance: 2
         });
 
-        var expect = {
+        const expect = {
           loc: {
             $near: {
               $geometry: {
                 type: 'Point',
-                coordinates : [1,1]
+                coordinates: [1, 1]
               },
-              $maxDistance : 2
+              $maxDistance: 2
             }
           }
         };
@@ -917,32 +918,32 @@ describe('mquery', function() {
   describe('select', function() {
     describe('with 0 args', function() {
       it('is chainable', function() {
-        var m = mquery();
+        const m = mquery();
         assert.equal(m, m.select());
       });
     });
 
     it('accepts an object', function() {
-      var o = { x: 1, y: 1 };
-      var m = mquery().select(o);
+      const o = { x: 1, y: 1 };
+      const m = mquery().select(o);
       assert.deepEqual(m._fields, o);
     });
 
     it('accepts a string', function() {
-      var o = 'x -y';
-      var m = mquery().select(o);
+      const o = 'x -y';
+      const m = mquery().select(o);
       assert.deepEqual(m._fields, { x: 1, y: 0 });
     });
 
     it('does accept an array', function() {
-      var o = ['x', '-y'];
-      var m = mquery().select(o);
+      const o = ['x', '-y'];
+      const m = mquery().select(o);
       assert.deepEqual(m._fields, { x: 1, y: 0 });
     });
 
     it('merges previous arguments', function() {
-      var o = { x: 1, y: 0, a: 1 };
-      var m = mquery().select(o);
+      const o = { x: 1, y: 0, a: 1 };
+      const m = mquery().select(o);
       m.select('z -u w').select({ x: 0 });
       assert.deepEqual(m._fields, {
         x: 0,
@@ -961,7 +962,7 @@ describe('mquery', function() {
     });
 
     it('accepts arguments objects', function() {
-      var m = mquery();
+      const m = mquery();
       function t() {
         m.select(arguments);
         assert.deepEqual(m._fields, { x: 1, y: 0 });
@@ -974,7 +975,7 @@ describe('mquery', function() {
 
   describe('selected', function() {
     it('returns true when fields have been selected', function(done) {
-      var m;
+      let m;
 
       m = mquery().select({ name: 1 });
       assert.ok(m.selected());
@@ -986,7 +987,7 @@ describe('mquery', function() {
     });
 
     it('returns false when no fields have been selected', function(done) {
-      var m = mquery();
+      const m = mquery();
       assert.strictEqual(false, m.selected());
       done();
     });
@@ -1015,7 +1016,7 @@ describe('mquery', function() {
     describe('returns true', function() {
       it('when fields have been included', function(done) {
         assert.equal(true, mquery().select('name').selectedInclusively());
-        assert.equal(true, mquery().select({ name:1 }).selectedInclusively());
+        assert.equal(true, mquery().select({ name: 1 }).selectedInclusively());
         done();
       });
     });
@@ -1038,7 +1039,7 @@ describe('mquery', function() {
     describe('returns true', function() {
       it('when any field has been excluded', function(done) {
         assert.equal(true, mquery().select('-name').selectedExclusively());
-        assert.equal(true, mquery().select({ name:0 }).selectedExclusively());
+        assert.equal(true, mquery().select({ name: 0 }).selectedExclusively());
         assert.equal(true, mquery().select('-_id').selectedExclusively());
         assert.strictEqual(true, mquery().select('name bio -_id').selectedExclusively());
         assert.strictEqual(true, mquery().select({ name: 1, _id: 0 }).selectedExclusively());
@@ -1050,11 +1051,11 @@ describe('mquery', function() {
   describe('slice', function() {
     describe('with 0 args', function() {
       it('is chainable', function() {
-        var m = mquery();
+        const m = mquery();
         assert.equal(m, m.slice());
       });
       it('is a noop', function() {
-        var m = mquery().slice();
+        const m = mquery().slice();
         assert.deepEqual(m._fields, undefined);
       });
     });
@@ -1069,19 +1070,19 @@ describe('mquery', function() {
         });
       });
       it('that is a number', function() {
-        var query = mquery();
+        const query = mquery();
         query.where('collection').slice(5);
-        assert.deepEqual(query._fields, {collection: {$slice: 5}});
+        assert.deepEqual(query._fields, { collection: { $slice: 5 } });
       });
       it('that is an array', function() {
-        var query = mquery();
-        query.where('collection').slice([5,10]);
-        assert.deepEqual(query._fields, {collection: {$slice: [5,10]}});
+        const query = mquery();
+        query.where('collection').slice([5, 10]);
+        assert.deepEqual(query._fields, { collection: { $slice: [5, 10] } });
       });
       it('that is an object', function() {
-        var query = mquery();
+        const query = mquery();
         query.slice({ collection: [5, 10] });
-        assert.deepEqual(query._fields, {collection: {$slice: [5,10]}});
+        assert.deepEqual(query._fields, { collection: { $slice: [5, 10] } });
       });
     });
 
@@ -1089,26 +1090,26 @@ describe('mquery', function() {
       describe('and first is a number', function() {
         it('throws if not called after where', function() {
           assert.throws(function() {
-            mquery().slice(2,3);
+            mquery().slice(2, 3);
           }, /must be used after where/);
         });
         it('does not throw if used after where', function() {
-          var query = mquery();
-          query.where('collection').slice(2,3);
-          assert.deepEqual(query._fields, {collection: {$slice: [2,3]}});
+          const query = mquery();
+          query.where('collection').slice(2, 3);
+          assert.deepEqual(query._fields, { collection: { $slice: [2, 3] } });
         });
       });
       it('and first is not a number', function() {
-        var query = mquery().slice('collection', [-5, 2]);
-        assert.deepEqual(query._fields, {collection: {$slice: [-5,2]}});
+        const query = mquery().slice('collection', [-5, 2]);
+        assert.deepEqual(query._fields, { collection: { $slice: [-5, 2] } });
       });
     });
 
     describe('with 3 args', function() {
       it('works', function() {
-        var query = mquery();
+        const query = mquery();
         query.slice('collection', 14, 10);
-        assert.deepEqual(query._fields, {collection: {$slice: [14, 10]}});
+        assert.deepEqual(query._fields, { collection: { $slice: [14, 10] } });
       });
     });
 
@@ -1121,32 +1122,32 @@ describe('mquery', function() {
   describe('sort', function() {
     describe('with 0 args', function() {
       it('chains', function() {
-        var m = mquery();
+        const m = mquery();
         assert.equal(m, m.sort());
       });
       it('has no affect', function() {
-        var m = mquery();
+        const m = mquery();
         assert.equal(m.options.sort, undefined);
       });
     });
 
     it('works', function() {
-      var query = mquery();
+      let query = mquery();
       query.sort('a -c b');
-      assert.deepEqual(query.options.sort, { a : 1, b: 1, c : -1});
+      assert.deepEqual(query.options.sort, { a: 1, b: 1, c: -1 });
 
       query = mquery();
-      query.sort({'a': 1, 'c': -1, 'b': 'asc', e: 'descending', f: 'ascending'});
-      assert.deepEqual(query.options.sort, {'a': 1, 'c': -1, 'b': 1, 'e': -1, 'f': 1});
+      query.sort({ a: 1, c: -1, b: 'asc', e: 'descending', f: 'ascending' });
+      assert.deepEqual(query.options.sort, { a: 1, c: -1, b: 1, e: -1, f: 1 });
 
       query = mquery();
       query.sort([['a', -1], ['c', 1], ['b', 'desc'], ['e', 'ascending'], ['f', 'descending']]);
       assert.deepEqual(query.options.sort, [['a', -1], ['c', 1], ['b', -1], ['e', 1], ['f', -1]]);
 
       query = mquery();
-      var e = undefined;
+      let e = undefined;
       try {
-        query.sort([['a', 1], { 'b': 5 }]);
+        query.sort([['a', 1], { b: 5 }]);
       } catch (err) {
         e = err;
       }
@@ -1166,19 +1167,19 @@ describe('mquery', function() {
     });
 
     it('handles $meta sort options', function() {
-      var query = mquery();
-      query.sort({ score: { $meta : 'textScore' } });
-      assert.deepEqual(query.options.sort, { score : { $meta : 'textScore' } });
+      const query = mquery();
+      query.sort({ score: { $meta: 'textScore' } });
+      assert.deepEqual(query.options.sort, { score: { $meta: 'textScore' } });
     });
 
     it('array syntax', function() {
-      var query = mquery();
+      const query = mquery();
       query.sort([['field', 1], ['test', -1]]);
       assert.deepEqual(query.options.sort, [['field', 1], ['test', -1]]);
     });
 
     it('throws with mixed array/object syntax', function() {
-      var query = mquery();
+      const query = mquery();
       assert.throws(function() {
         query.sort({ field: 1 }).sort([['test', -1]]);
       }, /Can't mix sort syntaxes/);
@@ -1191,7 +1192,7 @@ describe('mquery', function() {
       if (typeof Map === 'undefined') {
         return this.skip();
       }
-      var query = mquery();
+      const query = mquery();
       query.sort(new Map().set('field', 1).set('test', -1));
       assert.deepEqual(query.options.sort, new Map().set('field', 1).set('test', -1));
     });
@@ -1200,12 +1201,12 @@ describe('mquery', function() {
   function simpleOption(type, options) {
     describe(type, function() {
       it('sets the ' + type + ' option', function() {
-        var m = mquery()[type](2);
-        var optionName = options.name || type;
+        const m = mquery()[type](2);
+        const optionName = options.name || type;
         assert.equal(2, m.options[optionName]);
       });
       it('is chainable', function() {
-        var m = mquery();
+        const m = mquery();
         assert.equal(m[type](3), m);
       });
 
@@ -1214,13 +1215,13 @@ describe('mquery', function() {
     });
   }
 
-  var negated = {
-    limit: {distinct: false, count: true},
-    skip: {distinct: false, count: true},
-    maxScan: {distinct: false, count: false},
-    batchSize: {distinct: false, count: false},
-    maxTime: {distinct: true, count: true, name: 'maxTimeMS' },
-    comment: {distinct: false, count: false}
+  const negated = {
+    limit: { distinct: false, count: true },
+    skip: { distinct: false, count: true },
+    maxScan: { distinct: false, count: false },
+    batchSize: { distinct: false, count: false },
+    maxTime: { distinct: true, count: true, name: 'maxTimeMS' },
+    comment: { distinct: false, count: false }
   };
   Object.keys(negated).forEach(function(key) {
     simpleOption(key, negated[key]);
@@ -1228,7 +1229,7 @@ describe('mquery', function() {
 
   describe('snapshot', function() {
     it('works', function() {
-      var query;
+      let query;
 
       query = mquery();
       query.snapshot();
@@ -1248,13 +1249,13 @@ describe('mquery', function() {
 
   describe('hint', function() {
     it('accepts an object', function() {
-      var query2 = mquery();
-      query2.hint({'a': 1, 'b': -1});
-      assert.deepEqual(query2.options.hint, {'a': 1, 'b': -1});
+      const query2 = mquery();
+      query2.hint({ a: 1, b: -1 });
+      assert.deepEqual(query2.options.hint, { a: 1, b: -1 });
     });
 
     it('accepts a string', function() {
-      var query2 = mquery();
+      const query2 = mquery();
       query2.hint('a');
       assert.deepEqual(query2.options.hint, 'a');
     });
@@ -1270,7 +1271,7 @@ describe('mquery', function() {
 
     describe('does not have side affects', function() {
       it('on invalid arg', function() {
-        var m = mquery();
+        const m = mquery();
         try {
           m.hint(1);
         } catch (err) {
@@ -1279,7 +1280,7 @@ describe('mquery', function() {
         assert.equal(undefined, m.options.hint);
       });
       it('on missing arg', function() {
-        var m = mquery().hint();
+        const m = mquery().hint();
         assert.equal(undefined, m.options.hint);
       });
     });
@@ -1289,14 +1290,14 @@ describe('mquery', function() {
 
   describe('j', function() {
     it('works', function() {
-      var m = mquery().j(true);
+      const m = mquery().j(true);
       assert.equal(true, m.options.j);
     });
   });
 
   describe('slaveOk', function() {
     it('works', function() {
-      var query;
+      let query;
 
       query = mquery();
       query.slaveOk();
@@ -1314,19 +1315,19 @@ describe('mquery', function() {
 
   describe('read', function() {
     it('sets associated readPreference option', function() {
-      var m = mquery();
+      const m = mquery();
       m.read('p');
       assert.equal('primary', m.options.readPreference);
     });
     it('is chainable', function() {
-      var m = mquery();
+      const m = mquery();
       assert.equal(m, m.read('sp'));
     });
   });
 
   describe('readConcern', function() {
     it('sets associated readConcern option', function() {
-      var m;
+      let m;
 
       m = mquery();
       m.readConcern('s');
@@ -1337,14 +1338,14 @@ describe('mquery', function() {
       assert.deepEqual({ level: 'local' }, m.options.readConcern);
     });
     it('is chainable', function() {
-      var m = mquery();
+      const m = mquery();
       assert.equal(m, m.readConcern('lz'));
     });
   });
 
   describe('tailable', function() {
     it('works', function() {
-      var query;
+      let query;
 
       query = mquery();
       query.tailable();
@@ -1359,7 +1360,7 @@ describe('mquery', function() {
       assert.equal(false, query.options.tailable);
     });
     it('is chainable', function() {
-      var m = mquery();
+      const m = mquery();
       assert.equal(m, m.tailable());
     });
     noDistinct('tailable');
@@ -1368,7 +1369,7 @@ describe('mquery', function() {
 
   describe('writeConcern', function() {
     it('sets associated writeConcern option', function() {
-      var m;
+      let m;
       m = mquery();
       m.writeConcern('majority');
       assert.equal('majority', m.options.w);
@@ -1382,20 +1383,20 @@ describe('mquery', function() {
       assert.equal(1, m.options.w);
     });
     it('accepts object', function() {
-      var m;
+      let m;
 
       m = mquery().writeConcern({ w: 'm', j: true, wtimeout: 1000 });
       assert.equal('m', m.options.w); // check it does not convert m to majority
       assert.equal(true, m.options.j);
       assert.equal(1000, m.options.wtimeout);
 
-      m = mquery().w('m').w({j: false, wtimeout: 0 });
+      m = mquery().w('m').w({ j: false, wtimeout: 0 });
       assert.equal('majority', m.options.w);
       assert.strictEqual(false, m.options.j);
       assert.strictEqual(0, m.options.wtimeout);
     });
     it('is chainable', function() {
-      var m = mquery();
+      const m = mquery();
       assert.equal(m, m.writeConcern('majority'));
     });
   });
@@ -1405,7 +1406,7 @@ describe('mquery', function() {
   describe('merge', function() {
     describe('with falsy arg', function() {
       it('returns itself', function() {
-        var m = mquery();
+        const m = mquery();
         assert.equal(m, m.merge());
         assert.equal(m, m.merge(null));
         assert.equal(m, m.merge(0));
@@ -1428,44 +1429,44 @@ describe('mquery', function() {
 
       describe('that is a query', function() {
         it('merges conditions, field selection, and options', function() {
-          var m = mquery({ x: 'hi' }, { select: 'x y', another: true });
-          var n = mquery().merge(m);
+          const m = mquery({ x: 'hi' }, { select: 'x y', another: true });
+          const n = mquery().merge(m);
           assert.deepEqual(n._conditions, m._conditions);
           assert.deepEqual(n._fields, m._fields);
           assert.deepEqual(n.options, m.options);
         });
         it('clones update arguments', function(done) {
-          var original = { $set: { iTerm: true }};
-          var m = mquery().update(original);
-          var n = mquery().merge(m);
-          m.update({ $set: { x: 2 }});
+          const original = { $set: { iTerm: true } };
+          const m = mquery().updateOne(original);
+          const n = mquery().merge(m);
+          m.updateOne({ $set: { x: 2 } });
           assert.notDeepEqual(m._update, n._update);
           done();
         });
         it('is chainable', function() {
-          var m = mquery({ x: 'hi' });
-          var n = mquery();
+          const m = mquery({ x: 'hi' });
+          const n = mquery();
           assert.equal(n, n.merge(m));
         });
       });
 
       describe('that is an object', function() {
         it('merges', function() {
-          var m = { x: 'hi' };
-          var n = mquery().merge(m);
+          const m = { x: 'hi' };
+          const n = mquery().merge(m);
           assert.deepEqual(n._conditions, { x: 'hi' });
         });
         it('clones update arguments', function(done) {
-          var original = { $set: { iTerm: true }};
-          var m = mquery().update(original);
-          var n = mquery().merge(original);
-          m.update({ $set: { x: 2 }});
+          const original = { $set: { iTerm: true } };
+          const m = mquery().updateOne(original);
+          const n = mquery().merge(original);
+          m.updateOne({ $set: { x: 2 } });
           assert.notDeepEqual(m._update, n._update);
           done();
         });
         it('is chainable', function() {
-          var m = { x: 'hi' };
-          var n = mquery();
+          const m = { x: 'hi' };
+          const n = mquery();
           assert.equal(n, n.merge(m));
         });
       });
@@ -1477,7 +1478,7 @@ describe('mquery', function() {
   describe('find', function() {
     describe('with no callback', function() {
       it('does not execute', function() {
-        var m = mquery();
+        const m = mquery();
         assert.doesNotThrow(function() {
           m.find();
         });
@@ -1488,15 +1489,15 @@ describe('mquery', function() {
     });
 
     it('is chainable', function() {
-      var m = mquery().find({ x: 1 }).find().find({ y: 2 });
-      assert.deepEqual(m._conditions, {x:1,y:2});
+      const m = mquery().find({ x: 1 }).find().find({ y: 2 });
+      assert.deepEqual(m._conditions, { x: 1, y: 2 });
     });
 
     it('merges other queries', function() {
-      var m = mquery({ name: 'mquery' });
+      const m = mquery({ name: 'mquery' });
       m.tailable();
       m.select('_id');
-      var a = mquery().find(m);
+      const a = mquery().find(m);
       assert.deepEqual(a._conditions, m._conditions);
       assert.deepEqual(a.options, m.options);
       assert.deepEqual(a._fields, m._fields);
@@ -1504,7 +1505,7 @@ describe('mquery', function() {
 
     describe('executes', function() {
       before(function(done) {
-        col.insert({ name: 'mquery' }, { safe: true }, done);
+        col.insertOne({ name: 'mquery' }, done);
       });
 
       after(function(done) {
@@ -1519,7 +1520,7 @@ describe('mquery', function() {
         });
       });
       it('when Query is passed with a callback', function(done) {
-        var m = mquery({ name: 'mquery' });
+        const m = mquery({ name: 'mquery' });
         mquery(col).find(m, function(err, docs) {
           assert.ifError(err);
           assert.equal(1, docs.length);
@@ -1539,7 +1540,7 @@ describe('mquery', function() {
   describe('findOne', function() {
     describe('with no callback', function() {
       it('does not execute', function() {
-        var m = mquery();
+        const m = mquery();
         assert.doesNotThrow(function() {
           m.findOne();
         });
@@ -1550,18 +1551,18 @@ describe('mquery', function() {
     });
 
     it('is chainable', function() {
-      var m = mquery();
-      var n = m.findOne({ x: 1 }).findOne().findOne({ y: 2 });
+      const m = mquery();
+      const n = m.findOne({ x: 1 }).findOne().findOne({ y: 2 });
       assert.equal(m, n);
-      assert.deepEqual(m._conditions, {x:1,y:2});
+      assert.deepEqual(m._conditions, { x: 1, y: 2 });
       assert.equal('findOne', m.op);
     });
 
     it('merges other queries', function() {
-      var m = mquery({ name: 'mquery' });
+      const m = mquery({ name: 'mquery' });
       m.read('nearest');
       m.select('_id');
-      var a = mquery().findOne(m);
+      const a = mquery().findOne(m);
       assert.deepEqual(a._conditions, m._conditions);
       assert.deepEqual(a.options, m.options);
       assert.deepEqual(a._fields, m._fields);
@@ -1569,7 +1570,7 @@ describe('mquery', function() {
 
     describe('executes', function() {
       before(function(done) {
-        col.insert({ name: 'mquery findone' }, { safe: true }, done);
+        col.insertOne({ name: 'mquery findone' }, done);
       });
 
       after(function(done) {
@@ -1585,7 +1586,7 @@ describe('mquery', function() {
         });
       });
       it('when Query is passed with a callback', function(done) {
-        var m = mquery(col).where({ name: 'mquery findone' });
+        const m = mquery(col).where({ name: 'mquery findone' });
         mquery(col).findOne(m, function(err, doc) {
           assert.ifError(err);
           assert.ok(doc);
@@ -1607,7 +1608,7 @@ describe('mquery', function() {
   describe('count', function() {
     describe('with no callback', function() {
       it('does not execute', function() {
-        var m = mquery();
+        const m = mquery();
         assert.doesNotThrow(function() {
           m.count();
         });
@@ -1618,18 +1619,18 @@ describe('mquery', function() {
     });
 
     it('is chainable', function() {
-      var m = mquery();
-      var n = m.count({ x: 1 }).count().count({ y: 2 });
+      const m = mquery();
+      const n = m.count({ x: 1 }).count().count({ y: 2 });
       assert.equal(m, n);
-      assert.deepEqual(m._conditions, {x:1,y:2});
+      assert.deepEqual(m._conditions, { x: 1, y: 2 });
       assert.equal('count', m.op);
     });
 
     it('merges other queries', function() {
-      var m = mquery({ name: 'mquery' });
+      const m = mquery({ name: 'mquery' });
       m.read('nearest');
       m.select('_id');
-      var a = mquery().count(m);
+      const a = mquery().count(m);
       assert.deepEqual(a._conditions, m._conditions);
       assert.deepEqual(a.options, m.options);
       assert.deepEqual(a._fields, m._fields);
@@ -1637,7 +1638,7 @@ describe('mquery', function() {
 
     describe('executes', function() {
       before(function(done) {
-        col.insert({ name: 'mquery count' }, { safe: true }, done);
+        col.insertOne({ name: 'mquery count' }, done);
       });
 
       after(function(done) {
@@ -1653,7 +1654,7 @@ describe('mquery', function() {
         });
       });
       it('when Query is passed with a callback', function(done) {
-        var m = mquery({ name: 'mquery count' });
+        const m = mquery({ name: 'mquery count' });
         mquery(col).count(m, function(err, count) {
           assert.ifError(err);
           assert.ok(count);
@@ -1746,7 +1747,7 @@ describe('mquery', function() {
   describe('distinct', function() {
     describe('with no callback', function() {
       it('does not execute', function() {
-        var m = mquery();
+        const m = mquery();
         assert.doesNotThrow(function() {
           m.distinct();
         });
@@ -1763,26 +1764,26 @@ describe('mquery', function() {
     });
 
     it('is chainable', function() {
-      var m = mquery({x:1}).distinct('name');
-      var n = m.distinct({y:2});
+      const m = mquery({ x: 1 }).distinct('name');
+      const n = m.distinct({ y: 2 });
       assert.equal(m, n);
-      assert.deepEqual(n._conditions, {x:1, y:2});
+      assert.deepEqual(n._conditions, { x: 1, y: 2 });
       assert.equal('name', n._distinct);
       assert.equal('distinct', n.op);
     });
 
     it('overwrites field', function() {
-      var m = mquery({ name: 'mquery' }).distinct('name');
+      const m = mquery({ name: 'mquery' }).distinct('name');
       m.distinct('rename');
       assert.equal(m._distinct, 'rename');
-      m.distinct({x:1}, 'renamed');
+      m.distinct({ x: 1 }, 'renamed');
       assert.equal(m._distinct, 'renamed');
     });
 
     it('merges other queries', function() {
-      var m = mquery().distinct({ name: 'mquery' }, 'age');
+      const m = mquery().distinct({ name: 'mquery' }, 'age');
       m.read('nearest');
-      var a = mquery().distinct(m);
+      const a = mquery().distinct(m);
       assert.deepEqual(a._conditions, m._conditions);
       assert.deepEqual(a.options, m.options);
       assert.deepEqual(a._fields, m._fields);
@@ -1791,7 +1792,7 @@ describe('mquery', function() {
 
     describe('executes', function() {
       before(function(done) {
-        col.insert({ name: 'mquery distinct', age: 1 }, { safe: true }, done);
+        col.insertOne({ name: 'mquery distinct', age: 1 }, done);
       });
 
       after(function(done) {
@@ -1820,7 +1821,7 @@ describe('mquery', function() {
         });
       });
       describe('when Query is passed with a callback', function() {
-        var m = mquery({ name: 'mquery distinct' });
+        const m = mquery({ name: 'mquery distinct' });
         it('if distinct arg was declared', function(done) {
           mquery(col).distinct('age').distinct(m, function(err, doc) {
             assert.ifError(err);
@@ -1836,7 +1837,7 @@ describe('mquery', function() {
       });
       describe('when just a callback is passed', function() {
         it('if distinct arg was declared', function(done) {
-          var m = mquery({ name: 'mquery distinct' });
+          const m = mquery({ name: 'mquery distinct' });
           m.collection(col);
           m.distinct('age');
           m.distinct(function(err, doc) {
@@ -1846,7 +1847,7 @@ describe('mquery', function() {
           });
         });
         it('but not if no distinct arg was declared', function() {
-          var m = mquery();
+          const m = mquery();
           m.collection(col);
           assert.throws(function() {
             m.distinct(function() {});
@@ -1938,39 +1939,39 @@ describe('mquery', function() {
   describe('update', function() {
     describe('with no callback', function() {
       it('does not execute', function() {
-        var m = mquery();
+        const m = mquery();
         assert.doesNotThrow(function() {
-          m.update({ name: 'old' }, { name: 'updated' }, { multi: true });
+          m.updateOne({ name: 'old' }, { name: 'updated' }, { multi: true });
         });
         assert.doesNotThrow(function() {
-          m.update({ name: 'old' }, { name: 'updated' });
+          m.updateOne({ name: 'old' }, { name: 'updated' });
         });
         assert.doesNotThrow(function() {
-          m.update({ name: 'updated' });
+          m.updateOne({ name: 'updated' });
         });
         assert.doesNotThrow(function() {
-          m.update();
+          m.updateOne();
         });
       });
     });
 
     it('is chainable', function() {
-      var m = mquery({x:1}).update({ y: 2 });
-      var n = m.where({y:2});
+      const m = mquery({ x: 1 }).updateOne({ y: 2 });
+      const n = m.where({ y: 2 });
       assert.equal(m, n);
-      assert.deepEqual(n._conditions, {x:1, y:2});
+      assert.deepEqual(n._conditions, { x: 1, y: 2 });
       assert.deepEqual({ y: 2 }, n._update);
-      assert.equal('update', n.op);
+      assert.equal('updateOne', n.op);
     });
 
     it('merges update doc arg', function() {
-      var a = [1,2];
-      var m = mquery().where({ name: 'mquery' }).update({ x: 'stuff', a: a });
-      m.update({ z: 'stuff' });
+      const a = [1, 2];
+      const m = mquery().where({ name: 'mquery' }).updateOne({ x: 'stuff', a: a });
+      m.updateOne({ z: 'stuff' });
       assert.deepEqual(m._update, { z: 'stuff', x: 'stuff', a: a });
       assert.deepEqual(m._conditions, { name: 'mquery' });
       assert.ok(!m.options.overwrite);
-      m.update({}, { z: 'renamed' }, { overwrite: true });
+      m.updateOne({}, { z: 'renamed' }, { overwrite: true });
       assert.ok(m.options.overwrite === true);
       assert.deepEqual(m._conditions, { name: 'mquery' });
       assert.deepEqual(m._update, { z: 'renamed', x: 'stuff', a: a });
@@ -1978,20 +1979,11 @@ describe('mquery', function() {
       assert.notDeepEqual(m._update, { z: 'renamed', x: 'stuff', a: a });
     });
 
-    it('merges other options', function() {
-      var m = mquery();
-      m.setOptions({ overwrite: true });
-      m.update({ age: 77 }, { name: 'pagemill' }, { multi: true });
-      assert.deepEqual({ age: 77 }, m._conditions);
-      assert.deepEqual({ name: 'pagemill' }, m._update);
-      assert.deepEqual({ overwrite: true, multi: true }, m.options);
-    });
-
     describe('executes', function() {
-      var id;
+      let id;
       before(function(done) {
-        col.insert({ name: 'mquery update', age: 1 }, { safe: true }, function(err, res) {
-          id = res.insertedIds[0];
+        col.insertOne({ name: 'mquery update', age: 1 }, function(err, res) {
+          id = res.insertedId;
           done();
         });
       });
@@ -2002,10 +1994,10 @@ describe('mquery', function() {
 
       describe('when conds + doc + opts + callback passed', function() {
         it('works', function(done) {
-          var m = mquery(col).where({ _id: id });
-          m.update({}, { name: 'Sparky' }, { safe: true }, function(err, res) {
+          const m = mquery(col).where({ _id: id });
+          m.updateOne({}, { name: 'Sparky' }, {}, function(err, res) {
             assert.ifError(err);
-            assert.equal(res.result.n, 1);
+            assert.equal(res.modifiedCount, 1);
             m.findOne(function(err, doc) {
               assert.ifError(err);
               assert.equal(doc.name, 'Sparky');
@@ -2017,7 +2009,7 @@ describe('mquery', function() {
 
       describe('when conds + doc + callback passed', function() {
         it('works', function(done) {
-          var m = mquery(col).update({ _id: id }, { name: 'fairgrounds' }, function(err, num) {
+          const m = mquery(col).updateOne({ _id: id }, { name: 'fairgrounds' }, function(err, num) {
             assert.ifError(err);
             assert.ok(1, num);
             m.findOne(function(err, doc) {
@@ -2031,7 +2023,7 @@ describe('mquery', function() {
 
       describe('when doc + callback passed', function() {
         it('works', function(done) {
-          var m = mquery(col).where({ _id: id }).update({ name: 'changed' }, function(err, num) {
+          const m = mquery(col).where({ _id: id }).updateOne({ name: 'changed' }, function(err, num) {
             assert.ifError(err);
             assert.ok(1, num);
             m.findOne(function(err, doc) {
@@ -2045,12 +2037,11 @@ describe('mquery', function() {
 
       describe('when just callback passed', function() {
         it('works', function(done) {
-          var m = mquery(col).where({ _id: id });
-          m.setOptions({ safe: true });
-          m.update({ name: 'Frankenweenie' });
-          m.update(function(err, res) {
+          const m = mquery(col).where({ _id: id });
+          m.updateOne({ name: 'Frankenweenie' });
+          m.updateOne(function(err, res) {
             assert.ifError(err);
-            assert.equal(res.result.n, 1);
+            assert.equal(res.modifiedCount, 1);
             m.findOne(function(err, doc) {
               assert.ifError(err);
               assert.equal(doc.name, 'Frankenweenie');
@@ -2062,16 +2053,15 @@ describe('mquery', function() {
 
       describe('without a callback', function() {
         it('when forced by exec()', function(done) {
-          var m = mquery(col).where({ _id: id });
-          m.setOptions({ safe: true, multi: true });
-          m.update({ name: 'forced' });
+          const m = mquery(col).where({ _id: id });
+          m.setOptions({ w: 'majority' });
+          m.updateOne({ name: 'forced' });
 
-          var update = m._collection.update;
-          m._collection.update = function(conds, doc, opts) {
+          const update = m._collection.update;
+          m._collection.updateOne = function(conds, doc, opts) {
             m._collection.update = update;
 
-            assert.ok(opts.safe);
-            assert.ok(true === opts.multi);
+            assert.equal(opts.w, 'majority');
             assert.equal('forced', doc.$set.name);
             done();
           };
@@ -2082,9 +2072,8 @@ describe('mquery', function() {
 
       describe('except when update doc is empty and missing overwrite flag', function() {
         it('works', function(done) {
-          var m = mquery(col).where({ _id: id });
-          m.setOptions({ safe: true });
-          m.update({ }, function(err, num) {
+          const m = mquery(col).where({ _id: id });
+          m.updateOne({}, function(err, num) {
             assert.ifError(err);
             assert.ok(0 === num);
             setTimeout(function() {
@@ -2100,46 +2089,10 @@ describe('mquery', function() {
         });
       });
 
-      describe('when update doc is set with overwrite flag', function() {
-        it('works', function(done) {
-          var m = mquery(col).where({ _id: id });
-          m.setOptions({ safe: true, overwrite: true });
-          m.update({ all: 'yep', two: 2 }, function(err, res) {
-            assert.ifError(err);
-            assert.equal(res.result.n, 1);
-            m.findOne(function(err, doc) {
-              assert.ifError(err);
-              assert.equal(3, mquery.utils.keys(doc).length);
-              assert.equal('yep', doc.all);
-              assert.equal(2, doc.two);
-              assert.equal(id, doc._id.toString());
-              done();
-            });
-          });
-        });
-      });
-
-      describe('when update doc is empty with overwrite flag', function() {
-        it('works', function(done) {
-          var m = mquery(col).where({ _id: id });
-          m.setOptions({ safe: true, overwrite: true });
-          m.update({ }, function(err, res) {
-            assert.ifError(err);
-            assert.equal(res.result.n, 1);
-            m.findOne(function(err, doc) {
-              assert.ifError(err);
-              assert.equal(1, mquery.utils.keys(doc).length);
-              assert.equal(id, doc._id.toString());
-              done();
-            });
-          });
-        });
-      });
-
       describe('when boolean (true) - exec()', function() {
         it('works', function(done) {
-          var m = mquery(col).where({ _id: id });
-          m.update({ name: 'bool' }).update(true);
+          const m = mquery(col).where({ _id: id });
+          m.updateOne({ name: 'bool' }).updateOne(true);
           setTimeout(function() {
             m.findOne(function(err, doc) {
               assert.ifError(err);
@@ -2155,16 +2108,16 @@ describe('mquery', function() {
 
   describe('remove', function() {
     describe('with 0 args', function() {
-      var name = 'remove: no args test';
+      const name = 'remove: no args test';
       before(function(done) {
-        col.insert({ name: name }, { safe: true }, done);
+        col.insertOne({ name: name }, done);
       });
       after(function(done) {
-        col.remove({ name: name }, { safe: true }, done);
+        col.remove({ name: name }, done);
       });
 
       it('does not execute', function(done) {
-        var remove = col.remove;
+        const remove = col.remove;
         col.remove = function() {
           col.remove = remove;
           done(new Error('remove executed!'));
@@ -2178,36 +2131,36 @@ describe('mquery', function() {
       });
 
       it('chains', function() {
-        var m = mquery();
+        const m = mquery();
         assert.equal(m, m.remove());
       });
     });
 
     describe('with 1 argument', function() {
-      var name = 'remove: 1 arg test';
+      const name = 'remove: 1 arg test';
       before(function(done) {
-        col.insert({ name: name }, { safe: true }, done);
+        col.insertOne({ name: name }, done);
       });
       after(function(done) {
-        col.remove({ name: name }, { safe: true }, done);
+        col.remove({ name: name }, done);
       });
 
       describe('that is a', function() {
         it('plain object', function() {
-          var m = mquery(col).remove({ name: 'Whiskers' });
+          const m = mquery(col).remove({ name: 'Whiskers' });
           m.remove({ color: '#fff' });
           assert.deepEqual({ name: 'Whiskers', color: '#fff' }, m._conditions);
         });
 
         it('query', function() {
-          var q = mquery({ color: '#fff' });
-          var m = mquery(col).remove({ name: 'Whiskers' });
+          const q = mquery({ color: '#fff' });
+          const m = mquery(col).remove({ name: 'Whiskers' });
           m.remove(q);
           assert.deepEqual({ name: 'Whiskers', color: '#fff' }, m._conditions);
         });
 
         it('function', function(done) {
-          mquery(col, { safe: true }).where({name: name}).remove(function(err) {
+          mquery(col).where({ name: name }).remove(function(err) {
             assert.ifError(err);
             mquery(col).findOne({ name: name }, function(err, doc) {
               assert.ifError(err);
@@ -2218,7 +2171,7 @@ describe('mquery', function() {
         });
 
         it('boolean (true) - execute', function(done) {
-          col.insert({ name: name }, { safe: true }, function(err) {
+          col.insertOne({ name: name }, function(err) {
             assert.ifError(err);
             mquery(col).findOne({ name: name }, function(err, doc) {
               assert.ifError(err);
@@ -2239,11 +2192,11 @@ describe('mquery', function() {
     });
 
     describe('with 2 arguments', function() {
-      var name = 'remove: 2 arg test';
+      const name = 'remove: 2 arg test';
       beforeEach(function(done) {
-        col.remove({}, { safe: true }, function(err) {
+        col.remove({}, function(err) {
           assert.ifError(err);
-          col.insert([{ name: 'shelly' }, { name: name }], { safe: true }, function(err) {
+          col.insertMany([{ name: 'shelly' }, { name: name }], function(err) {
             assert.ifError(err);
             mquery(col).find(function(err, docs) {
               assert.ifError(err);
@@ -2271,7 +2224,7 @@ describe('mquery', function() {
 
       describe('mquery + callback', function() {
         it('works', function(done) {
-          var m = mquery({ name: name });
+          const m = mquery({ name: name });
           mquery(col).remove(m, function(err) {
             assert.ifError(err);
             mquery(col).find(function(err, docs) {
@@ -2362,42 +2315,42 @@ describe('mquery', function() {
   }
 
   describe('findOneAndUpdate', function() {
-    var name = 'findOneAndUpdate + fn';
+    let name = 'findOneAndUpdate + fn';
 
     validateFindAndModifyOptions('findOneAndUpdate');
 
     describe('with 0 args', function() {
       it('makes no changes', function() {
-        var m = mquery();
-        var n = m.findOneAndUpdate();
+        const m = mquery();
+        const n = m.findOneAndUpdate();
         assert.deepEqual(m, n);
       });
     });
     describe('with 1 arg', function() {
       describe('that is an object', function() {
         it('updates the doc', function() {
-          var m = mquery();
-          var n = m.findOneAndUpdate({ $set: { name: '1 arg' }});
-          assert.deepEqual(n._update, { $set: { name: '1 arg' }});
+          const m = mquery();
+          const n = m.findOneAndUpdate({ $set: { name: '1 arg' } });
+          assert.deepEqual(n._update, { $set: { name: '1 arg' } });
         });
       });
       describe('that is a query', function() {
         it('updates the doc', function() {
-          var m = mquery({ name: name }).update({ x: 1 });
-          var n = mquery().findOneAndUpdate(m);
+          const m = mquery({ name: name }).updateOne({ x: 1 });
+          const n = mquery().findOneAndUpdate(m);
           assert.deepEqual(n._update, { x: 1 });
         });
       });
       it('that is a function', function(done) {
-        col.insert({ name: name }, { safe: true }, function(err) {
+        col.insertOne({ name: name }, function(err) {
           assert.ifError(err);
-          var m = mquery({ name: name }).collection(col);
+          const m = mquery({ name: name }).collection(col);
           name = '1 arg';
-          var n = m.update({ $set: { name: name }});
+          const n = m.updateOne({ $set: { name: name } }).setOptions({ returnDocument: 'after' });
           n.findOneAndUpdate(function(err, res) {
             assert.ifError(err);
             assert.ok(res.value);
-            assert.equal(name, res.value.name);
+            assert.equal(res.value.name, name);
             done();
           });
         });
@@ -2405,21 +2358,21 @@ describe('mquery', function() {
     });
     describe('with 2 args', function() {
       it('conditions + update', function() {
-        var m = mquery(col);
+        const m = mquery(col);
         m.findOneAndUpdate({ name: name }, { age: 100 });
         assert.deepEqual({ name: name }, m._conditions);
         assert.deepEqual({ age: 100 }, m._update);
       });
       it('query + update', function() {
-        var n = mquery({ name: name });
-        var m = mquery(col);
+        const n = mquery({ name: name });
+        const m = mquery(col);
         m.findOneAndUpdate(n, { age: 100 });
         assert.deepEqual({ name: name }, m._conditions);
         assert.deepEqual({ age: 100 }, m._update);
       });
       it('update + callback', function(done) {
-        var m = mquery(col).where({ name: name });
-        m.findOneAndUpdate({}, { $inc: { age: 10 }}, { new: true }, function(err, res) {
+        const m = mquery(col).where({ name: name });
+        m.findOneAndUpdate({}, { $inc: { age: 10 } }, { returnDocument: 'after' }, function(err, res) {
           assert.ifError(err);
           assert.equal(10, res.value.age);
           done();
@@ -2428,15 +2381,15 @@ describe('mquery', function() {
     });
     describe('with 3 args', function() {
       it('conditions + update + options', function() {
-        var m = mquery();
-        var n = m.findOneAndUpdate({ name: name }, { works: true }, { new: false });
-        assert.deepEqual({ name: name}, n._conditions);
+        const m = mquery();
+        const n = m.findOneAndUpdate({ name: name }, { works: true }, { returnDocument: 'before' });
+        assert.deepEqual({ name: name }, n._conditions);
         assert.deepEqual({ works: true }, n._update);
-        assert.deepEqual({ new: false }, n.options);
+        assert.deepEqual({ returnDocument: 'before' }, n.options);
       });
       it('conditions + update + callback', function(done) {
-        var m = mquery(col);
-        m.findOneAndUpdate({ name: name }, { works: true }, { new: true }, function(err, res) {
+        const m = mquery(col);
+        m.findOneAndUpdate({ name: name }, { works: true }, { returnDocument: 'after' }, function(err, res) {
           assert.ifError(err);
           assert.ok(res.value);
           assert.equal(name, res.value.name);
@@ -2447,8 +2400,8 @@ describe('mquery', function() {
     });
     describe('with 4 args', function() {
       it('conditions + update + options + callback', function(done) {
-        var m = mquery(col);
-        m.findOneAndUpdate({ name: name }, { works: false }, { new: false }, function(err, res) {
+        const m = mquery(col);
+        m.findOneAndUpdate({ name: name }, { works: false }, {}, function(err, res) {
           assert.ifError(err);
           assert.ok(res.value);
           assert.equal(name, res.value.name);
@@ -2460,36 +2413,36 @@ describe('mquery', function() {
   });
 
   describe('findOneAndRemove', function() {
-    var name = 'findOneAndRemove';
+    let name = 'findOneAndRemove';
 
     validateFindAndModifyOptions('findOneAndRemove');
 
     describe('with 0 args', function() {
       it('makes no changes', function() {
-        var m = mquery();
-        var n = m.findOneAndRemove();
+        const m = mquery();
+        const n = m.findOneAndRemove();
         assert.deepEqual(m, n);
       });
     });
     describe('with 1 arg', function() {
       describe('that is an object', function() {
         it('updates the doc', function() {
-          var m = mquery();
-          var n = m.findOneAndRemove({ name: '1 arg' });
+          const m = mquery();
+          const n = m.findOneAndRemove({ name: '1 arg' });
           assert.deepEqual(n._conditions, { name: '1 arg' });
         });
       });
       describe('that is a query', function() {
         it('updates the doc', function() {
-          var m = mquery({ name: name });
-          var n = m.findOneAndRemove(m);
+          const m = mquery({ name: name });
+          const n = m.findOneAndRemove(m);
           assert.deepEqual(n._conditions, { name: name });
         });
       });
       it('that is a function', function(done) {
-        col.insert({ name: name }, { safe: true }, function(err) {
+        col.insertOne({ name: name }, function(err) {
           assert.ifError(err);
-          var m = mquery({ name: name }).collection(col);
+          const m = mquery({ name: name }).collection(col);
           m.findOneAndRemove(function(err, res) {
             assert.ifError(err);
             assert.ok(res.value);
@@ -2501,22 +2454,22 @@ describe('mquery', function() {
     });
     describe('with 2 args', function() {
       it('conditions + options', function() {
-        var m = mquery(col);
-        m.findOneAndRemove({ name: name }, { new: false });
+        const m = mquery(col);
+        m.findOneAndRemove({ name: name }, { returnDocument: 'after' });
         assert.deepEqual({ name: name }, m._conditions);
-        assert.deepEqual({ new: false }, m.options);
+        assert.deepEqual({ returnDocument: 'after' }, m.options);
       });
       it('query + options', function() {
-        var n = mquery({ name: name });
-        var m = mquery(col);
-        m.findOneAndRemove(n, { sort: { x: 1 }});
+        const n = mquery({ name: name });
+        const m = mquery(col);
+        m.findOneAndRemove(n, { sort: { x: 1 } });
         assert.deepEqual({ name: name }, m._conditions);
-        assert.deepEqual({ sort: { 'x': 1 }}, m.options);
+        assert.deepEqual({ sort: { x: 1 } }, m.options);
       });
       it('conditions + callback', function(done) {
-        col.insert({ name: name }, { safe: true }, function(err) {
+        col.insertOne({ name: name }, function(err) {
           assert.ifError(err);
-          var m = mquery(col);
+          const m = mquery(col);
           m.findOneAndRemove({ name: name }, function(err, res) {
             assert.ifError(err);
             assert.equal(name, res.value.name);
@@ -2525,10 +2478,10 @@ describe('mquery', function() {
         });
       });
       it('query + callback', function(done) {
-        col.insert({ name: name }, { safe: true }, function(err) {
+        col.insertOne({ name: name }, function(err) {
           assert.ifError(err);
-          var n = mquery({ name: name });
-          var m = mquery(col);
+          const n = mquery({ name: name });
+          const m = mquery(col);
           m.findOneAndRemove(n, function(err, res) {
             assert.ifError(err);
             assert.equal(name, res.value.name);
@@ -2540,10 +2493,10 @@ describe('mquery', function() {
     describe('with 3 args', function() {
       it('conditions + options + callback', function(done) {
         name = 'findOneAndRemove + conds + options + cb';
-        col.insert([{ name: name }, { name: 'a' }], { safe: true }, function(err) {
+        col.insertMany([{ name: name }, { name: 'a' }], function(err) {
           assert.ifError(err);
-          var m = mquery(col);
-          m.findOneAndRemove({ name: name }, { sort: { name: 1 }}, function(err, res) {
+          const m = mquery(col);
+          m.findOneAndRemove({ name: name }, { sort: { name: 1 } }, function(err, res) {
             assert.ifError(err);
             assert.ok(res.value);
             assert.equal(name, res.value.name);
@@ -2556,7 +2509,7 @@ describe('mquery', function() {
 
   describe('exec', function() {
     beforeEach(function(done) {
-      col.insert([{ name: 'exec', age: 1 }, { name: 'exec', age: 2 }], done);
+      col.insertMany([{ name: 'exec', age: 1 }, { name: 'exec', age: 2 }], done);
     });
 
     afterEach(function(done) {
@@ -2571,7 +2524,7 @@ describe('mquery', function() {
 
     describe('find', function() {
       it('works', function(done) {
-        var m = mquery(col).find({ name: 'exec' });
+        const m = mquery(col).find({ name: 'exec' });
         m.exec(function(err, docs) {
           assert.ifError(err);
           assert.equal(2, docs.length);
@@ -2580,9 +2533,10 @@ describe('mquery', function() {
       });
 
       it('works with readPreferences', function(done) {
-        var m = mquery(col).find({ name: 'exec' });
+        const m = mquery(col).find({ name: 'exec' });
         try {
-          var rp = new require('mongodb').ReadPreference('primary');
+          const ReadPreference = require('mongodb').ReadPreference;
+          const rp = new ReadPreference('primary');
           m.read(rp);
         } catch (e) {
           done(e.code === 'MODULE_NOT_FOUND' ? null : e);
@@ -2609,7 +2563,7 @@ describe('mquery', function() {
       });
 
       it('works with readConcern', function(done) {
-        var m = mquery(col).find({ name: 'exec' });
+        const m = mquery(col).find({ name: 'exec' });
         m.readConcern('l');
         m.exec(function(err, docs) {
           assert.ifError(err);
@@ -2619,7 +2573,7 @@ describe('mquery', function() {
       });
 
       it('works with collation', function(done) {
-        var m = mquery(col).find({ name: 'EXEC' });
+        const m = mquery(col).find({ name: 'EXEC' });
         m.collation({ locale: 'en_US', strength: 1 });
         m.exec(function(err, docs) {
           assert.ifError(err);
@@ -2630,7 +2584,7 @@ describe('mquery', function() {
     });
 
     it('findOne', function(done) {
-      var m = mquery(col).findOne({ age: 2 });
+      const m = mquery(col).findOne({ age: 2 });
       m.exec(function(err, doc) {
         assert.ifError(err);
         assert.equal(2, doc.age);
@@ -2639,7 +2593,7 @@ describe('mquery', function() {
     });
 
     it('count', function(done) {
-      var m = mquery(col).count({ name: 'exec' });
+      const m = mquery(col).count({ name: 'exec' });
       m.exec(function(err, count) {
         assert.ifError(err);
         assert.equal(2, count);
@@ -2648,7 +2602,7 @@ describe('mquery', function() {
     });
 
     it('distinct', function(done) {
-      var m = mquery({ name: 'exec' });
+      const m = mquery({ name: 'exec' });
       m.collection(col);
       m.distinct('age');
       m.exec(function(err, array) {
@@ -2662,29 +2616,6 @@ describe('mquery', function() {
     });
 
     describe('update', function() {
-      var num;
-
-      it('with a callback', function(done) {
-        var m = mquery(col);
-        m.where({ name: 'exec' });
-
-        m.count(function(err, _num) {
-          assert.ifError(err);
-          num = _num;
-          m.setOptions({ multi: true });
-          m.update({ name: 'exec + update' });
-          m.exec(function(err, res) {
-            assert.ifError(err);
-            assert.equal(num, res.result.n);
-            mquery(col).find({ name: 'exec + update' }, function(err, docs) {
-              assert.ifError(err);
-              assert.equal(num, docs.length);
-              done();
-            });
-          });
-        });
-      });
-
       describe('updateMany', function() {
         it('works', function(done) {
           mquery(col).updateMany({ name: 'exec' }, { name: 'test' }).
@@ -2739,55 +2670,20 @@ describe('mquery', function() {
             });
         });
       });
-
-      it('without a callback', function(done) {
-        var m = mquery(col);
-        m.where({ name: 'exec + update' }).setOptions({ multi: true });
-        m.update({ name: 'exec' });
-
-        // unsafe write
-        m.exec();
-
-        setTimeout(function() {
-          mquery(col).find({ name: 'exec' }, function(err, docs) {
-            assert.ifError(err);
-            assert.equal(2, docs.length);
-            done();
-          });
-        }, 200);
-      });
-      it('preserves key ordering', function(done) {
-        var m = mquery(col);
-
-        var m2 = m.update({ _id : 'something' }, { '1' : 1, '2' : 2, '3' : 3});
-        var doc = m2._updateForExec().$set;
-        var count = 0;
-        for (var i in doc) {
-          if (count == 0) {
-            assert.equal('1', i);
-          } else if (count == 1) {
-            assert.equal('2', i);
-          } else if (count == 2) {
-            assert.equal('3', i);
-          }
-          count++;
-        }
-        done();
-      });
     });
 
     describe('remove', function() {
       it('with a callback', function(done) {
-        var m = mquery(col).where({ age: 2 }).remove();
+        const m = mquery(col).where({ age: 2 }).remove();
         m.exec(function(err, res) {
           assert.ifError(err);
-          assert.equal(1, res.result.n);
+          assert.equal(1, res.deletedCount);
           done();
         });
       });
 
       it('without a callback', function(done) {
-        var m = mquery(col).where({ age: 1 }).remove();
+        const m = mquery(col).where({ age: 1 }).remove();
         m.exec();
 
         setTimeout(function() {
@@ -2801,22 +2697,22 @@ describe('mquery', function() {
 
     describe('deleteOne', function() {
       it('with a callback', function(done) {
-        var m = mquery(col).where({ age: { $gte: 0 } }).deleteOne();
+        const m = mquery(col).where({ age: { $gte: 0 } }).deleteOne();
         m.exec(function(err, res) {
           assert.ifError(err);
-          assert.equal(res.result.n, 1);
+          assert.equal(res.deletedCount, 1);
           done();
         });
       });
 
       it('with justOne set', function(done) {
-        var m = mquery(col).where({ age: { $gte: 0 } }).
+        const m = mquery(col).where({ age: { $gte: 0 } }).
           // Should ignore `justOne`
           setOptions({ justOne: false }).
           deleteOne();
         m.exec(function(err, res) {
           assert.ifError(err);
-          assert.equal(res.result.n, 1);
+          assert.equal(res.deletedCount, 1);
           done();
         });
       });
@@ -2824,10 +2720,10 @@ describe('mquery', function() {
 
     describe('deleteMany', function() {
       it('with a callback', function(done) {
-        var m = mquery(col).where({ age: { $gte: 0 } }).deleteMany();
+        const m = mquery(col).where({ age: { $gte: 0 } }).deleteMany();
         m.exec(function(err, res) {
           assert.ifError(err);
-          assert.equal(res.result.n, 2);
+          assert.equal(res.deletedCount, 2);
           done();
         });
       });
@@ -2835,8 +2731,8 @@ describe('mquery', function() {
 
     describe('findOneAndUpdate', function() {
       it('with a callback', function(done) {
-        var m = mquery(col);
-        m.findOneAndUpdate({ name: 'exec', age: 1 }, { $set: { name: 'findOneAndUpdate' }});
+        const m = mquery(col);
+        m.findOneAndUpdate({ name: 'exec', age: 1 }, { $set: { name: 'findOneAndUpdate' } }, { returnDocument: 'after' });
         m.exec(function(err, res) {
           assert.ifError(err);
           assert.equal('findOneAndUpdate', res.value.name);
@@ -2847,7 +2743,7 @@ describe('mquery', function() {
 
     describe('findOneAndRemove', function() {
       it('with a callback', function(done) {
-        var m = mquery(col);
+        const m = mquery(col);
         m.findOneAndRemove({ name: 'exec', age: 2 });
         m.exec(function(err, res) {
           assert.ifError(err);
@@ -2865,13 +2761,13 @@ describe('mquery', function() {
 
   describe('setTraceFunction', function() {
     beforeEach(function(done) {
-      col.insert([{ name: 'trace', age: 93 }], done);
+      col.insertMany([{ name: 'trace', age: 93 }], done);
     });
 
     it('calls trace function when executing query', function(done) {
-      var m = mquery(col);
+      const m = mquery(col);
 
-      var resultTraceCalled;
+      let resultTraceCalled;
 
       m.setTraceFunction(function(method, queryInfo) {
         try {
@@ -2892,7 +2788,7 @@ describe('mquery', function() {
         };
       });
 
-      m.findOne({name: 'trace'}, function(err, doc) {
+      m.findOne({ name: 'trace' }, function(err, doc) {
         assert.ifError(err);
         assert.equal(resultTraceCalled, true);
         assert.equal(93, doc.age);
@@ -2903,9 +2799,9 @@ describe('mquery', function() {
     it('inherits trace function when calling toConstructor', function(done) {
       function traceFunction() { return function() {}; }
 
-      var tracedQuery = mquery().setTraceFunction(traceFunction).toConstructor();
+      const tracedQuery = mquery().setTraceFunction(traceFunction).toConstructor();
 
-      var query = tracedQuery();
+      const query = tracedQuery();
       assert.equal(traceFunction, query._traceFunction);
 
       done();
@@ -2920,7 +2816,7 @@ describe('mquery', function() {
 
     it('passes the fn arg to `exec`', function(done) {
       function cb() {}
-      var m = mquery();
+      const m = mquery();
 
       m.exec = function testing(fn) {
         assert.equal(this, m);
@@ -2934,7 +2830,7 @@ describe('mquery', function() {
 
   describe('then', function() {
     before(function(done) {
-      col.insert([{ name: 'then', age: 1 }, { name: 'then', age: 2 }], done);
+      col.insertMany([{ name: 'then', age: 1 }, { name: 'then', age: 2 }], done);
     });
 
     after(function(done) {
@@ -2942,13 +2838,13 @@ describe('mquery', function() {
     });
 
     it('returns a promise A+ compat object', function(done) {
-      var m = mquery(col).find();
+      const m = mquery(col).find();
       assert.equal('function', typeof m.then);
       done();
     });
 
     it('creates a promise that is resolved on success', function(done) {
-      var promise = mquery(col).count({ name: 'then' }).then();
+      const promise = mquery(col).count({ name: 'then' }).then();
       promise.then(function(count) {
         assert.equal(2, count);
         done();
@@ -2956,7 +2852,7 @@ describe('mquery', function() {
     });
 
     it('supports exec() cb being called synchronously #66', function(done) {
-      var query = mquery(col).count({ name: 'then' });
+      const query = mquery(col).count({ name: 'then' });
       query.exec = function(cb) {
         cb(null, 66);
       };
@@ -2967,27 +2863,11 @@ describe('mquery', function() {
         done();
       }
     });
-
-    it('supports other Promise libs', function(done) {
-      var bluebird = mquery.Promise;
-
-      // hack for testing
-      mquery.Promise = function P() {
-        mquery.Promise = bluebird;
-        this.then = function(x, y) {
-          return x + y;
-        };
-      };
-
-      var val = mquery(col).count({ name: 'exec' }).then(1, 2);
-      assert.equal(val, 3);
-      done();
-    });
   });
 
   describe('stream', function() {
     before(function(done) {
-      col.insert([{ name: 'stream', age: 1 }, { name: 'stream', age: 2 }], done);
+      col.insertMany([{ name: 'stream', age: 1 }, { name: 'stream', age: 2 }], done);
     });
 
     after(function(done) {
@@ -2996,7 +2876,7 @@ describe('mquery', function() {
 
     describe('throws', function() {
       describe('if used with non-find operations', function() {
-        var ops = ['update', 'findOneAndUpdate', 'remove', 'count', 'distinct'];
+        const ops = ['update', 'findOneAndUpdate', 'remove', 'count', 'distinct'];
 
         ops.forEach(function(op) {
           assert.throws(function() {
@@ -3007,9 +2887,9 @@ describe('mquery', function() {
     });
 
     it('returns a stream', function(done) {
-      var stream = mquery(col).find({ name: 'stream' }).stream();
-      var count = 0;
-      var err;
+      const stream = mquery(col).find({ name: 'stream' }).cursor().stream();
+      let count = 0;
+      let err;
 
       stream.on('data', function(doc) {
         assert.equal('stream', doc.name);
@@ -3050,21 +2930,21 @@ describe('mquery', function() {
 
   describe('_updateForExec', function() {
     it('returns a clone of the update object with same key order #19', function(done) {
-      var update = {};
-      update.$push = { n: { $each: [{x:10}], $slice: -1, $sort: {x:1}}};
+      const update = {};
+      update.$push = { n: { $each: [{ x: 10 }], $slice: -1, $sort: { x: 1 } } };
 
-      var q = mquery().update({ x: 1 }, update);
+      const q = mquery().updateOne({ x: 1 }, update);
 
       // capture original key order
-      var order = [];
-      var key;
+      const order = [];
+      let key;
       for (key in q._update.$push.n) {
         order.push(key);
       }
 
       // compare output
-      var doc = q._updateForExec();
-      var i = 0;
+      const doc = q._updateForExec();
+      let i = 0;
       for (key in doc.$push.n) {
         assert.equal(key, order[i]);
         i++;

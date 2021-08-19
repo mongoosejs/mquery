@@ -1,10 +1,11 @@
+'use strict';
 
-var assert = require('assert');
-var mongo = require('mongodb');
+const assert = require('assert');
+const mongo = require('mongodb');
 
-var uri = process.env.MQUERY_URI || 'mongodb://localhost/mquery';
-var client;
-var db;
+const uri = process.env.MQUERY_URI || 'mongodb://localhost/mquery';
+let client;
+let db;
 
 exports.getCollection = function(cb) {
   mongo.MongoClient.connect(uri, function(err, _client) {
@@ -12,7 +13,7 @@ exports.getCollection = function(cb) {
     client = _client;
     db = client.db();
 
-    var collection = db.collection('stuff');
+    const collection = db.collection('stuff');
 
     // clean test db before starting
     db.dropDatabase(function() {

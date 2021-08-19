@@ -266,7 +266,7 @@ When executed, the first matching document (if found) is modified according to t
 
 Options are passed to the `setOptions()` method.
 
-- `new`: boolean - true to return the modified document rather than the original. defaults to true
+- `returnDocument`: string - `'after'` to return the modified document rather than the original. defaults to `'before'`
 - `upsert`: boolean - creates the object if it doesn't exist. defaults to false
 - `sort`: if multiple docs are found by the match condition, sets the sort order to choose which doc to update
 
@@ -1240,8 +1240,6 @@ mquery().setOptions({ collection: coll, limit: 20 })
 - [comment](#comment) *
 - [snapshot](#snapshot) *
 - [hint](#hint) *
-- [slaveOk](#slaveOk) *
-- [safe](http://docs.mongodb.org/manual/reference/write-concern/): Boolean - passed through to the collection. Setting to `true` is equivalent to `{ w: 1 }`
 - [collection](#collection): the collection to query against
 
 _* denotes a query helper method is also available_
