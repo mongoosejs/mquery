@@ -1505,7 +1505,7 @@ describe('mquery', function() {
 
     describe('executes', function() {
       before(function(done) {
-        col.insert({ name: 'mquery' }, { safe: true }, done);
+        col.insertOne({ name: 'mquery' }, done);
       });
 
       after(function(done) {
@@ -1570,7 +1570,7 @@ describe('mquery', function() {
 
     describe('executes', function() {
       before(function(done) {
-        col.insert({ name: 'mquery findone' }, { safe: true }, done);
+        col.insertOne({ name: 'mquery findone' }, done);
       });
 
       after(function(done) {
@@ -1638,7 +1638,7 @@ describe('mquery', function() {
 
     describe('executes', function() {
       before(function(done) {
-        col.insert({ name: 'mquery count' }, { safe: true }, done);
+        col.insertOne({ name: 'mquery count' }, done);
       });
 
       after(function(done) {
@@ -1792,7 +1792,7 @@ describe('mquery', function() {
 
     describe('executes', function() {
       before(function(done) {
-        col.insert({ name: 'mquery distinct', age: 1 }, { safe: true }, done);
+        col.insertOne({ name: 'mquery distinct', age: 1 }, done);
       });
 
       after(function(done) {
@@ -1982,8 +1982,8 @@ describe('mquery', function() {
     describe('executes', function() {
       let id;
       before(function(done) {
-        col.insert({ name: 'mquery update', age: 1 }, {}, function(err, res) {
-          id = res.insertedIds[0];
+        col.insertOne({ name: 'mquery update', age: 1 }, function(err, res) {
+          id = res.insertedId;
           done();
         });
       });
@@ -2113,7 +2113,7 @@ describe('mquery', function() {
     describe('with 0 args', function() {
       const name = 'remove: no args test';
       before(function(done) {
-        col.insert({ name: name }, { safe: true }, done);
+        col.insertOne({ name: name }, done);
       });
       after(function(done) {
         col.remove({ name: name }, { safe: true }, done);
@@ -2142,7 +2142,7 @@ describe('mquery', function() {
     describe('with 1 argument', function() {
       const name = 'remove: 1 arg test';
       before(function(done) {
-        col.insert({ name: name }, { safe: true }, done);
+        col.insertOne({ name: name }, done);
       });
       after(function(done) {
         col.remove({ name: name }, { safe: true }, done);
@@ -2174,7 +2174,7 @@ describe('mquery', function() {
         });
 
         it('boolean (true) - execute', function(done) {
-          col.insert({ name: name }, { safe: true }, function(err) {
+          col.insertOne({ name: name }, function(err) {
             assert.ifError(err);
             mquery(col).findOne({ name: name }, function(err, doc) {
               assert.ifError(err);
@@ -2199,7 +2199,7 @@ describe('mquery', function() {
       beforeEach(function(done) {
         col.remove({}, { safe: true }, function(err) {
           assert.ifError(err);
-          col.insert([{ name: 'shelly' }, { name: name }], { safe: true }, function(err) {
+          col.insertMany([{ name: 'shelly' }, { name: name }], function(err) {
             assert.ifError(err);
             mquery(col).find(function(err, docs) {
               assert.ifError(err);
@@ -2345,7 +2345,7 @@ describe('mquery', function() {
         });
       });
       it('that is a function', function(done) {
-        col.insert({ name: name }, {}, function(err) {
+        col.insertOne({ name: name }, function(err) {
           assert.ifError(err);
           const m = mquery({ name: name }).collection(col);
           name = '1 arg';
@@ -2404,7 +2404,7 @@ describe('mquery', function() {
     describe('with 4 args', function() {
       it('conditions + update + options + callback', function(done) {
         const m = mquery(col);
-        m.findOneAndUpdate({ name: name }, { works: false }, { new: false }, function(err, res) {
+        m.findOneAndUpdate({ name: name }, { works: false }, {}, function(err, res) {
           assert.ifError(err);
           assert.ok(res.value);
           assert.equal(name, res.value.name);
@@ -2443,7 +2443,7 @@ describe('mquery', function() {
         });
       });
       it('that is a function', function(done) {
-        col.insert({ name: name }, { safe: true }, function(err) {
+        col.insertOne({ name: name }, function(err) {
           assert.ifError(err);
           const m = mquery({ name: name }).collection(col);
           m.findOneAndRemove(function(err, res) {
@@ -2458,9 +2458,9 @@ describe('mquery', function() {
     describe('with 2 args', function() {
       it('conditions + options', function() {
         const m = mquery(col);
-        m.findOneAndRemove({ name: name }, { new: false });
+        m.findOneAndRemove({ name: name }, { returnDocument: 'after' });
         assert.deepEqual({ name: name }, m._conditions);
-        assert.deepEqual({ new: false }, m.options);
+        assert.deepEqual({ returnDocument: 'after' }, m.options);
       });
       it('query + options', function() {
         const n = mquery({ name: name });
@@ -2470,7 +2470,7 @@ describe('mquery', function() {
         assert.deepEqual({ sort: { x: 1 } }, m.options);
       });
       it('conditions + callback', function(done) {
-        col.insert({ name: name }, { safe: true }, function(err) {
+        col.insertOne({ name: name }, function(err) {
           assert.ifError(err);
           const m = mquery(col);
           m.findOneAndRemove({ name: name }, function(err, res) {
@@ -2481,7 +2481,7 @@ describe('mquery', function() {
         });
       });
       it('query + callback', function(done) {
-        col.insert({ name: name }, { safe: true }, function(err) {
+        col.insertOne({ name: name }, function(err) {
           assert.ifError(err);
           const n = mquery({ name: name });
           const m = mquery(col);
@@ -2496,7 +2496,7 @@ describe('mquery', function() {
     describe('with 3 args', function() {
       it('conditions + options + callback', function(done) {
         name = 'findOneAndRemove + conds + options + cb';
-        col.insert([{ name: name }, { name: 'a' }], { safe: true }, function(err) {
+        col.insertMany([{ name: name }, { name: 'a' }], function(err) {
           assert.ifError(err);
           const m = mquery(col);
           m.findOneAndRemove({ name: name }, { sort: { name: 1 } }, function(err, res) {
@@ -2512,7 +2512,7 @@ describe('mquery', function() {
 
   describe('exec', function() {
     beforeEach(function(done) {
-      col.insert([{ name: 'exec', age: 1 }, { name: 'exec', age: 2 }], done);
+      col.insertMany([{ name: 'exec', age: 1 }, { name: 'exec', age: 2 }], done);
     });
 
     afterEach(function(done) {
@@ -2764,7 +2764,7 @@ describe('mquery', function() {
 
   describe('setTraceFunction', function() {
     beforeEach(function(done) {
-      col.insert([{ name: 'trace', age: 93 }], done);
+      col.insertMany([{ name: 'trace', age: 93 }], done);
     });
 
     it('calls trace function when executing query', function(done) {
@@ -2833,7 +2833,7 @@ describe('mquery', function() {
 
   describe('then', function() {
     before(function(done) {
-      col.insert([{ name: 'then', age: 1 }, { name: 'then', age: 2 }], done);
+      col.insertMany([{ name: 'then', age: 1 }, { name: 'then', age: 2 }], done);
     });
 
     after(function(done) {
@@ -2870,7 +2870,7 @@ describe('mquery', function() {
 
   describe('stream', function() {
     before(function(done) {
-      col.insert([{ name: 'stream', age: 1 }, { name: 'stream', age: 2 }], done);
+      col.insertMany([{ name: 'stream', age: 1 }, { name: 'stream', age: 2 }], done);
     });
 
     after(function(done) {
@@ -2890,7 +2890,7 @@ describe('mquery', function() {
     });
 
     it('returns a stream', function(done) {
-      const stream = mquery(col).find({ name: 'stream' }).stream();
+      const stream = mquery(col).find({ name: 'stream' }).cursor().stream();
       let count = 0;
       let err;
 
