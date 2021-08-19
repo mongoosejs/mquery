@@ -1509,7 +1509,7 @@ describe('mquery', function() {
       });
 
       after(function(done) {
-        col.remove({ name: 'mquery' }, done);
+        col.deleteMany({ name: 'mquery' }, done);
       });
 
       it('when criteria is passed with a callback', function(done) {
@@ -1574,7 +1574,7 @@ describe('mquery', function() {
       });
 
       after(function(done) {
-        col.remove({ name: 'mquery findone' }, done);
+        col.deleteMany({ name: 'mquery findone' }, done);
       });
 
       it('when criteria is passed with a callback', function(done) {
@@ -1642,7 +1642,7 @@ describe('mquery', function() {
       });
 
       after(function(done) {
-        col.remove({ name: 'mquery count' }, done);
+        col.deleteMany({ name: 'mquery count' }, done);
       });
 
       it('when criteria is passed with a callback', function(done) {
@@ -1796,7 +1796,7 @@ describe('mquery', function() {
       });
 
       after(function(done) {
-        col.remove({ name: 'mquery distinct' }, done);
+        col.deleteMany({ name: 'mquery distinct' }, done);
       });
 
       it('when distinct arg is passed with a callback', function(done) {
@@ -1989,7 +1989,7 @@ describe('mquery', function() {
       });
 
       after(function(done) {
-        col.remove({ _id: id }, done);
+        col.deleteMany({ _id: id }, done);
       });
 
       describe('when conds + doc + opts + callback passed', function() {
@@ -2101,140 +2101,6 @@ describe('mquery', function() {
               done();
             });
           }, 300);
-        });
-      });
-    });
-  });
-
-  describe('remove', function() {
-    describe('with 0 args', function() {
-      const name = 'remove: no args test';
-      before(function(done) {
-        col.insertOne({ name: name }, done);
-      });
-      after(function(done) {
-        col.remove({ name: name }, done);
-      });
-
-      it('does not execute', function(done) {
-        const remove = col.remove;
-        col.remove = function() {
-          col.remove = remove;
-          done(new Error('remove executed!'));
-        };
-
-        mquery(col).where({ name: name }).remove();
-        setTimeout(function() {
-          col.remove = remove;
-          done();
-        }, 10);
-      });
-
-      it('chains', function() {
-        const m = mquery();
-        assert.equal(m, m.remove());
-      });
-    });
-
-    describe('with 1 argument', function() {
-      const name = 'remove: 1 arg test';
-      before(function(done) {
-        col.insertOne({ name: name }, done);
-      });
-      after(function(done) {
-        col.remove({ name: name }, done);
-      });
-
-      describe('that is a', function() {
-        it('plain object', function() {
-          const m = mquery(col).remove({ name: 'Whiskers' });
-          m.remove({ color: '#fff' });
-          assert.deepEqual({ name: 'Whiskers', color: '#fff' }, m._conditions);
-        });
-
-        it('query', function() {
-          const q = mquery({ color: '#fff' });
-          const m = mquery(col).remove({ name: 'Whiskers' });
-          m.remove(q);
-          assert.deepEqual({ name: 'Whiskers', color: '#fff' }, m._conditions);
-        });
-
-        it('function', function(done) {
-          mquery(col).where({ name: name }).remove(function(err) {
-            assert.ifError(err);
-            mquery(col).findOne({ name: name }, function(err, doc) {
-              assert.ifError(err);
-              assert.equal(null, doc);
-              done();
-            });
-          });
-        });
-
-        it('boolean (true) - execute', function(done) {
-          col.insertOne({ name: name }, function(err) {
-            assert.ifError(err);
-            mquery(col).findOne({ name: name }, function(err, doc) {
-              assert.ifError(err);
-              assert.ok(doc);
-              mquery(col).remove(true);
-              setTimeout(function() {
-                mquery(col).find(function(err, docs) {
-                  assert.ifError(err);
-                  assert.ok(docs);
-                  assert.equal(0, docs.length);
-                  done();
-                });
-              }, 300);
-            });
-          });
-        });
-      });
-    });
-
-    describe('with 2 arguments', function() {
-      const name = 'remove: 2 arg test';
-      beforeEach(function(done) {
-        col.remove({}, function(err) {
-          assert.ifError(err);
-          col.insertMany([{ name: 'shelly' }, { name: name }], function(err) {
-            assert.ifError(err);
-            mquery(col).find(function(err, docs) {
-              assert.ifError(err);
-              assert.equal(2, docs.length);
-              done();
-            });
-          });
-        });
-      });
-
-      describe('plain object + callback', function() {
-        it('works', function(done) {
-          mquery(col).remove({ name: name }, function(err) {
-            assert.ifError(err);
-            mquery(col).find(function(err, docs) {
-              assert.ifError(err);
-              assert.ok(docs);
-              assert.equal(1, docs.length);
-              assert.equal('shelly', docs[0].name);
-              done();
-            });
-          });
-        });
-      });
-
-      describe('mquery + callback', function() {
-        it('works', function(done) {
-          const m = mquery({ name: name });
-          mquery(col).remove(m, function(err) {
-            assert.ifError(err);
-            mquery(col).find(function(err, docs) {
-              assert.ifError(err);
-              assert.ok(docs);
-              assert.equal(1, docs.length);
-              assert.equal('shelly', docs[0].name);
-              done();
-            });
-          });
         });
       });
     });
@@ -2513,7 +2379,7 @@ describe('mquery', function() {
     });
 
     afterEach(function(done) {
-      mquery(col).remove(done);
+      mquery(col).deleteMany(done);
     });
 
     it('requires an op', function() {
@@ -2672,29 +2538,6 @@ describe('mquery', function() {
       });
     });
 
-    describe('remove', function() {
-      it('with a callback', function(done) {
-        const m = mquery(col).where({ age: 2 }).remove();
-        m.exec(function(err, res) {
-          assert.ifError(err);
-          assert.equal(1, res.deletedCount);
-          done();
-        });
-      });
-
-      it('without a callback', function(done) {
-        const m = mquery(col).where({ age: 1 }).remove();
-        m.exec();
-
-        setTimeout(function() {
-          mquery(col).where('name', 'exec').count(function(err, num) {
-            assert.equal(1, num);
-            done();
-          });
-        }, 200);
-      });
-    });
-
     describe('deleteOne', function() {
       it('with a callback', function(done) {
         const m = mquery(col).where({ age: { $gte: 0 } }).deleteOne();
@@ -2834,7 +2677,7 @@ describe('mquery', function() {
     });
 
     after(function(done) {
-      mquery(col).remove({ name: 'then' }).exec(done);
+      mquery(col).deleteMany({ name: 'then' }).exec(done);
     });
 
     it('returns a promise A+ compat object', function(done) {
@@ -2871,7 +2714,7 @@ describe('mquery', function() {
     });
 
     after(function(done) {
-      mquery(col).remove({ name: 'stream' }).exec(done);
+      mquery(col).deleteMany({ name: 'stream' }).exec(done);
     });
 
     describe('throws', function() {
