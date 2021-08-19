@@ -1,11 +1,11 @@
 'use strict';
 
-var Buffer = require('safe-buffer').Buffer;
-var utils = require('../lib/utils');
-var assert = require('assert');
-var debug = require('debug');
+const Buffer = require('safe-buffer').Buffer;
+const utils = require('../lib/utils');
+const assert = require('assert');
+const debug = require('debug');
 
-var mongo;
+let mongo;
 try {
   mongo = new require('mongodb');
 } catch (e) {
@@ -19,8 +19,8 @@ describe('lib/utils', function() {
         this.id = id;
       }
 
-      var o1 = new ObjectId('1234');
-      var o2 = utils.clone(o1);
+      const o1 = new ObjectId('1234');
+      const o2 = utils.clone(o1);
       assert.ok(o2 instanceof ObjectId);
 
       done();
@@ -31,8 +31,8 @@ describe('lib/utils', function() {
         this.id = id;
       }
 
-      var o1 = new ObjectID('1234');
-      var o2 = utils.clone(o1);
+      const o1 = new ObjectID('1234');
+      const o2 = utils.clone(o1);
 
       assert.ok(o2 instanceof ObjectID);
       done();
@@ -43,8 +43,8 @@ describe('lib/utils', function() {
         this.id = id;
       }
 
-      var o1 = new ObjectIdd('1234');
-      var o2 = utils.clone(o1);
+      const o1 = new ObjectIdd('1234');
+      const o2 = utils.clone(o1);
       assert.ok(!(o2 instanceof ObjectIdd));
 
       done();
@@ -57,17 +57,17 @@ describe('lib/utils', function() {
       }
 
       ObjectID.prototype.clone = function() {
-        var ret = new ObjectID(this.id);
+        const ret = new ObjectID(this.id);
         ret.cloned = true;
         return ret;
       };
 
-      var id = 1234;
-      var o1 = new ObjectID(id);
+      const id = 1234;
+      const o1 = new ObjectID(id);
       assert.equal(id, o1.id);
       assert.equal(false, o1.cloned);
 
-      var o2 = utils.clone(o1);
+      const o2 = utils.clone(o1);
       assert.ok(o2 instanceof ObjectID);
       assert.equal(id, o2.id);
       assert.ok(o2.cloned);
@@ -77,18 +77,18 @@ describe('lib/utils', function() {
     it('clones mongodb.ReadPreferences', function(done) {
       if (!mongo) return done();
 
-      var tags = [
-        {dc: 'tag1'}
+      const tags = [
+        { dc: 'tag1' }
       ];
-      var prefs = [
+      const prefs = [
         new mongo.ReadPreference('primary'),
         new mongo.ReadPreference(mongo.ReadPreference.PRIMARY_PREFERRED),
         new mongo.ReadPreference('secondary', tags)
       ];
 
-      var prefsCloned = utils.clone(prefs);
+      const prefsCloned = utils.clone(prefs);
 
-      for (var i = 0; i < prefsCloned.length; i++) {
+      for (let i = 0; i < prefsCloned.length; i++) {
         assert.notEqual(prefs[i], prefsCloned[i]);
         if (prefs[i].tags) {
           assert.ok(prefsCloned[i].tags);
@@ -104,9 +104,9 @@ describe('lib/utils', function() {
 
     it('clones mongodb.Binary', function(done) {
       if (!mongo) return done();
-      var buf = Buffer.from('hi');
-      var binary = new mongo.Binary(buf, 2);
-      var clone = utils.clone(binary);
+      const buf = Buffer.from('hi');
+      const binary = new mongo.Binary(buf, 2);
+      const clone = utils.clone(binary);
       assert.equal(binary.sub_type, clone.sub_type);
       assert.equal(String(binary.buffer), String(buf));
       assert.ok(binary !== clone);
@@ -114,12 +114,12 @@ describe('lib/utils', function() {
     });
 
     it('handles objects with no constructor', function(done) {
-      var name = '335';
+      const name = '335';
 
-      var o = Object.create(null);
+      const o = Object.create(null);
       o.name = name;
 
-      var clone;
+      let clone;
       assert.doesNotThrow(function() {
         clone = utils.clone(o);
       });
@@ -130,11 +130,11 @@ describe('lib/utils', function() {
     });
 
     it('handles buffers', function(done) {
-      var buff = Buffer.alloc(10);
+      const buff = Buffer.alloc(10);
       buff.fill(1);
-      var clone = utils.clone(buff);
+      const clone = utils.clone(buff);
 
-      for (var i = 0; i < buff.length; i++) {
+      for (let i = 0; i < buff.length; i++) {
         assert.equal(buff[i], clone[i]);
       }
 
@@ -142,8 +142,8 @@ describe('lib/utils', function() {
     });
 
     it('skips __proto__', function() {
-      var payload = JSON.parse('{"__proto__": {"polluted": "vulnerable"}}');
-      var res = utils.clone(payload);
+      const payload = JSON.parse('{"__proto__": {"polluted": "vulnerable"}}');
+      const res = utils.clone(payload);
 
       assert.strictEqual({}.polluted, void 0);
       assert.strictEqual(res.__proto__, Object.prototype);
@@ -152,8 +152,8 @@ describe('lib/utils', function() {
 
   describe('merge', function() {
     it('avoids prototype pollution', function() {
-      var payload = JSON.parse('{"__proto__": {"polluted": "vulnerable"}}');
-      var obj = {};
+      const payload = JSON.parse('{"__proto__": {"polluted": "vulnerable"}}');
+      const obj = {};
       utils.merge(obj, payload);
 
       assert.strictEqual({}.polluted, void 0);

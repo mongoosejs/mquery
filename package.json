@@ -22,6 +22,7 @@
   },
   "devDependencies": {
     "eslint": "5.x",
+    "eslint-plugin-mocha-no-only": "1.1.0",
     "mocha": "9.x",
     "mongodb": "4.x"
   },
@@ -35,48 +36,5 @@
     "query",
     "builder"
   ],
-  "homepage": "https://github.com/aheckmann/mquery/",
-  "eslintConfig": {
-    "env": {
-      "node": true,
-      "mocha": true,
-      "es6": false
-    },
-    "extends": "eslint:recommended",
-    "parserOptions": {
-      "ecmaVersion": 5
-    },
-    "rules": {
-      "comma-style": "error",
-      "consistent-this": [
-        "error",
-        "_this"
-      ],
-      "indent": [
-        "error",
-        2,
-        {
-          "SwitchCase": 1,
-          "VariableDeclarator": 2
-        }
-      ],
-      "keyword-spacing": "error",
-      "no-console": "off",
-      "no-multi-spaces": "error",
-      "func-call-spacing": "error",
-      "no-trailing-spaces": "error",
-      "quotes": [
-        "error",
-        "single"
-      ],
-      "semi": "error",
-      "space-before-blocks": "error",
-      "space-before-function-paren": [
-        "error",
-        "never"
-      ],
-      "space-infix-ops": "error",
-      "space-unary-ops": "error"
-    }
-  }
+  "homepage": "https://github.com/aheckmann/mquery/"
 }
