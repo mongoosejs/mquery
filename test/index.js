@@ -1996,7 +1996,6 @@ describe('mquery', function() {
           var m = mquery(col).where({ _id: id });
           m.updateOne({}, { name: 'Sparky' }, {}, function(err, res) {
             assert.ifError(err);
-            console.log(res);
             assert.equal(res.modifiedCount, 1);
             m.findOne(function(err, doc) {
               assert.ifError(err);
@@ -2680,7 +2679,6 @@ describe('mquery', function() {
         var m = mquery(col).where({ age: 2 }).remove();
         m.exec(function(err, res) {
           assert.ifError(err);
-          console.log(res)
           assert.equal(1, res.deletedCount);
           done();
         });

@@ -18,7 +18,6 @@
   "dependencies": {
     "debug": "4.x",
     "regexp-clone": "^1.0.0",
-    "safe-buffer": "5.1.2",
     "sliced": "1.0.1"
   },
   "devDependencies": {
