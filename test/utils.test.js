@@ -1,6 +1,5 @@
 'use strict';
 
-const Buffer = require('safe-buffer').Buffer;
 const utils = require('../lib/utils');
 const assert = require('assert');
 const debug = require('debug');
