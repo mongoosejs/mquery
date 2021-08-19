@@ -49,10 +49,10 @@ describe('mquery', function() {
     describe('options', function() {
       it('are merged when passed', function() {
         let m;
-        m = mquery(col, { safe: true });
-        assert.deepEqual({ safe: true }, m.options);
-        m = mquery({ name: 'mquery' }, { safe: true });
-        assert.deepEqual({ safe: true }, m.options);
+        m = mquery(col, { w: 'majority' });
+        assert.deepEqual({ w: 'majority' }, m.options);
+        m = mquery({ name: 'mquery' }, { w: 'majority' });
+        assert.deepEqual({ w: 'majority' }, m.options);
       });
     });
   });
@@ -2038,7 +2038,6 @@ describe('mquery', function() {
       describe('when just callback passed', function() {
         it('works', function(done) {
           const m = mquery(col).where({ _id: id });
-          m.setOptions({ safe: true });
           m.updateOne({ name: 'Frankenweenie' });
           m.updateOne(function(err, res) {
             assert.ifError(err);
@@ -2055,15 +2054,14 @@ describe('mquery', function() {
       describe('without a callback', function() {
         it('when forced by exec()', function(done) {
           const m = mquery(col).where({ _id: id });
-          m.setOptions({ safe: true, multi: true });
+          m.setOptions({ w: 'majority' });
           m.updateOne({ name: 'forced' });
 
           const update = m._collection.update;
           m._collection.updateOne = function(conds, doc, opts) {
             m._collection.update = update;
 
-            assert.ok(opts.safe);
-            assert.ok(true === opts.multi);
+            assert.equal(opts.w, 'majority');
             assert.equal('forced', doc.$set.name);
             done();
           };
@@ -2075,8 +2073,7 @@ describe('mquery', function() {
       describe('except when update doc is empty and missing overwrite flag', function() {
         it('works', function(done) {
           const m = mquery(col).where({ _id: id });
-          m.setOptions({ safe: true });
-          m.updateOne({ }, function(err, num) {
+          m.updateOne({}, function(err, num) {
             assert.ifError(err);
             assert.ok(0 === num);
             setTimeout(function() {
@@ -2116,7 +2113,7 @@ describe('mquery', function() {
         col.insertOne({ name: name }, done);
       });
       after(function(done) {
-        col.remove({ name: name }, { safe: true }, done);
+        col.remove({ name: name }, done);
       });
 
       it('does not execute', function(done) {
@@ -2145,7 +2142,7 @@ describe('mquery', function() {
         col.insertOne({ name: name }, done);
       });
       after(function(done) {
-        col.remove({ name: name }, { safe: true }, done);
+        col.remove({ name: name }, done);
       });
 
       describe('that is a', function() {
@@ -2163,7 +2160,7 @@ describe('mquery', function() {
         });
 
         it('function', function(done) {
-          mquery(col, { safe: true }).where({ name: name }).remove(function(err) {
+          mquery(col).where({ name: name }).remove(function(err) {
             assert.ifError(err);
             mquery(col).findOne({ name: name }, function(err, doc) {
               assert.ifError(err);
@@ -2197,7 +2194,7 @@ describe('mquery', function() {
     describe('with 2 arguments', function() {
       const name = 'remove: 2 arg test';
       beforeEach(function(done) {
-        col.remove({}, { safe: true }, function(err) {
+        col.remove({}, function(err) {
           assert.ifError(err);
           col.insertMany([{ name: 'shelly' }, { name: name }], function(err) {
             assert.ifError(err);
