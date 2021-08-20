@@ -1,3 +1,10 @@
+4.0.0-rc0 / 2021-08-19
+======================
+ * BREAKING CHANGE: drop support for Node < 12 #123
+ * BREAKING CHANGE: upgrade to mongodb driver 4.x: drop support for `findAndModify()`, use native `findOneAndUpdate/Delete` #124
+ * BREAKING CHANGE: rename findStream -> findCursor #124
+ * BREAKING CHANGE: use native ES6 promises by default, remove bluebird dependency #123
+
 3.2.5 / 2021-03-29
 ==================
  * fix(utils): make `mergeClone()` skip special properties like `__proto__` #121 [zpbrent](https://github.com/zpbrent)
