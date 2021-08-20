@@ -1240,8 +1240,6 @@ mquery().setOptions({ collection: coll, limit: 20 })
 - [comment](#comment) *
 - [snapshot](#snapshot) *
 - [hint](#hint) *
-- [slaveOk](#slaveOk) *
-- [safe](http://docs.mongodb.org/manual/reference/write-concern/): Boolean - passed through to the collection. Setting to `true` is equivalent to `{ w: 1 }`
 - [collection](#collection): the collection to query against
 
 _* denotes a query helper method is also available_
