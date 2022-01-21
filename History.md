@@ -1,3 +1,8 @@
+4.0.1 / 2022-01-20
+==================
+ * perf: remove sliced, add various microoptimizations #130 [Uzlopak](https://github.com/Uzlopak)
+ * refactor: convert NodeCollection to a class #128 [jimmywarting](https://github.com/jimmywarting)
+
 4.0.0 / 2021-08-24
 
 4.0.0-rc0 / 2021-08-19
