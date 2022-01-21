@@ -3,8 +3,6 @@
 const mquery = require('../');
 const assert = require('assert');
 
-/* global Map */
-
 describe('mquery', function() {
   let col;
 

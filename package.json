@@ -17,12 +17,11 @@
   },
   "dependencies": {
     "debug": "4.x",
-    "regexp-clone": "^1.0.0",
-    "sliced": "1.0.1"
+    "regexp-clone": "^1.0.0"
   },
   "devDependencies": {
-    "eslint": "5.x",
-    "eslint-plugin-mocha-no-only": "1.1.0",
+    "eslint": "8.x",
+    "eslint-plugin-mocha-no-only": "1.1.1",
     "mocha": "9.x",
     "mongodb": "4.x"
   },
