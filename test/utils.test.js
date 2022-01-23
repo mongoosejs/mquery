@@ -37,6 +37,27 @@ describe('lib/utils', function() {
       done();
     });
 
+    it('clones RegExp', function(done) {
+      const sampleRE = /a/giy;
+
+      const clonedRE = utils.clone(sampleRE);
+
+      assert.ok(clonedRE !== sampleRE);
+      assert.ok(clonedRE instanceof RegExp);
+      assert.ok(clonedRE.source === 'a');
+      assert.ok(clonedRE.flags === 'giy');
+      done();
+    });
+
+    it('clones Buffer', function(done) {
+      const buf1 = Buffer.alloc(10);
+
+      const buf2 = utils.clone(buf1);
+
+      assert.ok(buf2 instanceof Buffer);
+      done();
+    });
+
     it('does not clone constructors named ObjectIdd', function(done) {
       function ObjectIdd(id) {
         this.id = id;
