@@ -42,6 +42,7 @@ describe('lib/utils', function() {
 
       const clonedRE = utils.clone(sampleRE);
 
+      assert.ok(clonedRE !== sampleRE);
       assert.ok(clonedRE instanceof RegExp);
       assert.ok(clonedRE.source === 'a');
       assert.ok(clonedRE.flags === 'giy');
