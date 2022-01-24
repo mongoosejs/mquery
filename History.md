@@ -1,3 +1,7 @@
+4.0.2 / 2022-01-23
+==================
+ * perf: replace regexp-clone with native functionality #131 [Uzlopak](https://github.com/Uzlopak)
+
 4.0.1 / 2022-01-20
 ==================
  * perf: remove sliced, add various microoptimizations #130 [Uzlopak](https://github.com/Uzlopak)
