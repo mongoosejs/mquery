@@ -130,6 +130,7 @@ describe('lib/utils', function() {
       assert.equal(binary.sub_type, clone.sub_type);
       assert.equal(String(binary.buffer), String(buf));
       assert.ok(binary !== clone);
+      assert.ok(binary.buffer !== clone.buffer);
       done();
     });
 
@@ -158,6 +159,7 @@ describe('lib/utils', function() {
         assert.equal(buff[i], clone[i]);
       }
 
+      assert.ok(buff.buffer !== clone.buffer);
       done();
     });
 
