@@ -1218,8 +1218,7 @@ describe('mquery', function() {
     skip: { distinct: false, count: true },
     maxScan: { distinct: false, count: false },
     batchSize: { distinct: false, count: false },
-    maxTime: { distinct: true, count: true, name: 'maxTimeMS' },
-    comment: { distinct: false, count: false }
+    maxTime: { distinct: true, count: true, name: 'maxTimeMS' }
   };
   Object.keys(negated).forEach(function(key) {
     simpleOption(key, negated[key]);
@@ -1712,13 +1711,6 @@ describe('mquery', function() {
         done();
       });
 
-      it('comment', function(done) {
-        assert.throws(function() {
-          mquery().comment('mquery').count();
-        }, /comment cannot be used with count/);
-        done();
-      });
-
       it('maxScan', function(done) {
         assert.throws(function() {
           mquery().maxScan(300).count();
@@ -1894,13 +1886,6 @@ describe('mquery', function() {
         assert.throws(function() {
           mquery({}, { batchSize: 3 }).distinct();
         }, /batchSize cannot be used with distinct/);
-        done();
-      });
-
-      it('comment', function(done) {
-        assert.throws(function() {
-          mquery().comment('mquery').distinct();
-        }, /comment cannot be used with distinct/);
         done();
       });
 
@@ -2289,24 +2274,10 @@ describe('mquery', function() {
         done();
       });
 
-      it('hint', function(done) {
-        assert.throws(function() {
-          mquery().hint({ x: 1 })[method]();
-        }, new RegExp('hint cannot be used with ' + method));
-        done();
-      });
-
       it('tailable', function(done) {
         assert.throws(function() {
           mquery().tailable()[method]();
         }, new RegExp('tailable cannot be used with ' + method));
-        done();
-      });
-
-      it('comment', function(done) {
-        assert.throws(function() {
-          mquery().comment('mquery')[method]();
-        }, new RegExp('comment cannot be used with ' + method));
         done();
       });
     });
