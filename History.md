@@ -1,3 +1,7 @@
+4.0.3 / 2022-05-17
+==================
+ * fix: allow using `comment` with `findOneAndUpdate()`, `count()`, `distinct()` and `hint` with `findOneAndUpdate()` Automattic/mongoose#11793
+
 4.0.2 / 2022-01-23
 ==================
  * perf: replace regexp-clone with native functionality #131 [Uzlopak](https://github.com/Uzlopak)
