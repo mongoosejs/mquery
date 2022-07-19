@@ -394,7 +394,7 @@ Note: this only works with `find()` operations.
 
 Note: returns the stream object directly from the node-mongodb-native driver. (currently streams1 type stream). Any options will be passed along to the [driver method](http://mongodb.github.io/node-mongodb-native/api-generated/cursor.html#stream).
 
--------------
+---
 
 ### all()
 
@@ -852,7 +852,7 @@ query.$where(function () {
 
 Only use `$where` when you have a condition that cannot be met using other MongoDB operators like `$lt`. Be sure to read about all of [its caveats](http://docs.mongodb.org/manual/reference/operator/where/) before using.
 
------------
+---
 
 ### batchSize()
 
