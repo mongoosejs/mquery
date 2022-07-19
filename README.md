@@ -1366,7 +1366,9 @@ Method and options combinations are checked for validity at runtime to prevent c
 
 Debug mode is provided through the use of the [debug](https://github.com/visionmedia/debug) module. To enable:
 
-    DEBUG=mquery node yourprogram.js
+```sh
+DEBUG=mquery node yourprogram.js
+```
 
 Read the debug module documentation for more details.
 
@@ -1400,7 +1402,9 @@ If you need to specify tags, pass an instance of your drivers ReadPreference con
 
 ## Installation
 
-    $ npm install mquery
+```sh
+npm install mquery
+```
 
 ## License
 
