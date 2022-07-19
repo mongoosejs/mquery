@@ -9,14 +9,14 @@
 
 ## Features
 
-  - fluent query builder api
-  - custom base query support
-  - MongoDB 2.4 geoJSON support
-  - method + option combinations validation
-  - node.js driver compatibility
-  - environment detection
-  - [debug](https://github.com/visionmedia/debug) support
-  - separated collection implementations for maximum flexibility
+- fluent query builder api
+- custom base query support
+- MongoDB 2.4 geoJSON support
+- method + option combinations validation
+- node.js driver compatibility
+- environment detection
+- [debug](https://github.com/visionmedia/debug) support
+- separated collection implementations for maximum flexibility
 
 ## Use
 
@@ -1299,9 +1299,9 @@ The trace function is passed (method, queryInfo, query)
 
 - method is the name of the method being called (e.g. findOne)
 - queryInfo contains information about the query:
- - conditions: query conditions/criteria
- - options: options such as sort, fields, etc
- - doc: document being updated
+  - conditions: query conditions/criteria
+  - options: options such as sort, fields, etc
+  - doc: document being updated
 - query is the query object
 
 The trace function should return a callback function which accepts:
@@ -1395,8 +1395,8 @@ If you need to specify tags, pass an instance of your drivers ReadPreference con
 
 ## Future goals
 
-  - mongo shell compatibility
-  - browser compatibility
+- mongo shell compatibility
+- browser compatibility
 
 ## Installation
 
