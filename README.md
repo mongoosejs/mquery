@@ -1390,7 +1390,7 @@ when creating an `ObjectId` instance we can pass that `id` as an argument.
 
 #### Read Preferences
 
-`mquery` supports specifying [Read Preferences]() to control from which MongoDB node your query will read.
+`mquery` supports specifying [Read Preferences](https://www.mongodb.com/docs/manual/core/read-preference/) to control from which MongoDB node your query will read.
 The Read Preferences spec also support specifying tags. To pass tags, some
 drivers (Node.js driver) require passing a special constructor that handles both the read preference and its tags.
 If you need to specify tags, pass an instance of your drivers ReadPreference constructor or roll your own. `mquery` will store whatever you provide and pass later to your collection during execution.
