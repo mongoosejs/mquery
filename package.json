@@ -34,8 +34,5 @@
     "query",
     "builder"
   ],
-  "homepage": "https://github.com/aheckmann/mquery/",
-  "files": [
-    "lib/**/*.js"
-  ]
+  "homepage": "https://github.com/aheckmann/mquery/"
 }
