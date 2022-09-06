@@ -1,0 +1,6 @@
+# dont include things like the travis yml
+*.yml
+# dont include things like the eslint config (this package does not use any json files)
+*.json
+# dont include the tests
+test/

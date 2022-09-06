@@ -9,14 +9,14 @@
 
 ## Features
 
-  - fluent query builder api
-  - custom base query support
-  - MongoDB 2.4 geoJSON support
-  - method + option combinations validation
-  - node.js driver compatibility
-  - environment detection
-  - [debug](https://github.com/visionmedia/debug) support
-  - separated collection implementations for maximum flexibility
+- fluent query builder api
+- custom base query support
+- MongoDB 2.4 geoJSON support
+- method + option combinations validation
+- node.js driver compatibility
+- environment detection
+- [debug](https://github.com/visionmedia/debug) support
+- separated collection implementations for maximum flexibility
 
 ## Use
 
@@ -44,65 +44,100 @@ require('mongodb').connect(uri, function (err, db) {
 
 ## Fluent API
 
-- [find](#find)
-- [findOne](#findOne)
-- [count](#count)
-- [remove](#remove)
-- [update](#update)
-- [findOneAndUpdate](#findoneandupdate)
-- [findOneAndDelete, findOneAndRemove](#findoneandremove)
-- [distinct](#distinct)
-- [exec](#exec)
-- [stream](#stream)
-- [all](#all)
-- [and](#and)
-- [box](#box)
-- [circle](#circle)
-- [elemMatch](#elemmatch)
-- [equals](#equals)
-- [exists](#exists)
-- [geometry](#geometry)
-- [gt](#gt)
-- [gte](#gte)
-- [in](#in)
-- [intersects](#intersects)
-- [lt](#lt)
-- [lte](#lte)
-- [maxDistance](#maxdistance)
-- [mod](#mod)
-- [ne](#ne)
-- [nin](#nin)
-- [nor](#nor)
-- [near](#near)
-- [or](#or)
-- [polygon](#polygon)
-- [regex](#regex)
-- [select](#select)
-- [selected](#selected)
-- [selectedInclusively](#selectedinclusively)
-- [selectedExclusively](#selectedexclusively)
-- [size](#size)
-- [slice](#slice)
-- [within](#within)
-- [where](#where)
-- [$where](#where-1)
-- [batchSize](#batchsize)
-- [collation](#collation)
-- [comment](#comment)
-- [hint](#hint)
-- [j](#j)
-- [limit](#limit)
-- [maxScan](#maxscan)
-- [maxTime, maxTimeMS](#maxtime)
-- [skip](#skip)
-- [sort](#sort)
-- [read, setReadPreference](#read)
-- [readConcern, r](#readconcern)
-- [slaveOk](#slaveok)
-- [snapshot](#snapshot)
-- [tailable](#tailable)
-- [writeConcern, w](#writeconcern)
-- [wtimeout, wTimeout](#wtimeout)
+- [mquery](#mquery)
+  - [Features](#features)
+  - [Use](#use)
+  - [Fluent API](#fluent-api)
+  - [Helpers](#helpers)
+    - [find()](#find)
+    - [findOne()](#findone)
+    - [count()](#count)
+    - [remove()](#remove)
+    - [update()](#update)
+        - [the update document](#the-update-document)
+        - [options](#options)
+    - [findOneAndUpdate()](#findoneandupdate)
+        - [options](#options-1)
+    - [findOneAndRemove()](#findoneandremove)
+        - [options](#options-2)
+    - [distinct()](#distinct)
+    - [exec()](#exec)
+    - [stream()](#stream)
+    - [all()](#all)
+    - [and()](#and)
+    - [box()](#box)
+    - [circle()](#circle)
+    - [elemMatch()](#elemmatch)
+    - [equals()](#equals)
+    - [exists()](#exists)
+    - [geometry()](#geometry)
+    - [gt()](#gt)
+    - [gte()](#gte)
+    - [in()](#in)
+    - [intersects()](#intersects)
+    - [lt()](#lt)
+    - [lte()](#lte)
+    - [maxDistance()](#maxdistance)
+    - [mod()](#mod)
+    - [ne()](#ne)
+    - [nin()](#nin)
+    - [nor()](#nor)
+    - [near()](#near)
+      - [Example](#example)
+    - [or()](#or)
+    - [polygon()](#polygon)
+    - [regex()](#regex)
+    - [select()](#select)
+        - [String syntax](#string-syntax)
+    - [selected()](#selected)
+    - [selectedInclusively()](#selectedinclusively)
+    - [selectedExclusively()](#selectedexclusively)
+    - [size()](#size)
+    - [slice()](#slice)
+    - [within()](#within)
+    - [where()](#where)
+    - [$where()](#where-1)
+    - [batchSize()](#batchsize)
+    - [collation()](#collation)
+    - [comment()](#comment)
+    - [hint()](#hint)
+    - [j()](#j)
+    - [limit()](#limit)
+    - [maxScan()](#maxscan)
+    - [maxTime()](#maxtime)
+    - [skip()](#skip)
+    - [sort()](#sort)
+    - [read()](#read)
+        - [Preferences:](#preferences)
+        - [Preference Tags:](#preference-tags)
+    - [readConcern()](#readconcern)
+        - [Read Concern Level:](#read-concern-level)
+    - [writeConcern()](#writeconcern)
+        - [Write Concern:](#write-concern)
+    - [slaveOk()](#slaveok)
+    - [snapshot()](#snapshot)
+    - [tailable()](#tailable)
+    - [wtimeout()](#wtimeout)
+  - [Helpers](#helpers-1)
+    - [collection()](#collection)
+    - [then()](#then)
+    - [thunk()](#thunk)
+    - [merge(object)](#mergeobject)
+    - [setOptions(options)](#setoptionsoptions)
+        - [options](#options-3)
+    - [setTraceFunction(func)](#settracefunctionfunc)
+    - [mquery.setGlobalTraceFunction(func)](#mquerysetglobaltracefunctionfunc)
+    - [mquery.canMerge(conditions)](#mquerycanmergeconditions)
+  - [mquery.use$geoWithin](#mqueryusegeowithin)
+  - [Custom Base Queries](#custom-base-queries)
+  - [Validation](#validation)
+  - [Debug support](#debug-support)
+  - [General compatibility](#general-compatibility)
+      - [ObjectIds](#objectids)
+      - [Read Preferences](#read-preferences)
+  - [Future goals](#future-goals)
+  - [Installation](#installation)
+  - [License](#license)
 
 ## Helpers
 
@@ -359,7 +394,7 @@ Note: this only works with `find()` operations.
 
 Note: returns the stream object directly from the node-mongodb-native driver. (currently streams1 type stream). Any options will be passed along to the [driver method](http://mongodb.github.io/node-mongodb-native/api-generated/cursor.html#stream).
 
--------------
+---
 
 ### all()
 
@@ -817,7 +852,7 @@ query.$where(function () {
 
 Only use `$where` when you have a condition that cannot be met using other MongoDB operators like `$lt`. Be sure to read about all of [its caveats](http://docs.mongodb.org/manual/reference/operator/where/) before using.
 
------------
+---
 
 ### batchSize()
 
@@ -1264,9 +1299,9 @@ The trace function is passed (method, queryInfo, query)
 
 - method is the name of the method being called (e.g. findOne)
 - queryInfo contains information about the query:
- - conditions: query conditions/criteria
- - options: options such as sort, fields, etc
- - doc: document being updated
+  - conditions: query conditions/criteria
+  - options: options such as sort, fields, etc
+  - doc: document being updated
 - query is the query object
 
 The trace function should return a callback function which accepts:
@@ -1331,7 +1366,9 @@ Method and options combinations are checked for validity at runtime to prevent c
 
 Debug mode is provided through the use of the [debug](https://github.com/visionmedia/debug) module. To enable:
 
-    DEBUG=mquery node yourprogram.js
+```sh
+DEBUG=mquery node yourprogram.js
+```
 
 Read the debug module documentation for more details.
 
@@ -1353,21 +1390,22 @@ when creating an `ObjectId` instance we can pass that `id` as an argument.
 
 #### Read Preferences
 
-`mquery` supports specifying [Read Preferences]() to control from which MongoDB node your query will read.
+`mquery` supports specifying [Read Preferences](https://www.mongodb.com/docs/manual/core/read-preference/) to control from which MongoDB node your query will read.
 The Read Preferences spec also support specifying tags. To pass tags, some
 drivers (Node.js driver) require passing a special constructor that handles both the read preference and its tags.
 If you need to specify tags, pass an instance of your drivers ReadPreference constructor or roll your own. `mquery` will store whatever you provide and pass later to your collection during execution.
 
 ## Future goals
 
-  - mongo shell compatibility
-  - browser compatibility
+- mongo shell compatibility
+- browser compatibility
 
 ## Installation
 
-    $ npm install mquery
+```sh
+npm install mquery
+```
 
 ## License
 
 [MIT](https://github.com/aheckmann/mquery/blob/master/LICENSE)
-
