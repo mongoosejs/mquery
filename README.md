@@ -52,7 +52,6 @@ require('mongodb').connect(uri, function (err, db) {
     - [find()](#find)
     - [findOne()](#findone)
     - [count()](#count)
-    - [remove()](#remove)
     - [update()](#update)
         - [the update document](#the-update-document)
         - [options](#options)
@@ -191,17 +190,6 @@ mquery().count(callback)
 mquery().count(match, function (err, number){
   console.log('we found %d matching documents', number);
 })
-```
-
-### remove()
-
-Declares this query a _remove_ query. Optionally pass a match clause and / or callback. If a callback is passed the query is executed.
-
-```js
-mquery().remove()
-mquery().remove(match)
-mquery().remove(callback)
-mquery().remove(match, function (err){})
 ```
 
 ### update()
@@ -910,7 +898,6 @@ This option is only valid for operations that write to the database:
 - `deleteMany()`
 - `findOneAndDelete()`
 - `findOneAndUpdate()`
-- `remove()`
 - `update()`
 - `updateOne()`
 - `updateMany()`
@@ -1103,7 +1090,6 @@ This option is only valid for operations that write to the database:
 - `deleteMany()`
 - `findOneAndDelete()`
 - `findOneAndUpdate()`
-- `remove()`
 - `update()`
 - `updateOne()`
 - `updateMany()`
@@ -1185,7 +1171,6 @@ This option is only valid for operations that write to the database:
 - `deleteMany()`
 - `findOneAndDelete()`
 - `findOneAndUpdate()`
-- `remove()`
 - `update()`
 - `updateOne()`
 - `updateMany()`
