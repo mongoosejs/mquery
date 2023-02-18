@@ -52,9 +52,6 @@ require('mongodb').connect(uri, function (err, db) {
     - [find()](#find)
     - [findOne()](#findone)
     - [count()](#count)
-    - [update()](#update)
-        - [the update document](#the-update-document)
-        - [options](#options)
     - [findOneAndUpdate()](#findoneandupdate)
         - [options](#options-1)
     - [findOneAndRemove()](#findoneandremove)
@@ -190,93 +187,6 @@ mquery().count(callback)
 mquery().count(match, function (err, number){
   console.log('we found %d matching documents', number);
 })
-```
-
-### update()
-
-Declares this query an _update_ query. Optionally pass an update document, match clause, options or callback. If a callback is passed, the query is executed. To force execution without passing a callback, run `update(true)`.
-
-```js
-mquery().update()
-mquery().update(match, updateDocument)
-mquery().update(match, updateDocument, options)
-
-// the following all execute the command
-mquery().update(callback)
-mquery().update({$set: updateDocument, callback)
-mquery().update(match, updateDocument, callback)
-mquery().update(match, updateDocument, options, function (err, result){})
-mquery().update(true) // executes (unsafe write)
-```
-
-##### the update document
-
-All paths passed that are not `$atomic` operations will become `$set` ops. For example:
-
-```js
-mquery(collection).where({ _id: id }).update({ title: 'words' }, callback)
-```
-
-becomes
-
-```js
-collection.update({ _id: id }, { $set: { title: 'words' }}, callback)
-```
-
-This behavior can be overridden using the `overwrite` option (see below).
-
-##### options
-
-Options are passed to the `setOptions()` method.
-
-- overwrite
-
-Passing an empty object `{ }` as the update document will result in a no-op unless the `overwrite` option is passed. Without the `overwrite` option, the update operation will be ignored and the callback executed without sending the command to MongoDB to prevent accidently overwritting documents in the collection.
-
-```js
-var q = mquery(collection).where({ _id: id }).setOptions({ overwrite: true });
-q.update({ }, callback); // overwrite with an empty doc
-```
-
-The `overwrite` option isn't just for empty objects, it also provides a means to override the default `$set` conversion and send the update document as is.
-
-```js
-// create a base query
-var base = mquery({ _id: 108 }).collection(collection).toConstructor();
-
-base().findOne(function (err, doc) {
-  console.log(doc); // { _id: 108, name: 'cajon' })
-
-  base().setOptions({ overwrite: true }).update({ changed: true }, function (err) {
-    base.findOne(function (err, doc) {
-      console.log(doc); // { _id: 108, changed: true }) - the doc was overwritten
-    });
-  });
-})
-```
-
-- multi
-
-Updates only modify a single document by default. To update multiple documents, set the `multi` option to `true`.
-
-```js
-mquery()
-  .collection(coll)
-  .update({ name: /^match/ }, { $addToSet: { arr: 4 }}, { multi: true }, callback)
-
-// another way of doing it
-mquery({ name: /^match/ })
-  .collection(coll)
-  .setOptions({ multi: true })
-  .update({ $addToSet: { arr: 4 }}, callback)
-
-// update multiple documents with an empty doc
-var q = mquery(collection).where({ name: /^match/ });
-q.setOptions({ multi: true, overwrite: true })
-q.update({ });
-q.update(function (err, result) {
-  console.log(arguments);
-});
 ```
 
 ### findOneAndUpdate()
@@ -898,7 +808,6 @@ This option is only valid for operations that write to the database:
 - `deleteMany()`
 - `findOneAndDelete()`
 - `findOneAndUpdate()`
-- `update()`
 - `updateOne()`
 - `updateMany()`
 
@@ -1090,7 +999,6 @@ This option is only valid for operations that write to the database:
 - `deleteMany()`
 - `findOneAndDelete()`
 - `findOneAndUpdate()`
-- `update()`
 - `updateOne()`
 - `updateMany()`
 
@@ -1171,7 +1079,6 @@ This option is only valid for operations that write to the database:
 - `deleteMany()`
 - `findOneAndDelete()`
 - `findOneAndUpdate()`
-- `update()`
 - `updateOne()`
 - `updateMany()`
 
