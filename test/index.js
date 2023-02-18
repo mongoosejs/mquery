@@ -1216,7 +1216,6 @@ describe('mquery', function() {
   const negated = {
     limit: { distinct: false, count: true },
     skip: { distinct: false, count: true },
-    maxScan: { distinct: false, count: false },
     batchSize: { distinct: false, count: false },
     maxTime: { distinct: true, count: true, name: 'maxTimeMS' }
   };
@@ -1711,13 +1710,6 @@ describe('mquery', function() {
         done();
       });
 
-      it('maxScan', function(done) {
-        assert.throws(function() {
-          mquery().maxScan(300).count();
-        }, /maxScan cannot be used with count/);
-        done();
-      });
-
       it('snapshot', function(done) {
         assert.throws(function() {
           mquery().snapshot().count();
@@ -1886,13 +1878,6 @@ describe('mquery', function() {
         assert.throws(function() {
           mquery({}, { batchSize: 3 }).distinct();
         }, /batchSize cannot be used with distinct/);
-        done();
-      });
-
-      it('maxScan', function(done) {
-        assert.throws(function() {
-          mquery().maxScan(300).distinct();
-        }, /maxScan cannot be used with distinct/);
         done();
       });
 
@@ -2123,13 +2108,6 @@ describe('mquery', function() {
         assert.throws(function() {
           mquery({}, { batchSize: 3 })[method]();
         }, new RegExp('batchSize cannot be used with ' + method));
-        done();
-      });
-
-      it('maxScan', function(done) {
-        assert.throws(function() {
-          mquery().maxScan(300)[method]();
-        }, new RegExp('maxScan cannot be used with ' + method));
         done();
       });
 

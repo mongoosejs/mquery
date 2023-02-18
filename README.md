@@ -99,7 +99,6 @@ require('mongodb').connect(uri, function (err, db) {
     - [hint()](#hint)
     - [j()](#j)
     - [limit()](#limit)
-    - [maxScan()](#maxscan)
     - [maxTime()](#maxtime)
     - [skip()](#skip)
     - [sort()](#sort)
@@ -829,18 +828,6 @@ _Cannot be used with `distinct()`._
 
 [MongoDB documentation](http://docs.mongodb.org/manual/reference/method/cursor.limit/)
 
-### maxScan()
-
-Specifies the maxScan option.
-
-```js
-query.maxScan(100)
-```
-
-_Cannot be used with `distinct()`._
-
-[MongoDB documentation](http://docs.mongodb.org/manual/reference/operator/maxScan/)
-
 ### maxTime()
 
 Specifies the maxTimeMS option.
@@ -1161,7 +1148,6 @@ mquery().setOptions({ collection: coll, limit: 20 })
 - [sort](#sort) *
 - [limit](#limit) *
 - [skip](#skip) *
-- [maxScan](#maxscan) *
 - [maxTime](#maxtime) *
 - [batchSize](#batchSize) *
 - [comment](#comment) *
