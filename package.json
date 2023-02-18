@@ -4,7 +4,7 @@
   "description": "Expressive query building for MongoDB",
   "main": "lib/mquery.js",
   "scripts": {
-    "test": "mocha test/index.js test/*.test.js",
+    "test": "mocha --exit test/index.js test/*.test.js",
     "fix-lint": "eslint . --fix",
     "lint": "eslint ."
   },
