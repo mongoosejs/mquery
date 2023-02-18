@@ -145,7 +145,7 @@ const docs = await Artist().find(...).where(...);
 - [setOptions](#setoptionsoptions)
 - [setTraceFunction](#settracefunctionfunc)
 - [mquery.setGlobalTraceFunction](#mquerysetglobaltracefunctionfunc)
-- [mquery.canMerge](#mquerycanmerge)
+- [mquery.canMerge](#mquerycanmergeconditions)
 - [mquery.use$geoWithin](#mqueryusegeowithin)
 
 ### find()
@@ -214,7 +214,7 @@ await mquery().update(match, updateDocument)
 await mquery().update(match, updateDocument, options)
 ```
 
-##### the update document
+#### the update document
 
 All paths passed that are not `$atomic` operations will become `$set` ops. For example:
 
@@ -230,7 +230,7 @@ await collection.update({ _id: id }, { $set: { title: 'words' } })
 
 This behavior can be overridden using the `overwrite` option (see below).
 
-##### options
+#### options
 
 Options are passed to the `setOptions()` method.
 
@@ -286,7 +286,7 @@ Declares this query a _findAndModify_ with update query. Optionally pass a match
 
 When executed, the first matching document (if found) is modified according to the update document and passed back.
 
-##### options
+#### options
 
 Options are passed to the `setOptions()` method.
 
@@ -318,7 +318,7 @@ Optionally pass a match clause, options.
 
 When executed, the first matching document (if found) is modified according to the update document, removed from the collection and passed as a result.
 
-##### options
+#### options
 
 Options are passed to the `setOptions()` method.
 
@@ -698,7 +698,7 @@ mquery().select({ name: 1, address: 1, _id: 0 })
 mquery().select('name address -_id')
 ```
 
-##### String syntax
+#### String syntax
 
 When passing a string, prefixing a path with `-` will flag that path as excluded. When a path does not have the `-` prefix, it is included.
 
@@ -942,7 +942,6 @@ query.maxTimeMS(100)
 
 [MongoDB documentation](http://docs.mongodb.org/manual/reference/method/cursor.maxTimeMS/)
 
-
 ### skip()
 
 Specifies the skip option.
@@ -996,7 +995,7 @@ mquery().read('n')  // same as nearest
 mquery().setReadPreference('primary') // alias of .read()
 ```
 
-##### Preferences:
+#### Preferences:
 
 - `primary` - (default) Read from primary only. Operations will produce an error if primary is unavailable. Cannot be combined with tags.
 - `secondary` - Read from secondary if available, otherwise error.
@@ -1012,7 +1011,7 @@ Aliases
 - `sp`  secondaryPreferred
 - `n`   nearest
 
-##### Preference Tags:
+#### Preference Tags:
 
 To keep the separation of concerns between `mquery` and your driver
 clean, `mquery#read()` no longer handles specifying a second `tags` argument as of version 0.5.
@@ -1028,7 +1027,6 @@ mquery(...).read(preference).exec();
 ```
 
 Read more about how to use read preferences [here](http://docs.mongodb.org/manual/applications/replication/#read-preference) and [here](http://mongodb.github.com/node-mongodb-native/driver-articles/anintroductionto1_1and2_2.html#read-preferences).
-
 
 ### readConcern()
 
@@ -1061,7 +1059,7 @@ mquery().readConcern('s')
 mquery().r('s')
 ```
 
-##### Read Concern Level:
+#### Read Concern Level:
 
 - `local` - The query returns from the instance with no guarantee guarantee that the data has been written to a majority of the replica set members (i.e. may be rolled back). (MongoDB 3.2+)
 - `available` - The query returns from the instance with no guarantee guarantee that the data has been written to a majority of the replica set members (i.e. may be rolled back). (MongoDB 3.6+)
@@ -1104,7 +1102,7 @@ mquery().writeConcern('tagSetName') // if the tag set is 'm', use .writeConcern(
 mquery().w(1) // w is alias of writeConcern
 ```
 
-##### Write Concern:
+#### Write Concern:
 
 writeConcern({ w: `<value>`, j: `<boolean>`, wtimeout: `<number>` }`)
 
@@ -1236,7 +1234,7 @@ Sets query options.
 mquery().setOptions({ collection: coll, limit: 20 })
 ```
 
-##### options
+#### options
 
 - [tailable](#tailable) *
 - [sort](#sort) *
@@ -1244,7 +1242,7 @@ mquery().setOptions({ collection: coll, limit: 20 })
 - [skip](#skip) *
 - [maxScan](#maxscan) *
 - [maxTime](#maxtime) *
-- [batchSize](#batchSize) *
+- [batchSize](#batchsize) *
 - [comment](#comment) *
 - [snapshot](#snapshot) *
 - [hint](#hint) *
@@ -1345,7 +1343,7 @@ Read the debug module documentation for more details.
 
 ## General compatibility
 
-#### ObjectIds
+### ObjectIds
 
 `mquery` clones query arguments before passing them to a `collection` method for execution.
 This prevents accidental side-affects to the objects you pass.
