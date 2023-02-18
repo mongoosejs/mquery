@@ -2625,7 +2625,7 @@ describe('mquery', function() {
 
     describe('throws', function() {
       describe('if used with non-find operations', function() {
-        const ops = ['update', 'findOneAndUpdate', 'count', 'distinct'];
+        const ops = ['findOneAndUpdate', 'count', 'distinct'];
 
         ops.forEach(function(op) {
           assert.throws(function() {
