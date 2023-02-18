@@ -2,21 +2,18 @@
 
 const mquery = require('../');
 const assert = require('assert');
+const env = require('./env');
 
 describe('mquery', function() {
   let col;
 
-  before(function(done) {
+  before(async function() {
     // get the env specific collection interface
-    require('./env').getCollection(function(err, collection) {
-      assert.ifError(err);
-      col = collection;
-      done();
-    });
+    col = await env.getCollection();
   });
 
-  after(function(done) {
-    require('./env').dropCollection(done);
+  after(async function() {
+    return env.dropCollection();
   });
 
   describe('mquery', function() {
