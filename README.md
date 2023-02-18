@@ -54,11 +54,11 @@ const docs = await Artist().find(...).where(...);
     - [remove()](#remove)
     - [update()](#update)
         - [the update document](#the-update-document)
-        - [options](#options)
+        - [update() options](#update-options)
     - [findOneAndUpdate()](#findoneandupdate)
-        - [options](#options-1)
+        - [findOneAndUpdate() options](#findoneandupdate-options)
     - [findOneAndRemove()](#findoneandremove)
-        - [options](#options-2)
+        - [findOneAndRemove() options](#findoneandremove-options)
     - [distinct()](#distinct)
     - [exec()](#exec)
     - [stream()](#stream)
@@ -122,7 +122,7 @@ const docs = await Artist().find(...).where(...);
     - [then()](#then)
     - [merge(object)](#mergeobject)
     - [setOptions(options)](#setoptionsoptions)
-        - [options](#options-3)
+        - [setOptions() options](#setoptions-options)
     - [setTraceFunction(func)](#settracefunctionfunc)
     - [mquery.setGlobalTraceFunction(func)](#mquerysetglobaltracefunctionfunc)
     - [mquery.canMerge(conditions)](#mquerycanmergeconditions)
@@ -230,7 +230,7 @@ await collection.update({ _id: id }, { $set: { title: 'words' } })
 
 This behavior can be overridden using the `overwrite` option (see below).
 
-#### options
+#### update() options
 
 Options are passed to the `setOptions()` method.
 
@@ -286,7 +286,7 @@ Declares this query a _findAndModify_ with update query. Optionally pass a match
 
 When executed, the first matching document (if found) is modified according to the update document and passed back.
 
-#### options
+#### findOneAndUpdate() options
 
 Options are passed to the `setOptions()` method.
 
@@ -318,7 +318,7 @@ Optionally pass a match clause, options.
 
 When executed, the first matching document (if found) is modified according to the update document, removed from the collection and passed as a result.
 
-#### options
+#### findOneAndRemove() options
 
 Options are passed to the `setOptions()` method.
 
@@ -1234,7 +1234,7 @@ Sets query options.
 mquery().setOptions({ collection: coll, limit: 20 })
 ```
 
-#### options
+#### setOptions() options
 
 - [tailable](#tailable) *
 - [sort](#sort) *
