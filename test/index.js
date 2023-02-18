@@ -1223,26 +1223,6 @@ describe('mquery', function() {
     simpleOption(key, negated[key]);
   });
 
-  describe('snapshot', function() {
-    it('works', function() {
-      let query;
-
-      query = mquery();
-      query.snapshot();
-      assert.equal(true, query.options.snapshot);
-
-      query = mquery();
-      query.snapshot(true);
-      assert.equal(true, query.options.snapshot);
-
-      query = mquery();
-      query.snapshot(false);
-      assert.equal(false, query.options.snapshot);
-    });
-    noDistinct('snapshot');
-    no('count', 'snapshot');
-  });
-
   describe('hint', function() {
     it('accepts an object', function() {
       const query2 = mquery();
@@ -1710,13 +1690,6 @@ describe('mquery', function() {
         done();
       });
 
-      it('snapshot', function(done) {
-        assert.throws(function() {
-          mquery().snapshot().count();
-        }, /snapshot cannot be used with count/);
-        done();
-      });
-
       it('tailable', function(done) {
         assert.throws(function() {
           mquery().tailable().count();
@@ -1878,13 +1851,6 @@ describe('mquery', function() {
         assert.throws(function() {
           mquery({}, { batchSize: 3 }).distinct();
         }, /batchSize cannot be used with distinct/);
-        done();
-      });
-
-      it('snapshot', function(done) {
-        assert.throws(function() {
-          mquery().snapshot().distinct();
-        }, /snapshot cannot be used with distinct/);
         done();
       });
 
@@ -2108,13 +2074,6 @@ describe('mquery', function() {
         assert.throws(function() {
           mquery({}, { batchSize: 3 })[method]();
         }, new RegExp('batchSize cannot be used with ' + method));
-        done();
-      });
-
-      it('snapshot', function(done) {
-        assert.throws(function() {
-          mquery().snapshot()[method]();
-        }, new RegExp('snapshot cannot be used with ' + method));
         done();
       });
 

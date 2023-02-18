@@ -110,7 +110,6 @@ require('mongodb').connect(uri, function (err, db) {
     - [writeConcern()](#writeconcern)
         - [Write Concern:](#write-concern)
     - [slaveOk()](#slaveok)
-    - [snapshot()](#snapshot)
     - [tailable()](#tailable)
     - [wtimeout()](#wtimeout)
   - [Helpers](#helpers-1)
@@ -1027,20 +1026,6 @@ query.slaveOk(false)
 
 [MongoDB documentation](http://docs.mongodb.org/manual/reference/method/rs.slaveOk/)
 
-### snapshot()
-
-Specifies this query as a snapshot query.
-
-```js
-mquery().snapshot() // true
-mquery().snapshot(true)
-mquery().snapshot(false)
-```
-
-_Cannot be used with `distinct()`._
-
-[MongoDB documentation](http://docs.mongodb.org/manual/reference/operator/snapshot/)
-
 ### tailable()
 
 Sets tailable option.
@@ -1151,7 +1136,6 @@ mquery().setOptions({ collection: coll, limit: 20 })
 - [maxTime](#maxtime) *
 - [batchSize](#batchSize) *
 - [comment](#comment) *
-- [snapshot](#snapshot) *
 - [hint](#hint) *
 - [collection](#collection): the collection to query against
 
