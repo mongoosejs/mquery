@@ -2774,26 +2774,6 @@ describe('mquery', function() {
     });
   });
 
-  describe('thunk', function() {
-    it('returns a function', function(done) {
-      assert.equal('function', typeof mquery().thunk());
-      done();
-    });
-
-    it('passes the fn arg to `exec`', function(done) {
-      function cb() {}
-      const m = mquery();
-
-      m.exec = function testing(fn) {
-        assert.equal(this, m);
-        assert.equal(cb, fn);
-        done();
-      };
-
-      m.thunk()(cb);
-    });
-  });
-
   describe('then', function() {
     before(function(done) {
       col.insertMany([{ name: 'then', age: 1 }, { name: 'then', age: 2 }], done);
