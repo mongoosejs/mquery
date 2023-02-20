@@ -2152,7 +2152,7 @@ describe('mquery', function() {
     });
 
     afterEach(async() => {
-      return mquery(col).remove();
+      return mquery(col).deleteMany();
     });
 
     it('requires an op', async() => {
@@ -2369,7 +2369,7 @@ describe('mquery', function() {
     });
 
     after(async() => {
-      return mquery(col).remove({ name: 'then' }).exec();
+      return mquery(col).deleteMany({ name: 'then' }).exec();
     });
 
     it('returns a promise A+ compat object', function(done) {
@@ -2393,7 +2393,7 @@ describe('mquery', function() {
     });
 
     after(async() => {
-      return mquery(col).remove({ name: 'stream' }).exec();
+      return mquery(col).deleteMany({ name: 'stream' }).exec();
     });
 
     describe('throws', function() {
