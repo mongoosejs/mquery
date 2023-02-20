@@ -21,26 +21,25 @@
 ## Use
 
 ```js
-require('mongodb').connect(uri, function (err, db) {
-  if (err) return handleError(err);
+const mongo = require('mongodb');
 
-  // get a collection
-  var collection = db.collection('artists');
+const client = new mongo.MongoClient(uri);
+await client.connect();
+// get a collection
+const collection = client.collection('artists');
 
-  // pass it to the constructor
-  mquery(collection).find({..}, callback);
+// pass it to the constructor
+await mquery(collection).find({...});
 
-  // or pass it to the collection method
-  mquery().find({..}).collection(collection).exec(callback)
+// or pass it to the collection method
+const docs = await mquery().find({...}).collection(collection);
 
-  // or better yet, create a custom query constructor that has it always set
-  var Artist = mquery(collection).toConstructor();
-  Artist().find(..).where(..).exec(callback)
-})
+// or better yet, create a custom query constructor that has it always set
+const Artist = mquery(collection).toConstructor();
+const docs = await Artist().find(...).where(...);
 ```
 
 `mquery` requires a collection object to work with. In the example above we just pass the collection object created using the official [MongoDB driver](https://github.com/mongodb/node-mongodb-native).
-
 
 ## Fluent API
 
@@ -53,9 +52,9 @@ require('mongodb').connect(uri, function (err, db) {
     - [findOne()](#findone)
     - [count()](#count)
     - [findOneAndUpdate()](#findoneandupdate)
-        - [options](#options-1)
+        - [findOneAndUpdate() options](#findoneandupdate-options)
     - [findOneAndRemove()](#findoneandremove)
-        - [options](#options-2)
+        - [findOneAndRemove() options](#findoneandremove-options)
     - [distinct()](#distinct)
     - [exec()](#exec)
     - [stream()](#stream)
@@ -115,10 +114,9 @@ require('mongodb').connect(uri, function (err, db) {
   - [Helpers](#helpers-1)
     - [collection()](#collection)
     - [then()](#then)
-    - [thunk()](#thunk)
     - [merge(object)](#mergeobject)
     - [setOptions(options)](#setoptionsoptions)
-        - [options](#options-3)
+        - [setOptions() options](#setoptions-options)
     - [setTraceFunction(func)](#settracefunctionfunc)
     - [mquery.setGlobalTraceFunction(func)](#mquerysetglobaltracefunctionfunc)
     - [mquery.canMerge(conditions)](#mquerycanmergeconditions)
@@ -137,63 +135,59 @@ require('mongodb').connect(uri, function (err, db) {
 
 - [collection](#collection)
 - [then](#then)
-- [thunk](#thunk)
 - [merge](#mergeobject)
 - [setOptions](#setoptionsoptions)
 - [setTraceFunction](#settracefunctionfunc)
 - [mquery.setGlobalTraceFunction](#mquerysetglobaltracefunctionfunc)
-- [mquery.canMerge](#mquerycanmerge)
+- [mquery.canMerge](#mquerycanmergeconditions)
 - [mquery.use$geoWithin](#mqueryusegeowithin)
 
 ### find()
 
-Declares this query a _find_ query. Optionally pass a match clause and / or callback. If a callback is passed the query is executed.
+Declares this query a _find_ query. Optionally pass a match clause.
 
 ```js
 mquery().find()
 mquery().find(match)
-mquery().find(callback)
-mquery().find(match, function (err, docs) {
-  assert(Array.isArray(docs));
-})
+await mquery().find()
+const docs = await mquery().find(match);
+assert(Array.isArray(docs));
 ```
 
 ### findOne()
 
-Declares this query a _findOne_ query. Optionally pass a match clause and / or callback. If a callback is passed the query is executed.
+Declares this query a _findOne_ query. Optionally pass a match clause.
 
 ```js
 mquery().findOne()
 mquery().findOne(match)
-mquery().findOne(callback)
-mquery().findOne(match, function (err, doc) {
-  if (doc) {
-    // the document may not be found
-    console.log(doc);
-  }
-})
+await mquery().findOne()
+const doc = await mquery().findOne(match);
+if (doc) {
+  // the document may not be found
+  console.log(doc);
+}
 ```
 
 ### count()
 
-Declares this query a _count_ query. Optionally pass a match clause and / or callback. If a callback is passed the query is executed.
+Declares this query a _count_ query. Optionally pass a match clause.
 
 ```js
 mquery().count()
 mquery().count(match)
-mquery().count(callback)
-mquery().count(match, function (err, number){
-  console.log('we found %d matching documents', number);
-})
+await mquery().count()
+const number = await mquery().count(match);
+console.log('we found %d matching documents', number);
 ```
 
 ### findOneAndUpdate()
 
-Declares this query a _findAndModify_ with update query. Optionally pass a match clause, update document, options, or callback. If a callback is passed, the query is executed.
+Declares this query a _findAndModify_ with update query. Optionally pass a match clause, update document, options.
 
-When executed, the first matching document (if found) is modified according to the update document and passed back to the callback.
+When executed, the first matching document (if found) is modified according to the update document and passed back.
 
-##### options
+#### findOneAndUpdate() options
 
 Options are passed to the `setOptions()` method.
 
@@ -208,25 +202,24 @@ query.findOneAndUpdate(match, updateDocument)
 query.findOneAndUpdate(match, updateDocument, options)
 
 // the following all execute the command
-query.findOneAndUpdate(callback)
-query.findOneAndUpdate(updateDocument, callback)
-query.findOneAndUpdate(match, updateDocument, callback)
-query.findOneAndUpdate(match, updateDocument, options, function (err, doc) {
-  if (doc) {
-    // the document may not be found
-    console.log(doc);
-  }
-})
- ```
+await query.findOneAndUpdate()
+await query.findOneAndUpdate(updateDocument)
+await query.findOneAndUpdate(match, updateDocument)
+const doc = await await query.findOneAndUpdate(match, updateDocument, options);
+if (doc) {
+  // the document may not be found
+  console.log(doc);
+}
+```
 
 ### findOneAndRemove()
 
 Declares this query a _findAndModify_ with remove query. Alias of findOneAndDelete.
-Optionally pass a match clause, options, or callback. If a callback is passed, the query is executed.
+Optionally pass a match clause, options.
 
-When executed, the first matching document (if found) is modified according to the update document, removed from the collection and passed to the callback.
+When executed, the first matching document (if found) is modified according to the update document, removed from the collection and passed as a result.
 
-##### options
+#### findOneAndRemove() options
 
 Options are passed to the `setOptions()` method.
 
@@ -239,19 +232,18 @@ A.where().findOneAndRemove(match)
 A.where().findOneAndRemove(match, options)
 
 // the following all execute the command
-A.where().findOneAndRemove(callback)
-A.where().findOneAndRemove(match, callback)
-A.where().findOneAndRemove(match, options, function (err, doc) {
-  if (doc) {
-    // the document may not be found
-    console.log(doc);
-  }
-})
- ```
+await A.where().findOneAndRemove()
+await A.where().findOneAndRemove(match)
+const doc = await A.where().findOneAndRemove(match, options);
+if (doc) {
+  // the document may not be found
+  console.log(doc);
+}
+```
 
 ### distinct()
 
-Declares this query a _distinct_ query. Optionally pass the distinct field, a match clause or callback. If a callback is passed the query is executed.
+Declares this query a _distinct_ query. Optionally pass the distinct field, a match clause.
 
 ```js
 mquery().distinct()
@@ -260,12 +252,11 @@ mquery().distinct(match, field)
 mquery().distinct(field)
 
 // the following all execute the command
-mquery().distinct(callback)
-mquery().distinct(field, callback)
-mquery().distinct(match, callback)
-mquery().distinct(match, field, function (err, result) {
-  console.log(result);
-})
+await mquery().distinct()
+await mquery().distinct(field)
+await mquery().distinct(match)
+const result = await mquery().distinct(match, field);
+console.log(result);
 ```
 
 ### exec()
@@ -273,7 +264,7 @@ mquery().distinct(match, field, function (err, result) {
 Executes the query.
 
 ```js
-mquery().findOne().where('route').intersects(polygon).exec(function (err, docs){})
+const docs = await mquery().findOne().where('route').intersects(polygon).exec()
 ```
 
 ### stream()
@@ -608,7 +599,7 @@ mquery().select({ name: 1, address: 1, _id: 0 })
 mquery().select('name address -_id')
 ```
 
-##### String syntax
+#### String syntax
 
 When passing a string, prefixing a path with `-` will flag that path as excluded. When a path does not have the `-` prefix, it is included.
 
@@ -725,11 +716,11 @@ mquery().where('age').gte(21).lte(65);
 mquery().find().where({ name: 'vonderful' })
 
 // chaining
-mquery()
-.where('age').gte(21).lte(65)
-.where({ 'name': /^vonderful/i })
-.where('friends').slice(10)
-.exec(callback)
+await mquery()
+  .where('age').gte(21).lte(65)
+  .where({ 'name': /^vonderful/i })
+  .where('friends').slice(10)
+  .exec()
 ```
 
 ### $where()
@@ -739,7 +730,7 @@ Specifies a `$where` condition.
 Use `$where` when you need to select documents using a JavaScript expression.
 
 ```js
-query.$where('this.comments.length > 10 || this.name.length > 5').exec(callback)
+await query.$where('this.comments.length > 10 || this.name.length > 5').exec()
 
 query.$where(function () {
   return this.comments.length > 10 || this.name.length > 5;
@@ -838,7 +829,6 @@ query.maxTimeMS(100)
 
 [MongoDB documentation](http://docs.mongodb.org/manual/reference/method/cursor.maxTimeMS/)
 
-
 ### skip()
 
 Specifies the skip option.
@@ -892,7 +882,7 @@ mquery().read('n')  // same as nearest
 mquery().setReadPreference('primary') // alias of .read()
 ```
 
-##### Preferences:
+#### Preferences:
 
 - `primary` - (default) Read from primary only. Operations will produce an error if primary is unavailable. Cannot be combined with tags.
 - `secondary` - Read from secondary if available, otherwise error.
@@ -908,7 +898,7 @@ Aliases
 - `sp`  secondaryPreferred
 - `n`   nearest
 
-##### Preference Tags:
+#### Preference Tags:
 
 To keep the separation of concerns between `mquery` and your driver
 clean, `mquery#read()` no longer handles specifying a second `tags` argument as of version 0.5.
@@ -920,11 +910,10 @@ For example:
 // example of specifying tags using the Node.js driver
 var ReadPref = require('mongodb').ReadPreference;
 var preference = new ReadPref('secondary', [{ dc:'sf', s: 1 },{ dc:'ma', s: 2 }]);
-mquery(..).read(preference).exec();
+mquery(...).read(preference).exec();
 ```
 
 Read more about how to use read preferences [here](http://docs.mongodb.org/manual/applications/replication/#read-preference) and [here](http://mongodb.github.com/node-mongodb-native/driver-articles/anintroductionto1_1and2_2.html#read-preferences).
-
 
 ### readConcern()
 
@@ -957,7 +946,7 @@ mquery().readConcern('s')
 mquery().r('s')
 ```
 
-##### Read Concern Level:
+#### Read Concern Level:
 
 - `local` - The query returns from the instance with no guarantee guarantee that the data has been written to a majority of the replica set members (i.e. may be rolled back). (MongoDB 3.2+)
 - `available` - The query returns from the instance with no guarantee guarantee that the data has been written to a majority of the replica set members (i.e. may be rolled back). (MongoDB 3.6+)
@@ -998,7 +987,7 @@ mquery().writeConcern('tagSetName') // if the tag set is 'm', use .writeConcern(
 mquery().w(1) // w is alias of writeConcern
 ```
 
-##### Write Concern:
+#### Write Concern:
 
 writeConcern({ w: `<value>`, j: `<boolean>`, wtimeout: `<number>` }`)
 
@@ -1093,28 +1082,15 @@ The returned promise is a [bluebird](https://github.com/petkaantonov/bluebird/) 
 use your favorite promise library, simply set `mquery.Promise = YourPromiseConstructor`.
 Your `Promise` must be [promises A+](http://promisesaplus.com/) compliant.
 
-### thunk()
-
-Returns a thunk which when called runs the query's `exec` method passing the results to the callback.
-
-```js
-var thunk = mquery(collection).find({..}).thunk();
-
-thunk(function(err, results) {
-
-})
-```
-
 ### merge(object)
 
 Merges other mquery or match condition objects into this one. When an mquery instance is passed, its match conditions, field selection and options are merged.
 
 ```js
-var drum = mquery({ type: 'drum' }).collection(instruments);
-var redDrum = mquery({ color: 'red' }).merge(drum);
-redDrum.count(function (err, n) {
-  console.log('there are %d red drums', n);
-})
+const drum = mquery({ type: 'drum' }).collection(instruments);
+const redDrum = mquery({ color: 'red' }).merge(drum);
+const n = await redDrum.count();
+console.log('there are %d red drums', n);
 ```
 
 Internally uses `mquery.canMerge` to determine validity.
@@ -1127,14 +1103,14 @@ Sets query options.
 mquery().setOptions({ collection: coll, limit: 20 })
 ```
 
-##### options
+#### setOptions() options
 
 - [tailable](#tailable) *
 - [sort](#sort) *
 - [limit](#limit) *
 - [skip](#skip) *
 - [maxTime](#maxtime) *
-- [batchSize](#batchSize) *
+- [batchSize](#batchsize) *
 - [comment](#comment) *
 - [hint](#hint) *
 - [collection](#collection): the collection to query against
@@ -1211,13 +1187,11 @@ Often times we want custom base queries that encapsulate predefined criteria. Wi
 var greatMovies = mquery(movieCollection).where('rating').gte(4.5).toConstructor();
 
 // use it!
-greatMovies().count(function (err, n) {
-  console.log('There are %d great movies', n);
-});
+const n = await greatMovies().count();
+console.log('There are %d great movies', n);
 
-greatMovies().where({ name: /^Life/ }).select('name').find(function (err, docs) {
-  console.log(docs);
-});
+const docs = await greatMovies().where({ name: /^Life/ }).select('name').find();
+console.log(docs);
 ```
 
 ## Validation
@@ -1236,7 +1210,7 @@ Read the debug module documentation for more details.
 
 ## General compatibility
 
-#### ObjectIds
+### ObjectIds
 
 `mquery` clones query arguments before passing them to a `collection` method for execution.
 This prevents accidental side-affects to the objects you pass.

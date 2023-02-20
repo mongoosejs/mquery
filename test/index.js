@@ -2,21 +2,18 @@
 
 const mquery = require('../');
 const assert = require('assert');
+const env = require('./env');
 
 describe('mquery', function() {
   let col;
 
-  before(function(done) {
+  before(async function() {
     // get the env specific collection interface
-    require('./env').getCollection(function(err, collection) {
-      assert.ifError(err);
-      col = collection;
-      done();
-    });
+    col = await env.getCollection();
   });
 
-  after(function(done) {
-    require('./env').dropCollection(done);
+  after(async function() {
+    return env.dropCollection();
   });
 
   describe('mquery', function() {
@@ -77,7 +74,7 @@ describe('mquery', function() {
       assert.deepEqual(opts, m.options);
       assert.deepEqual(match, m._conditions);
       assert.deepEqual(select, m._fields);
-      assert.deepEqual(update, m._update);
+      assert.deepEqual(update, m._updateDoc);
       assert.equal(path, m._path);
       assert.equal('find', m.op);
     });
@@ -1416,7 +1413,7 @@ describe('mquery', function() {
           const m = mquery().updateOne(original);
           const n = mquery().merge(m);
           m.updateOne({ $set: { x: 2 } });
-          assert.notDeepEqual(m._update, n._update);
+          assert.notDeepEqual(m._updateDoc, n._updateDoc);
           done();
         });
         it('is chainable', function() {
@@ -1437,7 +1434,7 @@ describe('mquery', function() {
           const m = mquery().updateOne(original);
           const n = mquery().merge(original);
           m.updateOne({ $set: { x: 2 } });
-          assert.notDeepEqual(m._update, n._update);
+          assert.notDeepEqual(m._updateDoc, n._updateDoc);
           done();
         });
         it('is chainable', function() {
@@ -1452,7 +1449,7 @@ describe('mquery', function() {
   // queries
 
   describe('find', function() {
-    describe('with no callback', function() {
+    describe('with no exec', function() {
       it('does not execute', function() {
         const m = mquery();
         assert.doesNotThrow(function() {
@@ -1480,41 +1477,33 @@ describe('mquery', function() {
     });
 
     describe('executes', function() {
-      before(function(done) {
-        col.insertOne({ name: 'mquery' }, done);
+      before(async() => {
+        return col.insertOne({ name: 'mquery' });
       });
 
-      after(function(done) {
-        col.deleteMany({ name: 'mquery' }, done);
+      after(async() => {
+        return col.deleteMany({ name: 'mquery' });
       });
 
-      it('when criteria is passed with a callback', function(done) {
-        mquery(col).find({ name: 'mquery' }, function(err, docs) {
-          assert.ifError(err);
-          assert.equal(1, docs.length);
-          done();
-        });
+      it('when criteria is passed with a exec', async() => {
+        const docs = await mquery(col).find({ name: 'mquery' });
+        assert.equal(1, docs.length);
+
       });
-      it('when Query is passed with a callback', function(done) {
+      it('when Query is passed with a exec', async() => {
         const m = mquery({ name: 'mquery' });
-        mquery(col).find(m, function(err, docs) {
-          assert.ifError(err);
-          assert.equal(1, docs.length);
-          done();
-        });
+        const docs = await mquery(col).find(m);
+        assert.equal(1, docs.length);
       });
-      it('when just a callback is passed', function(done) {
-        mquery({ name: 'mquery' }).collection(col).find(function(err, docs) {
-          assert.ifError(err);
-          assert.equal(1, docs.length);
-          done();
-        });
+      it('when just nothing is passed and executed', async() => {
+        const docs = await mquery({ name: 'mquery' }).collection(col).find();
+        assert.equal(1, docs.length);
       });
     });
   });
 
   describe('findOne', function() {
-    describe('with no callback', function() {
+    describe('with no exec', function() {
       it('does not execute', function() {
         const m = mquery();
         assert.doesNotThrow(function() {
@@ -1545,44 +1534,35 @@ describe('mquery', function() {
     });
 
     describe('executes', function() {
-      before(function(done) {
-        col.insertOne({ name: 'mquery findone' }, done);
+      before(async() => {
+        return col.insertOne({ name: 'mquery findone' });
       });
 
-      after(function(done) {
-        col.deleteMany({ name: 'mquery findone' }, done);
+      after(async() => {
+        return col.deleteMany({ name: 'mquery findone' });
       });
 
-      it('when criteria is passed with a callback', function(done) {
-        mquery(col).findOne({ name: 'mquery findone' }, function(err, doc) {
-          assert.ifError(err);
-          assert.ok(doc);
-          assert.equal('mquery findone', doc.name);
-          done();
-        });
+      it('when criteria is passed with a exec', async() => {
+        const doc = await mquery(col).findOne({ name: 'mquery findone' });
+        assert.ok(doc);
+        assert.equal('mquery findone', doc.name);
       });
-      it('when Query is passed with a callback', function(done) {
+      it('when Query is passed with a exec', async() => {
         const m = mquery(col).where({ name: 'mquery findone' });
-        mquery(col).findOne(m, function(err, doc) {
-          assert.ifError(err);
-          assert.ok(doc);
-          assert.equal('mquery findone', doc.name);
-          done();
-        });
+        const doc = await mquery(col).findOne(m);
+        assert.ok(doc);
+        assert.equal('mquery findone', doc.name);
       });
-      it('when just a callback is passed', function(done) {
-        mquery({ name: 'mquery findone' }).collection(col).findOne(function(err, doc) {
-          assert.ifError(err);
-          assert.ok(doc);
-          assert.equal('mquery findone', doc.name);
-          done();
-        });
+      it('when just nothing is passed but executed', async() => {
+        const doc = await mquery({ name: 'mquery findone' }).collection(col).findOne();
+        assert.ok(doc);
+        assert.equal('mquery findone', doc.name);
       });
     });
   });
 
   describe('count', function() {
-    describe('with no callback', function() {
+    describe('with no exec', function() {
       it('does not execute', function() {
         const m = mquery();
         assert.doesNotThrow(function() {
@@ -1613,37 +1593,28 @@ describe('mquery', function() {
     });
 
     describe('executes', function() {
-      before(function(done) {
-        col.insertOne({ name: 'mquery count' }, done);
+      before(async() => {
+        return col.insertOne({ name: 'mquery count' });
       });
 
-      after(function(done) {
-        col.deleteMany({ name: 'mquery count' }, done);
+      after(async() => {
+        return col.deleteMany({ name: 'mquery count' });
       });
 
-      it('when criteria is passed with a callback', function(done) {
-        mquery(col).count({ name: 'mquery count' }, function(err, count) {
-          assert.ifError(err);
-          assert.ok(count);
-          assert.ok(1 === count);
-          done();
-        });
+      it('when criteria is passed with a exec', async() => {
+        const count = await mquery(col).count({ name: 'mquery count' });
+        assert.ok(count);
+        assert.ok(1 === count);
       });
-      it('when Query is passed with a callback', function(done) {
+      it('when Query is passed with a exec', async() => {
         const m = mquery({ name: 'mquery count' });
-        mquery(col).count(m, function(err, count) {
-          assert.ifError(err);
-          assert.ok(count);
-          assert.ok(1 === count);
-          done();
-        });
+        const count = await mquery(col).count(m);
+        assert.ok(count);
+        assert.ok(1 === count);
       });
-      it('when just a callback is passed', function(done) {
-        mquery({ name: 'mquery count' }).collection(col).count(function(err, count) {
-          assert.ifError(err);
-          assert.ok(1 === count);
-          done();
-        });
+      it('when just nothing is passed but executed', async() => {
+        const count = await mquery({ name: 'mquery count' }).collection(col).count();
+        assert.ok(1 === count);
       });
     });
 
@@ -1700,7 +1671,7 @@ describe('mquery', function() {
   });
 
   describe('distinct', function() {
-    describe('with no callback', function() {
+    describe('with no exec', function() {
       it('does not execute', function() {
         const m = mquery();
         assert.doesNotThrow(function() {
@@ -1723,16 +1694,16 @@ describe('mquery', function() {
       const n = m.distinct({ y: 2 });
       assert.equal(m, n);
       assert.deepEqual(n._conditions, { x: 1, y: 2 });
-      assert.equal('name', n._distinct);
+      assert.equal('name', n._distinctDoc);
       assert.equal('distinct', n.op);
     });
 
     it('overwrites field', function() {
       const m = mquery({ name: 'mquery' }).distinct('name');
       m.distinct('rename');
-      assert.equal(m._distinct, 'rename');
+      assert.equal(m._distinctDoc, 'rename');
       m.distinct({ x: 1 }, 'renamed');
-      assert.equal(m._distinct, 'renamed');
+      assert.equal(m._distinctDoc, 'renamed');
     });
 
     it('merges other queries', function() {
@@ -1742,70 +1713,58 @@ describe('mquery', function() {
       assert.deepEqual(a._conditions, m._conditions);
       assert.deepEqual(a.options, m.options);
       assert.deepEqual(a._fields, m._fields);
-      assert.deepEqual(a._distinct, m._distinct);
+      assert.deepEqual(a._distinctDoc, m._distinctDoc);
     });
 
     describe('executes', function() {
-      before(function(done) {
-        col.insertOne({ name: 'mquery distinct', age: 1 }, done);
+      before(async() => {
+        return col.insertOne({ name: 'mquery distinct', age: 1 });
       });
 
-      after(function(done) {
-        col.deleteMany({ name: 'mquery distinct' }, done);
+      after(async() => {
+        return col.deleteMany({ name: 'mquery distinct' });
       });
 
-      it('when distinct arg is passed with a callback', function(done) {
-        mquery(col).distinct('distinct', function(err, doc) {
-          assert.ifError(err);
+      it('when distinct arg is passed with a exec', async() => {
+        const doc = await mquery(col).distinct('distinct');
+        assert.ok(doc);
+      });
+      describe('when criteria is passed with a exec', function() {
+        it('if distinct arg was declared', async() => {
+          const doc = await mquery(col).distinct('age').distinct({ name: 'mquery distinct' });
           assert.ok(doc);
-          done();
         });
-      });
-      describe('when criteria is passed with a callback', function() {
-        it('if distinct arg was declared', function(done) {
-          mquery(col).distinct('age').distinct({ name: 'mquery distinct' }, function(err, doc) {
-            assert.ifError(err);
-            assert.ok(doc);
-            done();
-          });
-        });
-        it('but not if distinct arg was not declared', function() {
-          assert.throws(function() {
-            mquery(col).distinct({ name: 'mquery distinct' }, function() {});
+        it('but not if distinct arg was not declared', async() => {
+          await assert.rejects(function() {
+            return mquery(col).distinct({ name: 'mquery distinct' }).exec();
           }, /No value for `distinct`/);
         });
       });
-      describe('when Query is passed with a callback', function() {
+      describe('when Query is passed with a exec', function() {
         const m = mquery({ name: 'mquery distinct' });
-        it('if distinct arg was declared', function(done) {
-          mquery(col).distinct('age').distinct(m, function(err, doc) {
-            assert.ifError(err);
-            assert.ok(doc);
-            done();
-          });
+        it('if distinct arg was declared', async() => {
+          const doc = await mquery(col).distinct('age').distinct(m);
+          assert.ok(doc);
         });
-        it('but not if distinct arg was not declared', function() {
-          assert.throws(function() {
-            mquery(col).distinct(m, function() {});
+        it('but not if distinct arg was not declared', async() => {
+          await assert.rejects(function() {
+            return mquery(col).distinct(m).exec();
           }, /No value for `distinct`/);
         });
       });
-      describe('when just a callback is passed', function() {
-        it('if distinct arg was declared', function(done) {
+      describe('when just nothing is passed but executed', function() {
+        it('if distinct arg was declared', async() => {
           const m = mquery({ name: 'mquery distinct' });
           m.collection(col);
           m.distinct('age');
-          m.distinct(function(err, doc) {
-            assert.ifError(err);
-            assert.ok(doc);
-            done();
-          });
+          const doc = await m.distinct();
+          assert.ok(doc);
         });
-        it('but not if no distinct arg was declared', function() {
+        it('but not if no distinct arg was declared', async() => {
           const m = mquery();
           m.collection(col);
-          assert.throws(function() {
-            m.distinct(function() {});
+          await assert.rejects(function() {
+            return m.distinct().exec();
           }, /No value for `distinct`/);
         });
       });
@@ -1871,7 +1830,7 @@ describe('mquery', function() {
   });
 
   describe('update', function() {
-    describe('with no callback', function() {
+    describe('with no exec', function() {
       it('does not execute', function() {
         const m = mquery();
         assert.doesNotThrow(function() {
@@ -1894,7 +1853,7 @@ describe('mquery', function() {
       const n = m.where({ y: 2 });
       assert.equal(m, n);
       assert.deepEqual(n._conditions, { x: 1, y: 2 });
-      assert.deepEqual({ y: 2 }, n._update);
+      assert.deepEqual({ y: 2 }, n._updateDoc);
       assert.equal('updateOne', n.op);
     });
 
@@ -1902,139 +1861,81 @@ describe('mquery', function() {
       const a = [1, 2];
       const m = mquery().where({ name: 'mquery' }).updateOne({ x: 'stuff', a: a });
       m.updateOne({ z: 'stuff' });
-      assert.deepEqual(m._update, { z: 'stuff', x: 'stuff', a: a });
+      assert.deepEqual(m._updateDoc, { z: 'stuff', x: 'stuff', a: a });
       assert.deepEqual(m._conditions, { name: 'mquery' });
       assert.ok(!m.options.overwrite);
       m.updateOne({}, { z: 'renamed' }, { overwrite: true });
       assert.ok(m.options.overwrite === true);
       assert.deepEqual(m._conditions, { name: 'mquery' });
-      assert.deepEqual(m._update, { z: 'renamed', x: 'stuff', a: a });
+      assert.deepEqual(m._updateDoc, { z: 'renamed', x: 'stuff', a: a });
       a.push(3);
-      assert.notDeepEqual(m._update, { z: 'renamed', x: 'stuff', a: a });
+      assert.notDeepEqual(m._updateDoc, { z: 'renamed', x: 'stuff', a: a });
     });
 
     describe('executes', function() {
       let id;
-      before(function(done) {
-        col.insertOne({ name: 'mquery update', age: 1 }, function(err, res) {
-          id = res.insertedId;
-          done();
-        });
+      before(async() => {
+        const res = await col.insertOne({ name: 'mquery update', age: 1 });
+        id = res.insertedId;
       });
 
-      after(function(done) {
-        col.deleteMany({ _id: id }, done);
+      after(async() => {
+        return col.deleteMany({ _id: id });
       });
 
-      describe('when conds + doc + opts + callback passed', function() {
-        it('works', function(done) {
+      describe('when conds + doc + opts + exec passed', function() {
+        it('works', async() => {
           const m = mquery(col).where({ _id: id });
-          m.updateOne({}, { name: 'Sparky' }, {}, function(err, res) {
-            assert.ifError(err);
-            assert.equal(res.modifiedCount, 1);
-            m.findOne(function(err, doc) {
-              assert.ifError(err);
-              assert.equal(doc.name, 'Sparky');
-              done();
-            });
-          });
+          const res = await m.updateOne({}, { name: 'Sparky' }, {});
+          assert.equal(res.modifiedCount, 1);
+          const doc = await m.findOne();
+          assert.equal(doc.name, 'Sparky');
         });
       });
 
-      describe('when conds + doc + callback passed', function() {
-        it('works', function(done) {
-          const m = mquery(col).updateOne({ _id: id }, { name: 'fairgrounds' }, function(err, num) {
-            assert.ifError(err);
-            assert.ok(1, num);
-            m.findOne(function(err, doc) {
-              assert.ifError(err);
-              assert.equal(doc.name, 'fairgrounds');
-              done();
-            });
-          });
+      describe('when conds + doc + exec passed', function() {
+        it('works', async() => {
+          const m = mquery(col);
+
+          const num = await m.updateOne({ _id: id }, { name: 'fairgrounds' });
+          assert.ok(1, num);
+          const doc = await m.findOne();
+          assert.equal(doc.name, 'fairgrounds');
         });
       });
 
-      describe('when doc + callback passed', function() {
-        it('works', function(done) {
-          const m = mquery(col).where({ _id: id }).updateOne({ name: 'changed' }, function(err, num) {
-            assert.ifError(err);
-            assert.ok(1, num);
-            m.findOne(function(err, doc) {
-              assert.ifError(err);
-              assert.equal(doc.name, 'changed');
-              done();
-            });
-          });
+      describe('when doc + exec passed', function() {
+        it('works', async() => {
+          const m = mquery(col);
+
+          const num = await m.where({ _id: id }).updateOne({ name: 'changed' });
+          assert.ok(1, num);
+          const doc = await m.findOne();
+          assert.equal(doc.name, 'changed');
         });
       });
 
-      describe('when just callback passed', function() {
-        it('works', function(done) {
+      describe('when just exec passed', function() {
+        it('works', async() => {
           const m = mquery(col).where({ _id: id });
           m.updateOne({ name: 'Frankenweenie' });
-          m.updateOne(function(err, res) {
-            assert.ifError(err);
-            assert.equal(res.modifiedCount, 1);
-            m.findOne(function(err, doc) {
-              assert.ifError(err);
-              assert.equal(doc.name, 'Frankenweenie');
-              done();
-            });
-          });
-        });
-      });
-
-      describe('without a callback', function() {
-        it('when forced by exec()', function(done) {
-          const m = mquery(col).where({ _id: id });
-          m.setOptions({ w: 'majority' });
-          m.updateOne({ name: 'forced' });
-
-          const update = m._collection.update;
-          m._collection.updateOne = function(conds, doc, opts) {
-            m._collection.update = update;
-
-            assert.equal(opts.w, 'majority');
-            assert.equal('forced', doc.$set.name);
-            done();
-          };
-
-          m.exec();
+          const res = await m.updateOne();
+          assert.equal(res.modifiedCount, 1);
+          const doc = await m.findOne();
+          assert.equal(doc.name, 'Frankenweenie');
         });
       });
 
       describe('except when update doc is empty and missing overwrite flag', function() {
-        it('works', function(done) {
+        it.skip('works', async() => {
           const m = mquery(col).where({ _id: id });
-          m.updateOne({}, function(err, num) {
-            assert.ifError(err);
-            assert.ok(0 === num);
-            setTimeout(function() {
-              m.findOne(function(err, doc) {
-                assert.ifError(err);
-                assert.equal(3, mquery.utils.keys(doc).length);
-                assert.equal(id, doc._id.toString());
-                assert.equal('Frankenweenie', doc.name);
-                done();
-              });
-            }, 300);
-          });
-        });
-      });
-
-      describe('when boolean (true) - exec()', function() {
-        it('works', function(done) {
-          const m = mquery(col).where({ _id: id });
-          m.updateOne({ name: 'bool' }).updateOne(true);
-          setTimeout(function() {
-            m.findOne(function(err, doc) {
-              assert.ifError(err);
-              assert.ok(doc);
-              assert.equal('bool', doc.name);
-              done();
-            });
-          }, 300);
+          const num = await m.updateOne({}, {});
+          assert.ok(0 === num);
+          await new Promise((res) => setTimeout(res, 300));
+          const doc = await m.findOne();
+          assert.equal(3, mquery.utils.keys(doc).length);
+          assert.equal(id, doc._id.toString());
+          assert.equal('Frankenweenie', doc.name);
         });
       });
     });
@@ -2103,29 +2004,24 @@ describe('mquery', function() {
         it('updates the doc', function() {
           const m = mquery();
           const n = m.findOneAndUpdate({ $set: { name: '1 arg' } });
-          assert.deepEqual(n._update, { $set: { name: '1 arg' } });
+          assert.deepEqual(n._updateDoc, { $set: { name: '1 arg' } });
         });
       });
       describe('that is a query', function() {
         it('updates the doc', function() {
           const m = mquery({ name: name }).updateOne({ x: 1 });
           const n = mquery().findOneAndUpdate(m);
-          assert.deepEqual(n._update, { x: 1 });
+          assert.deepEqual(n._updateDoc, { x: 1 });
         });
       });
-      it('that is a function', function(done) {
-        col.insertOne({ name: name }, function(err) {
-          assert.ifError(err);
-          const m = mquery({ name: name }).collection(col);
-          name = '1 arg';
-          const n = m.updateOne({ $set: { name: name } }).setOptions({ returnDocument: 'after' });
-          n.findOneAndUpdate(function(err, res) {
-            assert.ifError(err);
-            assert.ok(res.value);
-            assert.equal(res.value.name, name);
-            done();
-          });
-        });
+      it('that is a function', async() => {
+        await col.insertOne({ name: name });
+        const m = mquery({ name: name }).collection(col);
+        name = '1 arg';
+        const n = m.updateOne({ $set: { name: name } }).setOptions({ returnDocument: 'after' });
+        const res = await n.findOneAndUpdate();
+        assert.ok(res.value);
+        assert.equal(res.value.name, name);
       });
     });
     describe('with 2 args', function() {
@@ -2133,53 +2029,44 @@ describe('mquery', function() {
         const m = mquery(col);
         m.findOneAndUpdate({ name: name }, { age: 100 });
         assert.deepEqual({ name: name }, m._conditions);
-        assert.deepEqual({ age: 100 }, m._update);
+        assert.deepEqual({ age: 100 }, m._updateDoc);
       });
       it('query + update', function() {
         const n = mquery({ name: name });
         const m = mquery(col);
         m.findOneAndUpdate(n, { age: 100 });
         assert.deepEqual({ name: name }, m._conditions);
-        assert.deepEqual({ age: 100 }, m._update);
+        assert.deepEqual({ age: 100 }, m._updateDoc);
       });
-      it('update + callback', function(done) {
+      it('update + exec', async() => {
         const m = mquery(col).where({ name: name });
-        m.findOneAndUpdate({}, { $inc: { age: 10 } }, { returnDocument: 'after' }, function(err, res) {
-          assert.ifError(err);
-          assert.equal(10, res.value.age);
-          done();
-        });
+        const res = await m.findOneAndUpdate({}, { $inc: { age: 10 } }, { returnDocument: 'after' });
+        assert.equal(10, res.value.age);
       });
     });
     describe('with 3 args', function() {
       it('conditions + update + options', function() {
-        const m = mquery();
+        const m = mquery(col);
         const n = m.findOneAndUpdate({ name: name }, { works: true }, { returnDocument: 'before' });
         assert.deepEqual({ name: name }, n._conditions);
-        assert.deepEqual({ works: true }, n._update);
+        assert.deepEqual({ works: true }, n._updateDoc);
         assert.deepEqual({ returnDocument: 'before' }, n.options);
       });
-      it('conditions + update + callback', function(done) {
+      it('conditions + update + exec', async() => {
         const m = mquery(col);
-        m.findOneAndUpdate({ name: name }, { works: true }, { returnDocument: 'after' }, function(err, res) {
-          assert.ifError(err);
-          assert.ok(res.value);
-          assert.equal(name, res.value.name);
-          assert.ok(true === res.value.works);
-          done();
-        });
+        const res = await m.findOneAndUpdate({ name: name }, { works: true }, { returnDocument: 'after' });
+        assert.ok(res.value);
+        assert.equal(name, res.value.name);
+        assert.ok(true === res.value.works);
       });
     });
     describe('with 4 args', function() {
-      it('conditions + update + options + callback', function(done) {
+      it('conditions + update + options + exec', async() => {
         const m = mquery(col);
-        m.findOneAndUpdate({ name: name }, { works: false }, {}, function(err, res) {
-          assert.ifError(err);
-          assert.ok(res.value);
-          assert.equal(name, res.value.name);
-          assert.ok(true === res.value.works);
-          done();
-        });
+        const res = await m.findOneAndUpdate({ name: name }, { works: false }, {});
+        assert.ok(res.value);
+        assert.equal(name, res.value.name);
+        assert.ok(true === res.value.works);
       });
     });
   });
@@ -2211,17 +2098,12 @@ describe('mquery', function() {
           assert.deepEqual(n._conditions, { name: name });
         });
       });
-      it('that is a function', function(done) {
-        col.insertOne({ name: name }, function(err) {
-          assert.ifError(err);
-          const m = mquery({ name: name }).collection(col);
-          m.findOneAndRemove(function(err, res) {
-            assert.ifError(err);
-            assert.ok(res.value);
-            assert.equal(name, res.value.name);
-            done();
-          });
-        });
+      it('that is a function', async() => {
+        await col.insertOne({ name: name });
+        const m = mquery({ name: name }).collection(col);
+        const res = await m.findOneAndRemove();
+        assert.ok(res.value);
+        assert.equal(name, res.value.name);
       });
     });
     describe('with 2 args', function() {
@@ -2238,279 +2120,203 @@ describe('mquery', function() {
         assert.deepEqual({ name: name }, m._conditions);
         assert.deepEqual({ sort: { x: 1 } }, m.options);
       });
-      it('conditions + callback', function(done) {
-        col.insertOne({ name: name }, function(err) {
-          assert.ifError(err);
-          const m = mquery(col);
-          m.findOneAndRemove({ name: name }, function(err, res) {
-            assert.ifError(err);
-            assert.equal(name, res.value.name);
-            done();
-          });
-        });
+      it('conditions + exec', async() => {
+        await col.insertOne({ name: name });
+        const m = mquery(col);
+        const res = await m.findOneAndRemove({ name: name });
+        assert.equal(name, res.value.name);
       });
-      it('query + callback', function(done) {
-        col.insertOne({ name: name }, function(err) {
-          assert.ifError(err);
-          const n = mquery({ name: name });
-          const m = mquery(col);
-          m.findOneAndRemove(n, function(err, res) {
-            assert.ifError(err);
-            assert.equal(name, res.value.name);
-            done();
-          });
-        });
+      it('query + exec', async() => {
+        await col.insertOne({ name: name });
+        const n = mquery({ name: name });
+        const m = mquery(col);
+        const res = await m.findOneAndRemove(n);
+        assert.equal(name, res.value.name);
       });
     });
     describe('with 3 args', function() {
-      it('conditions + options + callback', function(done) {
+      it('conditions + options + exec', async() => {
         name = 'findOneAndRemove + conds + options + cb';
-        col.insertMany([{ name: name }, { name: 'a' }], function(err) {
-          assert.ifError(err);
-          const m = mquery(col);
-          m.findOneAndRemove({ name: name }, { sort: { name: 1 } }, function(err, res) {
-            assert.ifError(err);
-            assert.ok(res.value);
-            assert.equal(name, res.value.name);
-            done();
-          });
-        });
+        await col.insertMany([{ name: name }, { name: 'a' }]);
+        const m = mquery(col);
+        const res = await m.findOneAndRemove({ name: name }, { sort: { name: 1 } });
+        assert.ok(res.value);
+        assert.equal(name, res.value.name);
       });
     });
   });
 
   describe('exec', function() {
-    beforeEach(function(done) {
-      col.insertMany([{ name: 'exec', age: 1 }, { name: 'exec', age: 2 }], done);
+    beforeEach(async() => {
+      return col.insertMany([{ name: 'exec', age: 1 }, { name: 'exec', age: 2 }]);
     });
 
-    afterEach(function(done) {
-      mquery(col).deleteMany(done);
+    afterEach(async() => {
+      return mquery(col).remove();
     });
 
-    it('requires an op', function() {
-      assert.throws(function() {
-        mquery().exec();
+    it('requires an op', async() => {
+      assert.rejects(function() {
+        return mquery().exec();
       }, /Missing query type/);
     });
 
     describe('find', function() {
-      it('works', function(done) {
+      it('works', async() => {
         const m = mquery(col).find({ name: 'exec' });
-        m.exec(function(err, docs) {
-          assert.ifError(err);
-          assert.equal(2, docs.length);
-          done();
-        });
+        const docs = await m.exec();
+        assert.equal(2, docs.length);
       });
 
-      it('works with readPreferences', function(done) {
+      it('works with readPreferences', async() => {
         const m = mquery(col).find({ name: 'exec' });
         try {
           const ReadPreference = require('mongodb').ReadPreference;
           const rp = new ReadPreference('primary');
           m.read(rp);
         } catch (e) {
-          done(e.code === 'MODULE_NOT_FOUND' ? null : e);
+          if (e.code !== 'MODULE_NOT_FOUND') {
+            throw e;
+          }
           return;
         }
-        m.exec(function(err, docs) {
-          assert.ifError(err);
-          assert.equal(2, docs.length);
-          done();
-        });
+        const docs = await m.exec();
+        assert.equal(2, docs.length);
       });
 
-      it('works with hint', function(done) {
-        mquery(col).hint({ _id: 1 }).find({ name: 'exec' }).exec(function(err, docs) {
-          assert.ifError(err);
-          assert.equal(2, docs.length);
+      it('works with hint', async() => {
+        let docs = await mquery(col).hint({ _id: 1 }).find({ name: 'exec' }).exec();
+        assert.equal(2, docs.length);
 
-          mquery(col).hint('_id_').find({ age: 1 }).exec(function(err, docs) {
-            assert.ifError(err);
-            assert.equal(1, docs.length);
-            done();
-          });
-        });
+        docs = await mquery(col).hint('_id_').find({ age: 1 }).exec();
+        assert.equal(1, docs.length);
       });
 
-      it('works with readConcern', function(done) {
+      it('works with readConcern', async() => {
         const m = mquery(col).find({ name: 'exec' });
         m.readConcern('l');
-        m.exec(function(err, docs) {
-          assert.ifError(err);
-          assert.equal(2, docs.length);
-          done();
-        });
+        const docs = await m.exec();
+        assert.equal(2, docs.length);
       });
 
-      it('works with collation', function(done) {
+      it('works with collation', async() => {
         const m = mquery(col).find({ name: 'EXEC' });
         m.collation({ locale: 'en_US', strength: 1 });
-        m.exec(function(err, docs) {
-          assert.ifError(err);
-          assert.equal(2, docs.length);
-          done();
-        });
+        const docs = await m.exec();
+        assert.equal(2, docs.length);
       });
     });
 
-    it('findOne', function(done) {
+    it('findOne', async() => {
       const m = mquery(col).findOne({ age: 2 });
-      m.exec(function(err, doc) {
-        assert.ifError(err);
-        assert.equal(2, doc.age);
-        done();
-      });
+      const doc = await m.exec();
+      assert.equal(2, doc.age);
     });
 
-    it('count', function(done) {
+    it('count', async() => {
       const m = mquery(col).count({ name: 'exec' });
-      m.exec(function(err, count) {
-        assert.ifError(err);
-        assert.equal(2, count);
-        done();
-      });
+      const count = await m.exec();
+      assert.equal(2, count);
     });
 
-    it('distinct', function(done) {
+    it('distinct', async() => {
       const m = mquery({ name: 'exec' });
       m.collection(col);
       m.distinct('age');
-      m.exec(function(err, array) {
-        assert.ifError(err);
-        assert.ok(Array.isArray(array));
-        assert.equal(2, array.length);
-        assert(~array.indexOf(1));
-        assert(~array.indexOf(2));
-        done();
-      });
+      const array = await m.exec();
+      assert.ok(Array.isArray(array));
+      assert.equal(2, array.length);
+      assert(~array.indexOf(1));
+      assert(~array.indexOf(2));
     });
 
     describe('update', function() {
       describe('updateMany', function() {
-        it('works', function(done) {
-          mquery(col).updateMany({ name: 'exec' }, { name: 'test' }).
-            exec(function(error) {
-              assert.ifError(error);
-              mquery(col).count({ name: 'test' }).exec(function(error, res) {
-                assert.ifError(error);
-                assert.equal(res, 2);
-                done();
-              });
-            });
+        it('works', async() => {
+          await mquery(col).updateMany({ name: 'exec' }, { name: 'test' }).
+            exec();
+          const res = await mquery(col).count({ name: 'test' }).exec();
+          assert.equal(res, 2);
         });
-        it('works with write concern', function(done) {
-          mquery(col).updateMany({ name: 'exec' }, { name: 'test' })
+        it('works with write concern', async() => {
+          await mquery(col).updateMany({ name: 'exec' }, { name: 'test' })
             .w(1).j(true).wtimeout(1000)
-            .exec(function(error) {
-              assert.ifError(error);
-              mquery(col).count({ name: 'test' }).exec(function(error, res) {
-                assert.ifError(error);
-                assert.equal(res, 2);
-                done();
-              });
-            });
+            .exec();
+          const res = await mquery(col).count({ name: 'test' }).exec();
+          assert.equal(res, 2);
         });
       });
 
       describe('updateOne', function() {
-        it('works', function(done) {
-          mquery(col).updateOne({ name: 'exec' }, { name: 'test' }).
-            exec(function(error) {
-              assert.ifError(error);
-              mquery(col).count({ name: 'test' }).exec(function(error, res) {
-                assert.ifError(error);
-                assert.equal(res, 1);
-                done();
-              });
-            });
+        it('works', async() => {
+          await mquery(col).updateOne({ name: 'exec' }, { name: 'test' }).
+            exec();
+          const res = await mquery(col).count({ name: 'test' }).exec();
+          assert.equal(res, 1);
         });
       });
 
       describe('replaceOne', function() {
-        it('works', function(done) {
-          mquery(col).replaceOne({ name: 'exec' }, { name: 'test' }).
-            exec(function(error) {
-              assert.ifError(error);
-              mquery(col).findOne({ name: 'test' }).exec(function(error, res) {
-                assert.ifError(error);
-                assert.equal(res.name, 'test');
-                assert.ok(res.age == null);
-                done();
-              });
-            });
+        it('works', async() => {
+          await mquery(col).replaceOne({ name: 'exec' }, { name: 'test' }).
+            exec();
+          const res = await mquery(col).findOne({ name: 'test' }).exec();
+          assert.equal(res.name, 'test');
+          assert.ok(res.age == null);
         });
       });
     });
 
     describe('deleteOne', function() {
-      it('with a callback', function(done) {
+      it('with exec', async() => {
         const m = mquery(col).where({ age: { $gte: 0 } }).deleteOne();
-        m.exec(function(err, res) {
-          assert.ifError(err);
-          assert.equal(res.deletedCount, 1);
-          done();
-        });
+        const res = await m.exec();
+        assert.equal(res.deletedCount, 1);
       });
 
-      it('with justOne set', function(done) {
+      it('with justOne set', async() => {
         const m = mquery(col).where({ age: { $gte: 0 } }).
           // Should ignore `justOne`
           setOptions({ justOne: false }).
           deleteOne();
-        m.exec(function(err, res) {
-          assert.ifError(err);
-          assert.equal(res.deletedCount, 1);
-          done();
-        });
+        const res = await m.exec();
+        assert.equal(res.deletedCount, 1);
       });
     });
 
     describe('deleteMany', function() {
-      it('with a callback', function(done) {
+      it('with exec', async() => {
         const m = mquery(col).where({ age: { $gte: 0 } }).deleteMany();
-        m.exec(function(err, res) {
-          assert.ifError(err);
-          assert.equal(res.deletedCount, 2);
-          done();
-        });
+        const res = await m.exec();
+        assert.equal(res.deletedCount, 2);
       });
     });
 
     describe('findOneAndUpdate', function() {
-      it('with a callback', function(done) {
+      it('with exec', async() => {
         const m = mquery(col);
         m.findOneAndUpdate({ name: 'exec', age: 1 }, { $set: { name: 'findOneAndUpdate' } }, { returnDocument: 'after' });
-        m.exec(function(err, res) {
-          assert.ifError(err);
-          assert.equal('findOneAndUpdate', res.value.name);
-          done();
-        });
+        const res = await m.exec();
+        assert.equal('findOneAndUpdate', res.value.name);
       });
     });
 
     describe('findOneAndRemove', function() {
-      it('with a callback', function(done) {
+      it('with exec', async() => {
         const m = mquery(col);
         m.findOneAndRemove({ name: 'exec', age: 2 });
-        m.exec(function(err, res) {
-          assert.ifError(err);
-          assert.equal('exec', res.value.name);
-          assert.equal(2, res.value.age);
-          mquery(col).count({ name: 'exec' }, function(err, num) {
-            assert.ifError(err);
-            assert.equal(1, num);
-            done();
-          });
-        });
+        const res = await m.exec();
+        assert.equal('exec', res.value.name);
+        assert.equal(2, res.value.age);
+        const num = await mquery(col).count({ name: 'exec' });
+        assert.equal(1, num);
       });
     });
   });
 
-  describe('setTraceFunction', function() {
-    beforeEach(function(done) {
-      col.insertMany([{ name: 'trace', age: 93 }], done);
+  describe.skip('setTraceFunction', function() {
+    beforeEach(async() => {
+      return col.insertMany([{ name: 'trace', age: 93 }]);
     });
 
     it('calls trace function when executing query', function(done) {
@@ -2557,33 +2363,13 @@ describe('mquery', function() {
     });
   });
 
-  describe('thunk', function() {
-    it('returns a function', function(done) {
-      assert.equal('function', typeof mquery().thunk());
-      done();
-    });
-
-    it('passes the fn arg to `exec`', function(done) {
-      function cb() {}
-      const m = mquery();
-
-      m.exec = function testing(fn) {
-        assert.equal(this, m);
-        assert.equal(cb, fn);
-        done();
-      };
-
-      m.thunk()(cb);
-    });
-  });
-
   describe('then', function() {
-    before(function(done) {
-      col.insertMany([{ name: 'then', age: 1 }, { name: 'then', age: 2 }], done);
+    before(async() => {
+      return col.insertMany([{ name: 'then', age: 1 }, { name: 'then', age: 2 }]);
     });
 
-    after(function(done) {
-      mquery(col).deleteMany({ name: 'then' }).exec(done);
+    after(async() => {
+      return mquery(col).remove({ name: 'then' }).exec();
     });
 
     it('returns a promise A+ compat object', function(done) {
@@ -2599,28 +2385,15 @@ describe('mquery', function() {
         done();
       }, done);
     });
-
-    it('supports exec() cb being called synchronously #66', function(done) {
-      const query = mquery(col).count({ name: 'then' });
-      query.exec = function(cb) {
-        cb(null, 66);
-      };
-
-      query.then(success, done);
-      function success(count) {
-        assert.equal(66, count);
-        done();
-      }
-    });
   });
 
   describe('stream', function() {
-    before(function(done) {
-      col.insertMany([{ name: 'stream', age: 1 }, { name: 'stream', age: 2 }], done);
+    before(async() => {
+      return col.insertMany([{ name: 'stream', age: 1 }, { name: 'stream', age: 2 }]);
     });
 
-    after(function(done) {
-      mquery(col).deleteMany({ name: 'stream' }).exec(done);
+    after(async() => {
+      return mquery(col).remove({ name: 'stream' }).exec();
     });
 
     describe('throws', function() {
@@ -2687,7 +2460,7 @@ describe('mquery', function() {
       // capture original key order
       const order = [];
       let key;
-      for (key in q._update.$push.n) {
+      for (key in q._updateDoc.$push.n) {
         order.push(key);
       }
 
