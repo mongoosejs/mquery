@@ -51,10 +51,6 @@ const docs = await Artist().find(...).where(...);
     - [find()](#find)
     - [findOne()](#findone)
     - [count()](#count)
-    - [remove()](#remove)
-    - [update()](#update)
-        - [the update document](#the-update-document)
-        - [update() options](#update-options)
     - [findOneAndUpdate()](#findoneandupdate)
         - [findOneAndUpdate() options](#findoneandupdate-options)
     - [findOneAndRemove()](#findoneandremove)
@@ -102,7 +98,6 @@ const docs = await Artist().find(...).where(...);
     - [hint()](#hint)
     - [j()](#j)
     - [limit()](#limit)
-    - [maxScan()](#maxscan)
     - [maxTime()](#maxtime)
     - [skip()](#skip)
     - [sort()](#sort)
@@ -114,7 +109,6 @@ const docs = await Artist().find(...).where(...);
     - [writeConcern()](#writeconcern)
         - [Write Concern:](#write-concern)
     - [slaveOk()](#slaveok)
-    - [snapshot()](#snapshot)
     - [tailable()](#tailable)
     - [wtimeout()](#wtimeout)
   - [Helpers](#helpers-1)
@@ -185,99 +179,6 @@ mquery().count(match)
 await mquery().count()
 const number = await mquery().count(match);
 console.log('we found %d matching documents', number);
-```
-
-### remove()
-
-Declares this query a _remove_ query. Optionally pass a match clause.
-
-```js
-mquery().remove()
-mquery().remove(match)
-await mquery().remove()
-await mquery().remove(match)
-```
-
-### update()
-
-Declares this query an _update_ query. Optionally pass an update document, match clause, options.
-
-```js
-mquery().update()
-mquery().update(match, updateDocument)
-mquery().update(match, updateDocument, options)
-
-// the following all execute the command
-await mquery().update()
-await mquery().update({ $set: updateDocument })
-await mquery().update(match, updateDocument)
-await mquery().update(match, updateDocument, options)
-```
-
-#### the update document
-
-All paths passed that are not `$atomic` operations will become `$set` ops. For example:
-
-```js
-await mquery(collection).where({ _id: id }).update({ title: 'words' })
-```
-
-becomes
-
-```js
-await collection.update({ _id: id }, { $set: { title: 'words' } })
-```
-
-This behavior can be overridden using the `overwrite` option (see below).
-
-#### update() options
-
-Options are passed to the `setOptions()` method.
-
-- overwrite
-
-Passing an empty object `{ }` as the update document will result in a no-op unless the `overwrite` option is passed. Without the `overwrite` option, the update operation will be ignored and the promise resolved without sending the command to MongoDB to prevent accidently overwritting documents in the collection.
-
-```js
-var q = mquery(collection).where({ _id: id }).setOptions({ overwrite: true });
-await q.update({ }); // overwrite with an empty doc
-```
-
-The `overwrite` option isn't just for empty objects, it also provides a means to override the default `$set` conversion and send the update document as is.
-
-```js
-// create a base query
-var base = mquery({ _id: 108 }).collection(collection).toConstructor();
-
-const doc = await base().findOne();
-console.log(doc); // { _id: 108, name: 'cajon' })
-
-await base().setOptions({ overwrite: true }).update({ changed: true });
-const doc2 = base.findOne();
-console.log(doc2); // { _id: 108, changed: true }) - the doc was overwritten
-```
-
-- multi
-
-Updates only modify a single document by default. To update multiple documents, set the `multi` option to `true`.
-
-```js
-await mquery()
-  .collection(coll)
-  .update({ name: /^match/ }, { $addToSet: { arr: 4 }}, { multi: true })
-
-// another way of doing it
-await mquery({ name: /^match/ })
-  .collection(coll)
-  .setOptions({ multi: true })
-  .update({ $addToSet: { arr: 4 }})
-
-// update multiple documents with an empty doc
-var q = mquery(collection).where({ name: /^match/ });
-q.setOptions({ multi: true, overwrite: true })
-q.update({ });
-const result = await q.update();
-console.log(result);
 ```
 
 ### findOneAndUpdate()
@@ -896,8 +797,6 @@ This option is only valid for operations that write to the database:
 - `deleteMany()`
 - `findOneAndDelete()`
 - `findOneAndUpdate()`
-- `remove()`
-- `update()`
 - `updateOne()`
 - `updateMany()`
 
@@ -918,18 +817,6 @@ query.limit(20)
 _Cannot be used with `distinct()`._
 
 [MongoDB documentation](http://docs.mongodb.org/manual/reference/method/cursor.limit/)
-
-### maxScan()
-
-Specifies the maxScan option.
-
-```js
-query.maxScan(100)
-```
-
-_Cannot be used with `distinct()`._
-
-[MongoDB documentation](http://docs.mongodb.org/manual/reference/operator/maxScan/)
 
 ### maxTime()
 
@@ -1087,8 +974,6 @@ This option is only valid for operations that write to the database:
 - `deleteMany()`
 - `findOneAndDelete()`
 - `findOneAndUpdate()`
-- `remove()`
-- `update()`
 - `updateOne()`
 - `updateMany()`
 
@@ -1130,20 +1015,6 @@ query.slaveOk(false)
 
 [MongoDB documentation](http://docs.mongodb.org/manual/reference/method/rs.slaveOk/)
 
-### snapshot()
-
-Specifies this query as a snapshot query.
-
-```js
-mquery().snapshot() // true
-mquery().snapshot(true)
-mquery().snapshot(false)
-```
-
-_Cannot be used with `distinct()`._
-
-[MongoDB documentation](http://docs.mongodb.org/manual/reference/operator/snapshot/)
-
 ### tailable()
 
 Sets tailable option.
@@ -1169,8 +1040,6 @@ This option is only valid for operations that write to the database:
 - `deleteMany()`
 - `findOneAndDelete()`
 - `findOneAndUpdate()`
-- `remove()`
-- `update()`
 - `updateOne()`
 - `updateMany()`
 
@@ -1240,11 +1109,9 @@ mquery().setOptions({ collection: coll, limit: 20 })
 - [sort](#sort) *
 - [limit](#limit) *
 - [skip](#skip) *
-- [maxScan](#maxscan) *
 - [maxTime](#maxtime) *
 - [batchSize](#batchsize) *
 - [comment](#comment) *
-- [snapshot](#snapshot) *
 - [hint](#hint) *
 - [collection](#collection): the collection to query against
 

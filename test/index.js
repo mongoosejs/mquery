@@ -1213,32 +1213,11 @@ describe('mquery', function() {
   const negated = {
     limit: { distinct: false, count: true },
     skip: { distinct: false, count: true },
-    maxScan: { distinct: false, count: false },
     batchSize: { distinct: false, count: false },
     maxTime: { distinct: true, count: true, name: 'maxTimeMS' }
   };
   Object.keys(negated).forEach(function(key) {
     simpleOption(key, negated[key]);
-  });
-
-  describe('snapshot', function() {
-    it('works', function() {
-      let query;
-
-      query = mquery();
-      query.snapshot();
-      assert.equal(true, query.options.snapshot);
-
-      query = mquery();
-      query.snapshot(true);
-      assert.equal(true, query.options.snapshot);
-
-      query = mquery();
-      query.snapshot(false);
-      assert.equal(false, query.options.snapshot);
-    });
-    noDistinct('snapshot');
-    no('count', 'snapshot');
   });
 
   describe('hint', function() {
@@ -1682,20 +1661,6 @@ describe('mquery', function() {
         done();
       });
 
-      it('maxScan', function(done) {
-        assert.throws(function() {
-          mquery().maxScan(300).count();
-        }, /maxScan cannot be used with count/);
-        done();
-      });
-
-      it('snapshot', function(done) {
-        assert.throws(function() {
-          mquery().snapshot().count();
-        }, /snapshot cannot be used with count/);
-        done();
-      });
-
       it('tailable', function(done) {
         assert.throws(function() {
           mquery().tailable().count();
@@ -1848,20 +1813,6 @@ describe('mquery', function() {
         done();
       });
 
-      it('maxScan', function(done) {
-        assert.throws(function() {
-          mquery().maxScan(300).distinct();
-        }, /maxScan cannot be used with distinct/);
-        done();
-      });
-
-      it('snapshot', function(done) {
-        assert.throws(function() {
-          mquery().snapshot().distinct();
-        }, /snapshot cannot be used with distinct/);
-        done();
-      });
-
       it('hint', function(done) {
         assert.throws(function() {
           mquery().hint({ x: 1 }).distinct();
@@ -1990,99 +1941,6 @@ describe('mquery', function() {
     });
   });
 
-  describe('remove', function() {
-    describe('with 0 args', function() {
-      const name = 'remove: no args test';
-      before(async() => {
-        return col.insertOne({ name: name });
-      });
-      after(async() => {
-        return col.deleteMany({ name: name });
-      });
-
-      it('does not execute', function(done) {
-        const remove = col.deleteMany;
-        col.deleteMany = function() {
-          col.deleteMany = remove;
-          done(new Error('remove executed!'));
-        };
-
-        mquery(col).where({ name: name }).remove();
-        setTimeout(function() {
-          col.deleteMany = remove;
-          done();
-        }, 10);
-      });
-
-      it('chains', function() {
-        const m = mquery();
-        assert.equal(m, m.remove());
-      });
-    });
-
-    describe('with 1 argument', function() {
-      const name = 'remove: 1 arg test';
-      before(async() => {
-        return col.insertOne({ name: name });
-      });
-      after(async() => {
-        return col.deleteMany({ name: name });
-      });
-
-      describe('that is a', function() {
-        it('plain object', function() {
-          const m = mquery(col).remove({ name: 'Whiskers' });
-          m.remove({ color: '#fff' });
-          assert.deepEqual({ name: 'Whiskers', color: '#fff' }, m._conditions);
-        });
-
-        it('query', function() {
-          const q = mquery({ color: '#fff' });
-          const m = mquery(col).remove({ name: 'Whiskers' });
-          m.remove(q);
-          assert.deepEqual({ name: 'Whiskers', color: '#fff' }, m._conditions);
-        });
-
-        it('function', async() => {
-          await mquery(col).where({ name: name }).remove();
-          const doc = await mquery(col).findOne({ name: name });
-          assert.equal(null, doc);
-        });
-      });
-    });
-
-    describe('with 2 arguments', function() {
-      const name = 'remove: 2 arg test';
-      beforeEach(async() => {
-        await col.deleteMany({});
-        await col.insertMany([{ name: 'shelly' }, { name: name }]);
-        const docs = await mquery(col).find();
-        assert.equal(2, docs.length);
-      });
-
-      describe('plain object + exec', function() {
-        it('works', async() => {
-          await mquery(col).remove({ name: name });
-          const docs = await mquery(col).find();
-          assert.ok(docs);
-          assert.equal(1, docs.length);
-          assert.equal('shelly', docs[0].name);
-        });
-      });
-
-      describe('mquery + exec', function() {
-        it('works', async() => {
-          const m = mquery({ name: name });
-          await mquery(col).remove(m);
-          const docs = await mquery(col).find();
-          assert.ok(docs);
-          assert.equal(1, docs.length);
-          assert.equal('shelly', docs[0].name);
-        });
-      });
-    });
-  });
-
   function validateFindAndModifyOptions(method) {
     describe('validates its option', function() {
       it('sort', function(done) {
@@ -2117,20 +1975,6 @@ describe('mquery', function() {
         assert.throws(function() {
           mquery({}, { batchSize: 3 })[method]();
         }, new RegExp('batchSize cannot be used with ' + method));
-        done();
-      });
-
-      it('maxScan', function(done) {
-        assert.throws(function() {
-          mquery().maxScan(300)[method]();
-        }, new RegExp('maxScan cannot be used with ' + method));
-        done();
-      });
-
-      it('snapshot', function(done) {
-        assert.throws(function() {
-          mquery().snapshot()[method]();
-        }, new RegExp('snapshot cannot be used with ' + method));
         done();
       });
 
@@ -2423,14 +2267,6 @@ describe('mquery', function() {
       });
     });
 
-    describe('remove', function() {
-      it('with exec', async() => {
-        const m = mquery(col).where({ age: 2 }).remove();
-        const res = await m.exec();
-        assert.equal(1, res.deletedCount);
-      });
-    });
-
     describe('deleteOne', function() {
       it('with exec', async() => {
         const m = mquery(col).where({ age: { $gte: 0 } }).deleteOne();
@@ -2562,7 +2398,7 @@ describe('mquery', function() {
 
     describe('throws', function() {
       describe('if used with non-find operations', function() {
-        const ops = ['update', 'findOneAndUpdate', 'remove', 'count', 'distinct'];
+        const ops = ['findOneAndUpdate', 'count', 'distinct'];
 
         ops.forEach(function(op) {
           assert.throws(function() {
