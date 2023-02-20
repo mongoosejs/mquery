@@ -31,11 +31,7 @@ describe('mquery', function() {
       });
     });
     describe('criteria', function() {
-      it('if collection-like is used as collection', function() {
-        const m = mquery(col);
-        assert.equal(col, m._collection.collection);
-      });
-      it('non-collection-like is used as criteria', function() {
+      it('first param is used as criteria', function() {
         const m = mquery({ works: true });
         assert.ok(!m._collection);
         assert.deepEqual({ works: true }, m._conditions);
@@ -44,7 +40,7 @@ describe('mquery', function() {
     describe('options', function() {
       it('are merged when passed', function() {
         let m;
-        m = mquery(col, { w: 'majority' });
+        m = mquery(null, { w: 'majority' });
         assert.deepEqual({ w: 'majority' }, m.options);
         m = mquery({ name: 'mquery' }, { w: 'majority' });
         assert.deepEqual({ w: 'majority' }, m.options);
@@ -1486,13 +1482,13 @@ describe('mquery', function() {
       });
 
       it('when criteria is passed with a exec', async() => {
-        const docs = await mquery(col).find({ name: 'mquery' });
+        const docs = await mquery().collection(col).find({ name: 'mquery' });
         assert.equal(1, docs.length);
 
       });
       it('when Query is passed with a exec', async() => {
         const m = mquery({ name: 'mquery' });
-        const docs = await mquery(col).find(m);
+        const docs = await mquery().collection(col).find(m);
         assert.equal(1, docs.length);
       });
       it('when just nothing is passed and executed', async() => {
@@ -1543,13 +1539,13 @@ describe('mquery', function() {
       });
 
       it('when criteria is passed with a exec', async() => {
-        const doc = await mquery(col).findOne({ name: 'mquery findone' });
+        const doc = await mquery().collection(col).findOne({ name: 'mquery findone' });
         assert.ok(doc);
         assert.equal('mquery findone', doc.name);
       });
       it('when Query is passed with a exec', async() => {
-        const m = mquery(col).where({ name: 'mquery findone' });
-        const doc = await mquery(col).findOne(m);
+        const m = mquery().collection(col).where({ name: 'mquery findone' });
+        const doc = await mquery().collection(col).findOne(m);
         assert.ok(doc);
         assert.equal('mquery findone', doc.name);
       });
@@ -1602,13 +1598,13 @@ describe('mquery', function() {
       });
 
       it('when criteria is passed with a exec', async() => {
-        const count = await mquery(col).count({ name: 'mquery count' });
+        const count = await mquery().collection(col).count({ name: 'mquery count' });
         assert.ok(count);
         assert.ok(1 === count);
       });
       it('when Query is passed with a exec', async() => {
         const m = mquery({ name: 'mquery count' });
-        const count = await mquery(col).count(m);
+        const count = await mquery().collection(col).count(m);
         assert.ok(count);
         assert.ok(1 === count);
       });
@@ -1726,29 +1722,29 @@ describe('mquery', function() {
       });
 
       it('when distinct arg is passed with a exec', async() => {
-        const doc = await mquery(col).distinct('distinct');
+        const doc = await mquery().collection(col).distinct('distinct');
         assert.ok(doc);
       });
       describe('when criteria is passed with a exec', function() {
         it('if distinct arg was declared', async() => {
-          const doc = await mquery(col).distinct('age').distinct({ name: 'mquery distinct' });
+          const doc = await mquery().collection(col).distinct('age').distinct({ name: 'mquery distinct' });
           assert.ok(doc);
         });
         it('but not if distinct arg was not declared', async() => {
           await assert.rejects(function() {
-            return mquery(col).distinct({ name: 'mquery distinct' }).exec();
+            return mquery().collection(col).distinct({ name: 'mquery distinct' }).exec();
           }, /No value for `distinct`/);
         });
       });
       describe('when Query is passed with a exec', function() {
         const m = mquery({ name: 'mquery distinct' });
         it('if distinct arg was declared', async() => {
-          const doc = await mquery(col).distinct('age').distinct(m);
+          const doc = await mquery().collection(col).distinct('age').distinct(m);
           assert.ok(doc);
         });
         it('but not if distinct arg was not declared', async() => {
           await assert.rejects(function() {
-            return mquery(col).distinct(m).exec();
+            return mquery().collection(col).distinct(m).exec();
           }, /No value for `distinct`/);
         });
       });
@@ -1885,7 +1881,7 @@ describe('mquery', function() {
 
       describe('when conds + doc + opts + exec passed', function() {
         it('works', async() => {
-          const m = mquery(col).where({ _id: id });
+          const m = mquery().collection(col).where({ _id: id });
           const res = await m.updateOne({}, { name: 'Sparky' }, {});
           assert.equal(res.modifiedCount, 1);
           const doc = await m.findOne();
@@ -1895,7 +1891,7 @@ describe('mquery', function() {
 
       describe('when conds + doc + exec passed', function() {
         it('works', async() => {
-          const m = mquery(col);
+          const m = mquery().collection(col);
 
           const num = await m.updateOne({ _id: id }, { name: 'fairgrounds' });
           assert.ok(1, num);
@@ -1906,7 +1902,7 @@ describe('mquery', function() {
 
       describe('when doc + exec passed', function() {
         it('works', async() => {
-          const m = mquery(col);
+          const m = mquery().collection(col);
 
           const num = await m.where({ _id: id }).updateOne({ name: 'changed' });
           assert.ok(1, num);
@@ -1917,7 +1913,7 @@ describe('mquery', function() {
 
       describe('when just exec passed', function() {
         it('works', async() => {
-          const m = mquery(col).where({ _id: id });
+          const m = mquery().collection(col).where({ _id: id });
           m.updateOne({ name: 'Frankenweenie' });
           const res = await m.updateOne();
           assert.equal(res.modifiedCount, 1);
@@ -1928,7 +1924,7 @@ describe('mquery', function() {
 
       describe('except when update doc is empty and missing overwrite flag', function() {
         it.skip('works', async() => {
-          const m = mquery(col).where({ _id: id });
+          const m = mquery().collection(col).where({ _id: id });
           const num = await m.updateOne({}, {});
           assert.ok(0 === num);
           await new Promise((res) => setTimeout(res, 300));
@@ -2026,34 +2022,34 @@ describe('mquery', function() {
     });
     describe('with 2 args', function() {
       it('conditions + update', function() {
-        const m = mquery(col);
+        const m = mquery().collection(col);
         m.findOneAndUpdate({ name: name }, { age: 100 });
         assert.deepEqual({ name: name }, m._conditions);
         assert.deepEqual({ age: 100 }, m._updateDoc);
       });
       it('query + update', function() {
         const n = mquery({ name: name });
-        const m = mquery(col);
+        const m = mquery().collection(col);
         m.findOneAndUpdate(n, { age: 100 });
         assert.deepEqual({ name: name }, m._conditions);
         assert.deepEqual({ age: 100 }, m._updateDoc);
       });
       it('update + exec', async() => {
-        const m = mquery(col).where({ name: name });
+        const m = mquery().collection(col).where({ name: name });
         const res = await m.findOneAndUpdate({}, { $inc: { age: 10 } }, { returnDocument: 'after' });
         assert.equal(10, res.value.age);
       });
     });
     describe('with 3 args', function() {
       it('conditions + update + options', function() {
-        const m = mquery(col);
+        const m = mquery().collection(col);
         const n = m.findOneAndUpdate({ name: name }, { works: true }, { returnDocument: 'before' });
         assert.deepEqual({ name: name }, n._conditions);
         assert.deepEqual({ works: true }, n._updateDoc);
         assert.deepEqual({ returnDocument: 'before' }, n.options);
       });
       it('conditions + update + exec', async() => {
-        const m = mquery(col);
+        const m = mquery().collection(col);
         const res = await m.findOneAndUpdate({ name: name }, { works: true }, { returnDocument: 'after' });
         assert.ok(res.value);
         assert.equal(name, res.value.name);
@@ -2062,7 +2058,7 @@ describe('mquery', function() {
     });
     describe('with 4 args', function() {
       it('conditions + update + options + exec', async() => {
-        const m = mquery(col);
+        const m = mquery().collection(col);
         const res = await m.findOneAndUpdate({ name: name }, { works: false }, {});
         assert.ok(res.value);
         assert.equal(name, res.value.name);
@@ -2108,28 +2104,28 @@ describe('mquery', function() {
     });
     describe('with 2 args', function() {
       it('conditions + options', function() {
-        const m = mquery(col);
+        const m = mquery().collection(col);
         m.findOneAndRemove({ name: name }, { returnDocument: 'after' });
         assert.deepEqual({ name: name }, m._conditions);
         assert.deepEqual({ returnDocument: 'after' }, m.options);
       });
       it('query + options', function() {
         const n = mquery({ name: name });
-        const m = mquery(col);
+        const m = mquery().collection(col);
         m.findOneAndRemove(n, { sort: { x: 1 } });
         assert.deepEqual({ name: name }, m._conditions);
         assert.deepEqual({ sort: { x: 1 } }, m.options);
       });
       it('conditions + exec', async() => {
         await col.insertOne({ name: name });
-        const m = mquery(col);
+        const m = mquery().collection(col);
         const res = await m.findOneAndRemove({ name: name });
         assert.equal(name, res.value.name);
       });
       it('query + exec', async() => {
         await col.insertOne({ name: name });
         const n = mquery({ name: name });
-        const m = mquery(col);
+        const m = mquery().collection(col);
         const res = await m.findOneAndRemove(n);
         assert.equal(name, res.value.name);
       });
@@ -2138,7 +2134,7 @@ describe('mquery', function() {
       it('conditions + options + exec', async() => {
         name = 'findOneAndRemove + conds + options + cb';
         await col.insertMany([{ name: name }, { name: 'a' }]);
-        const m = mquery(col);
+        const m = mquery().collection(col);
         const res = await m.findOneAndRemove({ name: name }, { sort: { name: 1 } });
         assert.ok(res.value);
         assert.equal(name, res.value.name);
@@ -2152,7 +2148,7 @@ describe('mquery', function() {
     });
 
     afterEach(async() => {
-      return mquery(col).deleteMany();
+      return mquery().collection(col).deleteMany();
     });
 
     it('requires an op', async() => {
@@ -2163,13 +2159,13 @@ describe('mquery', function() {
 
     describe('find', function() {
       it('works', async() => {
-        const m = mquery(col).find({ name: 'exec' });
+        const m = mquery().collection(col).find({ name: 'exec' });
         const docs = await m.exec();
         assert.equal(2, docs.length);
       });
 
       it('works with readPreferences', async() => {
-        const m = mquery(col).find({ name: 'exec' });
+        const m = mquery().collection(col).find({ name: 'exec' });
         try {
           const ReadPreference = require('mongodb').ReadPreference;
           const rp = new ReadPreference('primary');
@@ -2185,22 +2181,22 @@ describe('mquery', function() {
       });
 
       it('works with hint', async() => {
-        let docs = await mquery(col).hint({ _id: 1 }).find({ name: 'exec' }).exec();
+        let docs = await mquery().collection(col).hint({ _id: 1 }).find({ name: 'exec' }).exec();
         assert.equal(2, docs.length);
 
-        docs = await mquery(col).hint('_id_').find({ age: 1 }).exec();
+        docs = await mquery().collection(col).hint('_id_').find({ age: 1 }).exec();
         assert.equal(1, docs.length);
       });
 
       it('works with readConcern', async() => {
-        const m = mquery(col).find({ name: 'exec' });
+        const m = mquery().collection(col).find({ name: 'exec' });
         m.readConcern('l');
         const docs = await m.exec();
         assert.equal(2, docs.length);
       });
 
       it('works with collation', async() => {
-        const m = mquery(col).find({ name: 'EXEC' });
+        const m = mquery().collection(col).find({ name: 'EXEC' });
         m.collation({ locale: 'en_US', strength: 1 });
         const docs = await m.exec();
         assert.equal(2, docs.length);
@@ -2208,13 +2204,13 @@ describe('mquery', function() {
     });
 
     it('findOne', async() => {
-      const m = mquery(col).findOne({ age: 2 });
+      const m = mquery().collection(col).findOne({ age: 2 });
       const doc = await m.exec();
       assert.equal(2, doc.age);
     });
 
     it('count', async() => {
-      const m = mquery(col).count({ name: 'exec' });
+      const m = mquery().collection(col).count({ name: 'exec' });
       const count = await m.exec();
       assert.equal(2, count);
     });
@@ -2233,34 +2229,34 @@ describe('mquery', function() {
     describe('update', function() {
       describe('updateMany', function() {
         it('works', async() => {
-          await mquery(col).updateMany({ name: 'exec' }, { name: 'test' }).
+          await mquery().collection(col).updateMany({ name: 'exec' }, { name: 'test' }).
             exec();
-          const res = await mquery(col).count({ name: 'test' }).exec();
+          const res = await mquery().collection(col).count({ name: 'test' }).exec();
           assert.equal(res, 2);
         });
         it('works with write concern', async() => {
-          await mquery(col).updateMany({ name: 'exec' }, { name: 'test' })
+          await mquery().collection(col).updateMany({ name: 'exec' }, { name: 'test' })
             .w(1).j(true).wtimeout(1000)
             .exec();
-          const res = await mquery(col).count({ name: 'test' }).exec();
+          const res = await mquery().collection(col).count({ name: 'test' }).exec();
           assert.equal(res, 2);
         });
       });
 
       describe('updateOne', function() {
         it('works', async() => {
-          await mquery(col).updateOne({ name: 'exec' }, { name: 'test' }).
+          await mquery().collection(col).updateOne({ name: 'exec' }, { name: 'test' }).
             exec();
-          const res = await mquery(col).count({ name: 'test' }).exec();
+          const res = await mquery().collection(col).count({ name: 'test' }).exec();
           assert.equal(res, 1);
         });
       });
 
       describe('replaceOne', function() {
         it('works', async() => {
-          await mquery(col).replaceOne({ name: 'exec' }, { name: 'test' }).
+          await mquery().collection(col).replaceOne({ name: 'exec' }, { name: 'test' }).
             exec();
-          const res = await mquery(col).findOne({ name: 'test' }).exec();
+          const res = await mquery().collection(col).findOne({ name: 'test' }).exec();
           assert.equal(res.name, 'test');
           assert.ok(res.age == null);
         });
@@ -2269,13 +2265,13 @@ describe('mquery', function() {
 
     describe('deleteOne', function() {
       it('with exec', async() => {
-        const m = mquery(col).where({ age: { $gte: 0 } }).deleteOne();
+        const m = mquery().collection(col).where({ age: { $gte: 0 } }).deleteOne();
         const res = await m.exec();
         assert.equal(res.deletedCount, 1);
       });
 
       it('with justOne set', async() => {
-        const m = mquery(col).where({ age: { $gte: 0 } }).
+        const m = mquery().collection(col).where({ age: { $gte: 0 } }).
           // Should ignore `justOne`
           setOptions({ justOne: false }).
           deleteOne();
@@ -2286,7 +2282,7 @@ describe('mquery', function() {
 
     describe('deleteMany', function() {
       it('with exec', async() => {
-        const m = mquery(col).where({ age: { $gte: 0 } }).deleteMany();
+        const m = mquery().collection(col).where({ age: { $gte: 0 } }).deleteMany();
         const res = await m.exec();
         assert.equal(res.deletedCount, 2);
       });
@@ -2294,7 +2290,7 @@ describe('mquery', function() {
 
     describe('findOneAndUpdate', function() {
       it('with exec', async() => {
-        const m = mquery(col);
+        const m = mquery().collection(col);
         m.findOneAndUpdate({ name: 'exec', age: 1 }, { $set: { name: 'findOneAndUpdate' } }, { returnDocument: 'after' });
         const res = await m.exec();
         assert.equal('findOneAndUpdate', res.value.name);
@@ -2303,12 +2299,12 @@ describe('mquery', function() {
 
     describe('findOneAndRemove', function() {
       it('with exec', async() => {
-        const m = mquery(col);
+        const m = mquery().collection(col);
         m.findOneAndRemove({ name: 'exec', age: 2 });
         const res = await m.exec();
         assert.equal('exec', res.value.name);
         assert.equal(2, res.value.age);
-        const num = await mquery(col).count({ name: 'exec' });
+        const num = await mquery().collection(col).count({ name: 'exec' });
         assert.equal(1, num);
       });
     });
@@ -2320,7 +2316,7 @@ describe('mquery', function() {
     });
 
     it('calls trace function when executing query', function(done) {
-      const m = mquery(col);
+      const m = mquery().collection(col);
 
       let resultTraceCalled;
 
@@ -2369,17 +2365,17 @@ describe('mquery', function() {
     });
 
     after(async() => {
-      return mquery(col).deleteMany({ name: 'then' }).exec();
+      return mquery().collection(col).deleteMany({ name: 'then' }).exec();
     });
 
     it('returns a promise A+ compat object', function(done) {
-      const m = mquery(col).find();
+      const m = mquery().collection(col).find();
       assert.equal('function', typeof m.then);
       done();
     });
 
     it('creates a promise that is resolved on success', function(done) {
-      const promise = mquery(col).count({ name: 'then' }).then();
+      const promise = mquery().collection(col).count({ name: 'then' }).then();
       promise.then(function(count) {
         assert.equal(2, count);
         done();
@@ -2393,7 +2389,7 @@ describe('mquery', function() {
     });
 
     after(async() => {
-      return mquery(col).deleteMany({ name: 'stream' }).exec();
+      return mquery().collection(col).deleteMany({ name: 'stream' }).exec();
     });
 
     describe('throws', function() {
@@ -2402,14 +2398,14 @@ describe('mquery', function() {
 
         ops.forEach(function(op) {
           assert.throws(function() {
-            mquery(col)[op]().stream();
+            mquery().collection(col)[op]().stream();
           });
         });
       });
     });
 
     it('returns a stream', function(done) {
-      const stream = mquery(col).find({ name: 'stream' }).cursor().stream();
+      const stream = mquery().collection(col).find({ name: 'stream' }).cursor().stream();
       let count = 0;
       let err;
 
