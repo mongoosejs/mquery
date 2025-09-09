@@ -59,7 +59,7 @@ describe('mquery', function() {
       const q = mquery().setOptions(opts);
       q.where(match);
       q.select(select);
-      q.updateOne(update);
+      q.updateOne({}, update);
       q.where(path);
       q.find();
 
@@ -1408,7 +1408,7 @@ describe('mquery', function() {
           const original = { $set: { iTerm: true } };
           const m = mquery().updateOne(original);
           const n = mquery().merge(m);
-          m.updateOne({ $set: { x: 2 } });
+          m.updateOne({}, { $set: { x: 2 } });
           assert.notDeepEqual(m._updateDoc, n._updateDoc);
           done();
         });
@@ -1429,7 +1429,7 @@ describe('mquery', function() {
           const original = { $set: { iTerm: true } };
           const m = mquery().updateOne(original);
           const n = mquery().merge(original);
-          m.updateOne({ $set: { x: 2 } });
+          m.updateOne({}, { $set: { x: 2 } });
           assert.notDeepEqual(m._updateDoc, n._updateDoc);
           done();
         });
@@ -1845,7 +1845,7 @@ describe('mquery', function() {
     });
 
     it('is chainable', function() {
-      const m = mquery({ x: 1 }).updateOne({ y: 2 });
+      const m = mquery({ x: 1 }).updateOne(null, { y: 2 });
       const n = m.where({ y: 2 });
       assert.equal(m, n);
       assert.deepEqual(n._conditions, { x: 1, y: 2 });
@@ -1855,8 +1855,8 @@ describe('mquery', function() {
 
     it('merges update doc arg', function() {
       const a = [1, 2];
-      const m = mquery().where({ name: 'mquery' }).updateOne({ x: 'stuff', a: a });
-      m.updateOne({ z: 'stuff' });
+      const m = mquery().where({ name: 'mquery' }).updateOne(null, { x: 'stuff', a: a });
+      m.updateOne(null, { z: 'stuff' });
       assert.deepEqual(m._updateDoc, { z: 'stuff', x: 'stuff', a: a });
       assert.deepEqual(m._conditions, { name: 'mquery' });
       assert.ok(!m.options.overwrite);
@@ -1904,7 +1904,7 @@ describe('mquery', function() {
         it('works', async() => {
           const m = mquery().collection(col);
 
-          const num = await m.where({ _id: id }).updateOne({ name: 'changed' });
+          const num = await m.where({ _id: id }).updateOne(null, { name: 'changed' });
           assert.ok(1, num);
           const doc = await m.findOne();
           assert.equal(doc.name, 'changed');
@@ -1914,7 +1914,7 @@ describe('mquery', function() {
       describe('when just exec passed', function() {
         it('works', async() => {
           const m = mquery().collection(col).where({ _id: id });
-          m.updateOne({ name: 'Frankenweenie' });
+          m.updateOne(null, { name: 'Frankenweenie' });
           const res = await m.updateOne();
           assert.equal(res.modifiedCount, 1);
           const doc = await m.findOne();
@@ -1988,6 +1988,14 @@ describe('mquery', function() {
 
     validateFindAndModifyOptions('findOneAndUpdate');
 
+    beforeEach(function() {
+      return mquery().collection(col).updateOne({ name }, { name }, { upsert: true });
+    });
+
+    afterEach(function () {
+      return mquery().collection(col).deleteMany();
+    });
+
     describe('with 0 args', function() {
       it('makes no changes', function() {
         const m = mquery();
@@ -1997,27 +2005,19 @@ describe('mquery', function() {
     });
     describe('with 1 arg', function() {
       describe('that is an object', function() {
-        it('updates the doc', function() {
+        it('sets conditions', function() {
           const m = mquery();
-          const n = m.findOneAndUpdate({ $set: { name: '1 arg' } });
-          assert.deepEqual(n._updateDoc, { $set: { name: '1 arg' } });
+          const n = m.findOneAndUpdate({ name: '1 arg' });
+          assert.deepEqual(n._conditions, { name: '1 arg' });
+          assert.strictEqual(n._updateDoc, undefined);
         });
       });
       describe('that is a query', function() {
         it('updates the doc', function() {
-          const m = mquery({ name: name }).updateOne({ x: 1 });
+          const m = mquery({ name: name }).updateOne(null, { x: 1 });
           const n = mquery().findOneAndUpdate(m);
           assert.deepEqual(n._updateDoc, { x: 1 });
         });
-      });
-      it('that is a function', async() => {
-        await col.insertOne({ name: name });
-        const m = mquery({ name: name }).collection(col);
-        name = '1 arg';
-        const n = m.updateOne({ $set: { name: name } }).setOptions({ returnDocument: 'after', includeResultMetadata: true });
-        const res = await n.findOneAndUpdate();
-        assert.ok(res);
-        assert.equal(res.value.name, name);
       });
     });
     describe('with 2 args', function() {
@@ -2036,7 +2036,7 @@ describe('mquery', function() {
       });
       it('update + exec', async() => {
         const m = mquery().collection(col).where({ name: name });
-        const res = await m.findOneAndUpdate({}, { $inc: { age: 10 } }, { returnDocument: 'after', includeResultMetadata: true });
+        const res = await m.findOneAndUpdate({}, { $set: { age: 10 } }, { returnDocument: 'after', includeResultMetadata: true });
         assert.equal(10, res.value.age);
       });
     });
@@ -2057,10 +2057,100 @@ describe('mquery', function() {
       });
       it('empty options', async() => {
         const m = mquery().collection(col);
-        const res = await m.findOneAndUpdate({ name: name }, { works: false }, {});
+        const res = await m.findOneAndUpdate({ name: name }, { works: false }, { returnDocument: 'after' });
         assert.ok(res);
         assert.equal(name, res.name);
-        assert.ok(true === res.works);
+        assert.strictEqual(res.works, false);
+      });
+    });
+  });
+
+  describe('findOneAndReplace', function() {
+    let name = 'findOneAndReplace + fn';
+
+    validateFindAndModifyOptions('findOneAndReplace');
+
+    beforeEach(function() {
+      return mquery().collection(col).updateOne({ name }, { name }, { upsert: true });
+    });
+
+    afterEach(function () {
+      return mquery().collection(col).deleteMany();
+    });
+
+    describe('with 0 args', function() {
+      it('makes no changes', function() {
+        const m = mquery();
+        const n = m.findOneAndReplace();
+        assert.deepEqual(m, n);
+      });
+    });
+
+    describe('with 1 arg', function() {
+      describe('that is an object', function() {
+        it('replaces the doc', function() {
+          const m = mquery();
+          const n = m.findOneAndReplace({ name: '1 arg', age: 10 });
+          assert.deepStrictEqual(n._conditions, { name: '1 arg', age: 10 });
+          assert.strictEqual(n._updateDoc, undefined);
+        });
+      });
+      describe('that is a query', function() {
+        it('replaces the doc', function() {
+          const m = mquery({ name: name }).updateOne(null, { x: 1 });
+          const n = mquery().findOneAndReplace(m);
+          assert.deepEqual(n._updateDoc, { x: 1 });
+        });
+      });
+    });
+
+    describe('with 2 args', function() {
+      it('conditions + replacement', function() {
+        const m = mquery().collection(col);
+        m.findOneAndReplace({ name: name }, { name: 'replaced', age: 100 });
+        assert.deepEqual({ name: name }, m._conditions);
+        assert.deepEqual({ name: 'replaced', age: 100 }, m._updateDoc);
+      });
+      it('query + replacement', function() {
+        const n = mquery({ name: name });
+        const m = mquery().collection(col);
+        m.findOneAndReplace(n, { name: 'replaced', age: 100 });
+        assert.deepEqual({ name: name }, m._conditions);
+        assert.deepEqual({ name: 'replaced', age: 100 }, m._updateDoc);
+      });
+      it('replacement + exec', async() => {
+        await col.insertOne({ name: name });
+        const m = mquery().collection(col).where({ name: name });
+        const res = await m.findOneAndReplace({}, { name: 'replaced', age: 101 }, { returnDocument: 'after', includeResultMetadata: true });
+        assert.ok(res.value);
+        assert.equal(res.value.name, 'replaced');
+        assert.equal(res.value.age, 101);
+      });
+    });
+
+    describe('with 3 args', function() {
+      it('conditions + replacement + options', function() {
+        const m = mquery().collection(col);
+        const n = m.findOneAndReplace({ name: name }, { name: 'replaced', works: true }, { returnDocument: 'before' });
+        assert.deepEqual({ name: name }, n._conditions);
+        assert.deepEqual({ name: 'replaced', works: true }, n._updateDoc);
+        assert.deepEqual({ returnDocument: 'before', overwrite: true }, n.options);
+      });
+      it('conditions + replacement + exec', async() => {
+        await col.insertOne({ name: name });
+        const m = mquery().collection(col);
+        const res = await m.findOneAndReplace({ name: name }, { name: 'replaced', works: true }, { returnDocument: 'after', includeResultMetadata: true });
+        assert.ok(res.value);
+        assert.equal(res.value.name, 'replaced');
+        assert.ok(true === res.value.works);
+      });
+      it('empty options', async() => {
+        await col.insertOne({ name: name });
+        const m = mquery().collection(col);
+        const res = await m.findOneAndReplace({ name: name }, { name: 'replaced', works: false }, { returnDocument: 'after' });
+        assert.ok(res);
+        assert.equal(res.name, 'replaced');
+        assert.ok(false === res.works);
       });
     });
   });
