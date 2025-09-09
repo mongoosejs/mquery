@@ -8,12 +8,12 @@ permissions:
 jobs:
   test:
     # os is not in the matrix, because otherwise there would be way too many testing instances
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:
-        node: [14, 16, 18]
-        mongo: [4.2, 5.0]
+        node: [20, 22]
+        mongo: [7.0, 8.0]
     services:
       mongodb:
         image: mongo:${{ matrix.mongo }}

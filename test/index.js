@@ -1105,7 +1105,7 @@ describe('mquery', function() {
     });
 
     noDistinct('slice');
-    no('count', 'slice');
+    no('countDocuments', 'slice');
   });
 
   // options
@@ -1202,7 +1202,7 @@ describe('mquery', function() {
       });
 
       if (!options.distinct) noDistinct(type);
-      if (!options.count) no('count', type);
+      if (!options.count) no('countDocuments', type);
     });
   }
 
@@ -1333,7 +1333,7 @@ describe('mquery', function() {
       assert.equal(m, m.tailable());
     });
     noDistinct('tailable');
-    no('count', 'tailable');
+    no('countDocuments', 'tailable');
   });
 
   describe('writeConcern', function() {
@@ -1557,32 +1557,32 @@ describe('mquery', function() {
     });
   });
 
-  describe('count', function() {
+  describe('countDocuments', function() {
     describe('with no exec', function() {
       it('does not execute', function() {
         const m = mquery();
         assert.doesNotThrow(function() {
-          m.count();
+          m.countDocuments();
         });
         assert.doesNotThrow(function() {
-          m.count({ x: 1 });
+          m.countDocuments({ x: 1 });
         });
       });
     });
 
     it('is chainable', function() {
       const m = mquery();
-      const n = m.count({ x: 1 }).count().count({ y: 2 });
+      const n = m.countDocuments({ x: 1 }).countDocuments().countDocuments({ y: 2 });
       assert.equal(m, n);
       assert.deepEqual(m._conditions, { x: 1, y: 2 });
-      assert.equal('count', m.op);
+      assert.equal(m.op, 'countDocuments');
     });
 
     it('merges other queries', function() {
       const m = mquery({ name: 'mquery' });
       m.read('nearest');
       m.select('_id');
-      const a = mquery().count(m);
+      const a = mquery().countDocuments(m);
       assert.deepEqual(a._conditions, m._conditions);
       assert.deepEqual(a.options, m.options);
       assert.deepEqual(a._fields, m._fields);
@@ -1598,18 +1598,18 @@ describe('mquery', function() {
       });
 
       it('when criteria is passed with a exec', async() => {
-        const count = await mquery().collection(col).count({ name: 'mquery count' });
+        const count = await mquery().collection(col).countDocuments({ name: 'mquery count' });
         assert.ok(count);
         assert.ok(1 === count);
       });
       it('when Query is passed with a exec', async() => {
         const m = mquery({ name: 'mquery count' });
-        const count = await mquery().collection(col).count(m);
+        const count = await mquery().collection(col).countDocuments(m);
         assert.ok(count);
         assert.ok(1 === count);
       });
       it('when just nothing is passed but executed', async() => {
-        const count = await mquery({ name: 'mquery count' }).collection(col).count();
+        const count = await mquery({ name: 'mquery count' }).collection(col).countDocuments();
         assert.ok(1 === count);
       });
     });
@@ -1617,49 +1617,49 @@ describe('mquery', function() {
     describe('validates its option', function() {
       it('sort', function(done) {
         assert.doesNotThrow(function() {
-          mquery().sort('x').count();
+          mquery().sort('x').countDocuments();
         });
         done();
       });
 
       it('select', function(done) {
         assert.throws(function() {
-          mquery().select('x').count();
+          mquery().select('x').countDocuments();
         }, /field selection and slice cannot be used with count/);
         done();
       });
 
       it('slice', function(done) {
         assert.throws(function() {
-          mquery().where('x').slice(-3).count();
+          mquery().where('x').slice(-3).countDocuments();
         }, /field selection and slice cannot be used with count/);
         done();
       });
 
       it('limit', function(done) {
         assert.doesNotThrow(function() {
-          mquery().limit(3).count();
+          mquery().limit(3).countDocuments();
         });
         done();
       });
 
       it('skip', function(done) {
         assert.doesNotThrow(function() {
-          mquery().skip(3).count();
+          mquery().skip(3).countDocuments();
         });
         done();
       });
 
       it('batchSize', function(done) {
         assert.throws(function() {
-          mquery({}, { batchSize: 3 }).count();
+          mquery({}, { batchSize: 3 }).countDocuments();
         }, /batchSize cannot be used with count/);
         done();
       });
 
       it('tailable', function(done) {
         assert.throws(function() {
-          mquery().tailable().count();
+          mquery().tailable().countDocuments();
         }, /tailable cannot be used with count/);
         done();
       });
@@ -2016,7 +2016,7 @@ describe('mquery', function() {
         name = '1 arg';
         const n = m.updateOne({ $set: { name: name } }).setOptions({ returnDocument: 'after', includeResultMetadata: true });
         const res = await n.findOneAndUpdate();
-        assert.ok(res.value);
+        assert.ok(res);
         assert.equal(res.value.name, name);
       });
     });
@@ -2065,15 +2065,15 @@ describe('mquery', function() {
     });
   });
 
-  describe('findOneAndRemove', function() {
-    let name = 'findOneAndRemove';
+  describe('findOneAndDelete', function() {
+    let name = 'findOneAndDelete';
 
-    validateFindAndModifyOptions('findOneAndRemove');
+    validateFindAndModifyOptions('findOneAndDelete');
 
     describe('with 0 args', function() {
       it('makes no changes', function() {
         const m = mquery();
-        const n = m.findOneAndRemove();
+        const n = m.findOneAndDelete();
         assert.deepEqual(m, n);
       });
     });
@@ -2081,21 +2081,21 @@ describe('mquery', function() {
       describe('that is an object', function() {
         it('updates the doc', function() {
           const m = mquery();
-          const n = m.findOneAndRemove({ name: '1 arg' });
+          const n = m.findOneAndDelete({ name: '1 arg' });
           assert.deepEqual(n._conditions, { name: '1 arg' });
         });
       });
       describe('that is a query', function() {
         it('updates the doc', function() {
           const m = mquery({ name: name });
-          const n = m.findOneAndRemove(m);
+          const n = m.findOneAndDelete(m);
           assert.deepEqual(n._conditions, { name: name });
         });
       });
       it('executes', async() => {
         await col.insertOne({ name: name });
         const m = mquery({ name: name }).collection(col);
-        const res = await m.findOneAndRemove();
+        const res = await m.findOneAndDelete();
         assert.ok(res);
         assert.equal(name, res.name);
       });
@@ -2103,35 +2103,35 @@ describe('mquery', function() {
     describe('with 2 args', function() {
       it('conditions + options', function() {
         const m = mquery().collection(col);
-        m.findOneAndRemove({ name: name }, { returnDocument: 'after' });
+        m.findOneAndDelete({ name: name }, { returnDocument: 'after' });
         assert.deepEqual({ name: name }, m._conditions);
         assert.deepEqual({ returnDocument: 'after' }, m.options);
       });
       it('query + options', function() {
         const n = mquery({ name: name });
         const m = mquery().collection(col);
-        m.findOneAndRemove(n, { sort: { x: 1 } });
+        m.findOneAndDelete(n, { sort: { x: 1 } });
         assert.deepEqual({ name: name }, m._conditions);
         assert.deepEqual({ sort: { x: 1 } }, m.options);
       });
       it('conditions + exec', async() => {
         await col.insertOne({ name: name });
         const m = mquery().collection(col);
-        const res = await m.findOneAndRemove({ name: name });
+        const res = await m.findOneAndDelete({ name: name });
         assert.equal(name, res.name);
       });
       it('query + exec', async() => {
         await col.insertOne({ name: name });
         const n = mquery({ name: name });
         const m = mquery().collection(col);
-        const res = await m.findOneAndRemove(n);
+        const res = await m.findOneAndDelete(n);
         assert.equal(name, res.name);
       });
       it('conditions + options + exec', async() => {
-        name = 'findOneAndRemove + conds + options + cb';
+        name = 'findOneAndDelete + conds + options + cb';
         await col.insertMany([{ name: name }, { name: 'a' }]);
         const m = mquery().collection(col);
-        const res = await m.findOneAndRemove({ name: name }, { sort: { name: 1 }, includeResultMetadata: true });
+        const res = await m.findOneAndDelete({ name: name }, { sort: { name: 1 }, includeResultMetadata: true });
         assert.ok(res.value);
         assert.equal(name, res.value.name);
       });
@@ -2206,7 +2206,7 @@ describe('mquery', function() {
     });
 
     it('count', async() => {
-      const m = mquery().collection(col).count({ name: 'exec' });
+      const m = mquery().collection(col).countDocuments({ name: 'exec' });
       const count = await m.exec();
       assert.equal(2, count);
     });
@@ -2227,14 +2227,14 @@ describe('mquery', function() {
         it('works', async() => {
           await mquery().collection(col).updateMany({ name: 'exec' }, { name: 'test' }).
             exec();
-          const res = await mquery().collection(col).count({ name: 'test' }).exec();
+          const res = await mquery().collection(col).countDocuments({ name: 'test' }).exec();
           assert.equal(res, 2);
         });
         it('works with write concern', async() => {
           await mquery().collection(col).updateMany({ name: 'exec' }, { name: 'test' })
             .w(1).j(true).wtimeout(1000)
             .exec();
-          const res = await mquery().collection(col).count({ name: 'test' }).exec();
+          const res = await mquery().collection(col).countDocuments({ name: 'test' }).exec();
           assert.equal(res, 2);
         });
       });
@@ -2243,7 +2243,7 @@ describe('mquery', function() {
         it('works', async() => {
           await mquery().collection(col).updateOne({ name: 'exec' }, { name: 'test' }).
             exec();
-          const res = await mquery().collection(col).count({ name: 'test' }).exec();
+          const res = await mquery().collection(col).countDocuments({ name: 'test' }).exec();
           assert.equal(res, 1);
         });
       });
@@ -2289,18 +2289,18 @@ describe('mquery', function() {
         const m = mquery().collection(col);
         m.findOneAndUpdate({ name: 'exec', age: 1 }, { $set: { name: 'findOneAndUpdate' } }, { returnDocument: 'after', includeResultMetadata: true });
         const res = await m.exec();
-        assert.equal('findOneAndUpdate', res.value.name);
+        assert.equal(res.value.name, 'findOneAndUpdate');
       });
     });
 
-    describe('findOneAndRemove', function() {
+    describe('findOneAndDelete', function() {
       it('with exec', async() => {
         const m = mquery().collection(col);
-        m.findOneAndRemove({ name: 'exec', age: 2 });
+        m.findOneAndDelete({ name: 'exec', age: 2 });
         const res = await m.exec();
         assert.equal('exec', res.name);
         assert.equal(2, res.age);
-        const num = await mquery().collection(col).count({ name: 'exec' });
+        const num = await mquery().collection(col).countDocuments({ name: 'exec' });
         assert.equal(1, num);
       });
     });
@@ -2371,7 +2371,7 @@ describe('mquery', function() {
     });
 
     it('creates a promise that is resolved on success', function(done) {
-      const promise = mquery().collection(col).count({ name: 'then' }).then();
+      const promise = mquery().collection(col).countDocuments({ name: 'then' }).then();
       promise.then(function(count) {
         assert.equal(2, count);
         done();
