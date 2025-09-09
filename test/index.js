@@ -546,33 +546,33 @@ describe('mquery', function() {
       describe('of length 1', function() {
         it('delegates to circle when center exists', function() {
           const m = mquery().where('loc').within({ center: [10, 10], radius: 3 });
-          assert.deepEqual({ $within: { $center: [[10, 10], 3] } }, m._conditions.loc);
+          assert.deepEqual({ $geoWithin: { $center: [[10, 10], 3] } }, m._conditions.loc);
         });
         it('delegates to box when exists', function() {
           const m = mquery().where('loc').within({ box: [[10, 10], [11, 14]] });
-          assert.deepEqual({ $within: { $box: [[10, 10], [11, 14]] } }, m._conditions.loc);
+          assert.deepEqual({ $geoWithin: { $box: [[10, 10], [11, 14]] } }, m._conditions.loc);
         });
         it('delegates to polygon when exists', function() {
           const m = mquery().where('loc').within({ polygon: [[10, 10], [11, 14], [10, 9]] });
-          assert.deepEqual({ $within: { $polygon: [[10, 10], [11, 14], [10, 9]] } }, m._conditions.loc);
+          assert.deepEqual({ $geoWithin: { $polygon: [[10, 10], [11, 14], [10, 9]] } }, m._conditions.loc);
         });
         it('delegates to geometry when exists', function() {
           const m = mquery().where('loc').within({ type: 'Polygon', coordinates: [[10, 10], [11, 14], [10, 9]] });
-          assert.deepEqual({ $within: { $geometry: { type: 'Polygon', coordinates: [[10, 10], [11, 14], [10, 9]] } } }, m._conditions.loc);
+          assert.deepEqual({ $geoWithin: { $geometry: { type: 'Polygon', coordinates: [[10, 10], [11, 14], [10, 9]] } } }, m._conditions.loc);
         });
       });
 
       describe('of length 2', function() {
         it('delegates to box()', function() {
           const m = mquery().where('loc').within([1, 2], [2, 5]);
-          assert.deepEqual(m._conditions.loc, { $within: { $box: [[1, 2], [2, 5]] } });
+          assert.deepEqual(m._conditions.loc, { $geoWithin: { $box: [[1, 2], [2, 5]] } });
         });
       });
 
       describe('of length > 2', function() {
         it('delegates to polygon()', function() {
           const m = mquery().where('loc').within([1, 2], [2, 5], [2, 4], [1, 3]);
-          assert.deepEqual(m._conditions.loc, { $within: { $polygon: [[1, 2], [2, 5], [2, 4], [1, 3]] } });
+          assert.deepEqual(m._conditions.loc, { $geoWithin: { $polygon: [[1, 2], [2, 5], [2, 4], [1, 3]] } });
         });
       });
     });
