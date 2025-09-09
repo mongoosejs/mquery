@@ -2017,7 +2017,7 @@ describe('mquery', function() {
         const n = m.updateOne({ $set: { name: name } }).setOptions({ returnDocument: 'after', includeResultMetadata: true });
         const res = await n.findOneAndUpdate();
         assert.ok(res);
-        assert.equal(res.name, name);
+        assert.equal(res.value.name, name);
       });
     });
     describe('with 2 args', function() {
@@ -2095,7 +2095,7 @@ describe('mquery', function() {
       it('executes', async() => {
         await col.insertOne({ name: name });
         const m = mquery({ name: name }).collection(col);
-        const res = await m.findOneAndRemove();
+        const res = await m.findOneAndDelete();
         assert.ok(res);
         assert.equal(name, res.name);
       });
@@ -2117,21 +2117,21 @@ describe('mquery', function() {
       it('conditions + exec', async() => {
         await col.insertOne({ name: name });
         const m = mquery().collection(col);
-        const res = await m.findOneAndRemove({ name: name });
+        const res = await m.findOneAndDelete({ name: name });
         assert.equal(name, res.name);
       });
       it('query + exec', async() => {
         await col.insertOne({ name: name });
         const n = mquery({ name: name });
         const m = mquery().collection(col);
-        const res = await m.findOneAndRemove(n);
+        const res = await m.findOneAndDelete(n);
         assert.equal(name, res.name);
       });
       it('conditions + options + exec', async() => {
         name = 'findOneAndDelete + conds + options + cb';
         await col.insertMany([{ name: name }, { name: 'a' }]);
         const m = mquery().collection(col);
-        const res = await m.findOneAndRemove({ name: name }, { sort: { name: 1 }, includeResultMetadata: true });
+        const res = await m.findOneAndDelete({ name: name }, { sort: { name: 1 }, includeResultMetadata: true });
         assert.ok(res.value);
         assert.equal(name, res.value.name);
       });
@@ -2289,7 +2289,7 @@ describe('mquery', function() {
         const m = mquery().collection(col);
         m.findOneAndUpdate({ name: 'exec', age: 1 }, { $set: { name: 'findOneAndUpdate' } }, { returnDocument: 'after', includeResultMetadata: true });
         const res = await m.exec();
-        assert.equal(res.name, 'findOneAndUpdate');
+        assert.equal(res.value.name, 'findOneAndUpdate');
       });
     });
 
@@ -2300,7 +2300,7 @@ describe('mquery', function() {
         const res = await m.exec();
         assert.equal('exec', res.name);
         assert.equal(2, res.age);
-        const num = await mquery().collection(col).count({ name: 'exec' });
+        const num = await mquery().collection(col).countDocuments({ name: 'exec' });
         assert.equal(1, num);
       });
     });
