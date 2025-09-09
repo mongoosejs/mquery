@@ -15,13 +15,10 @@
   "engines": {
     "node": ">=16.0.0"
   },
-  "dependencies": {
-    "debug": "4.x"
-  },
   "devDependencies": {
     "eslint": "8.x",
     "eslint-plugin-mocha-no-only": "1.1.1",
-    "mocha": "9.x",
+    "mocha": "11.x",
     "mongodb": "6.x"
   },
   "bugs": {
