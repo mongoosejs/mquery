@@ -15,14 +15,11 @@
   "engines": {
     "node": ">=14.0.0"
   },
-  "dependencies": {
-    "debug": "4.x"
-  },
   "devDependencies": {
     "eslint": "8.x",
     "eslint-plugin-mocha-no-only": "1.1.1",
-    "mocha": "9.x",
-    "mongodb": "5.x"
+    "mocha": "11.x",
+    "mongodb": "6.x"
   },
   "bugs": {
     "url": "https://github.com/aheckmann/mquery/issues/new"
