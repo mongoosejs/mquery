@@ -1,3 +1,12 @@
+6.0.0 / 2025-11-18
+==================
+ * BREAKING CHANGE: Make calling updateOne(), updateMany(), and findOneAndX() with one arg set the query filter rather than the update to line up with modern expectations of optional arguments
+ * BREAKING CHANGE: remove debug dependency, use node debuglog instead
+ * BREAKING CHANGE: remove count() and findOneAndRemove(): use countDocuments() and findOneAndDelete() instead
+ * BREAKING CHANGE: require Node >= 20.19.0
+ * feat: add findOneAndDelete, findOneAndReplace, countDocuments, estimatedDocumentCount
+ * feat: use mongodb driver 6 in tests
+
 5.0.0 / 2023-02-23
 ==================
  * BREAKING CHANGE: drop callback support #137 [hasezoey](https://github.com/hasezoey)

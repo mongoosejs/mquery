@@ -50,13 +50,22 @@ const docs = await Artist().find(...).where(...);
   - [Helpers](#helpers)
     - [find()](#find)
     - [findOne()](#findone)
-    - [count()](#count)
+    - [countDocuments()](#countdocuments)
+    - [estimatedDocumentCount()](#estimateddocumentcount)
     - [findOneAndUpdate()](#findoneandupdate)
         - [findOneAndUpdate() options](#findoneandupdate-options)
+    - [findOneAndReplace()](#findoneandreplace)
+        - [findOneAndReplace() options](#findoneandreplace-options)
     - [findOneAndRemove()](#findoneandremove)
         - [findOneAndRemove() options](#findoneandremove-options)
     - [distinct()](#distinct)
+    - [updateMany()](#updatemany)
+    - [updateOne()](#updateone)
+    - [replaceOne()](#replaceone)
+    - [deleteOne()](#deleteone)
+    - [deleteMany()](#deletemany)
     - [exec()](#exec)
+    - [cursor()](#cursor)
     - [stream()](#stream)
     - [all()](#all)
     - [and()](#and)
@@ -64,6 +73,7 @@ const docs = await Artist().find(...).where(...);
     - [circle()](#circle)
     - [elemMatch()](#elemmatch)
     - [equals()](#equals)
+    - [eq()](#eq)
     - [exists()](#exists)
     - [geometry()](#geometry)
     - [gt()](#gt)
@@ -169,16 +179,26 @@ if (doc) {
 }
 ```
 
-### count()
+### countDocuments()
 
-Declares this query a _count_ query. Optionally pass a match clause.
+Declares this query a _countDocuments_ query. Optionally pass a match clause.
 
 ```js
-mquery().count()
-mquery().count(match)
-await mquery().count()
-const number = await mquery().count(match);
+mquery().countDocuments()
+mquery().countDocuments(match)
+await mquery().countDocuments()
+const number = await mquery().countDocuments(match);
 console.log('we found %d matching documents', number);
+```
+
+### estimatedDocumentCount()
+
+Declares this query an _estimatedDocumentCount_ query. Gets an estimated count of documents in a collection using collection metadata.
+
+```js
+mquery().estimatedDocumentCount()
+const number = await mquery().estimatedDocumentCount();
+console.log('estimated documents: %d', number);
 ```
 
 ### findOneAndUpdate()
@@ -191,7 +211,7 @@ When executed, the first matching document (if found) is modified according to t
 
 Options are passed to the `setOptions()` method.
 
-- `returnDocument`: string - `'after'` to return the modified document rather than the original. defaults to `'before'`
+- `new`: boolean - true to return the modified document rather than the original. defaults to false
 - `upsert`: boolean - creates the object if it doesn't exist. defaults to false
 - `sort`: if multiple docs are found by the match condition, sets the sort order to choose which doc to update
 
@@ -205,7 +225,36 @@ query.findOneAndUpdate(match, updateDocument, options)
 await query.findOneAndUpdate()
 await query.findOneAndUpdate(updateDocument)
 await query.findOneAndUpdate(match, updateDocument)
-const doc = await await query.findOneAndUpdate(match, updateDocument, options);
+const doc = await query.findOneAndUpdate(match, updateDocument, options);
+if (doc) {
+  // the document may not be found
+  console.log(doc);
+}
+```
+
+### findOneAndReplace()
+
+Declares this query a _findOneAndReplace_ query. Finds a matching document, replaces it with the provided replacement, and returns the found document (if any).
+
+#### findOneAndReplace() options
+
+Options are passed to the `setOptions()` method.
+
+- `new`: boolean - true to return the modified document rather than the original. defaults to false
+- `upsert`: boolean - creates the object if it doesn't exist. defaults to false
+- `sort`: if multiple docs are found by the match condition, sets the sort order to choose which doc to replace
+
+```js
+query.findOneAndReplace()
+query.findOneAndReplace(replacement)
+query.findOneAndReplace(match, replacement)
+query.findOneAndReplace(match, replacement, options)
+
+// the following all execute the command
+await query.findOneAndReplace()
+await query.findOneAndReplace(replacement)
+await query.findOneAndReplace(match, replacement)
+const doc = await query.findOneAndReplace(match, replacement, options);
 if (doc) {
   // the document may not be found
   console.log(doc);
@@ -259,6 +308,65 @@ const result = await mquery().distinct(match, field);
 console.log(result);
 ```
 
+### updateMany()
+
+Declares this query an _updateMany_ query. Updates all documents that match `criteria`.
+
+When executed, the first argument is the query, and the second argument is the update document.
+
+_All paths passed that are not $atomic operations will become $set ops._
+
+```js
+mquery().updateMany({ name: /^match/ }, { field: 'value' })
+await mquery().updateMany({ name: /^match/ }, { field: 'value' })
+await mquery().where({ name: /^match/ }).updateMany({ field: 'value' })
+```
+
+### updateOne()
+
+Declares this query an _updateOne_ query. Updates only the first document that matches `criteria`.
+
+When executed, the first argument is the query, and the second argument is the update document.
+
+_All paths passed that are not $atomic operations will become $set ops._
+
+```js
+mquery().updateOne({ name: 'match' }, { field: 'value' })
+await mquery().updateOne({ name: 'match' }, { field: 'value' })
+await mquery().where({ name: 'match' }).updateOne({ field: 'value' })
+```
+
+### replaceOne()
+
+Declares this query a _replaceOne_ query. Replaces the first document that matches `criteria` with the provided replacement document.
+
+Similar to `updateOne()`, except `replaceOne()` is not allowed to use atomic modifiers (`$set`, `$push`, etc.). Calling `replaceOne()` will always replace the existing doc.
+
+```js
+mquery().replaceOne({ _id: 1 }, { name: 'new name', age: 25 })
+await mquery().replaceOne({ _id: 1 }, { name: 'new name', age: 25 })
+```
+
+### deleteOne()
+
+Declares this query a _deleteOne_ query. Deletes the first document that matches `criteria`.
+
+```js
+mquery().deleteOne({ name: 'match' })
+await mquery().deleteOne({ name: 'match' })
+await mquery().where({ name: 'match' }).deleteOne()
+```
+
+### deleteMany()
+
+Declares this query a _deleteMany_ query. Deletes all documents that match `criteria`.
+
+```js
+mquery().deleteMany({ name: /^match/ })
+await mquery().deleteMany({ name: /^match/ })
+await mquery().where({ name: /^match/ }).deleteMany()
+```
+
 ### exec()
 
 Executes the query.
@@ -266,6 +374,22 @@ Executes the query.
 ```js
 const docs = await mquery().findOne().where('route').intersects(polygon).exec()
 ```
+
+### cursor()
+
+Returns a cursor for the given `find` query.
+
+```js
+const cursor = mquery().find({ name: /^match/ }).cursor();
+cursor.on('data', function(doc) {
+  console.log(doc);
+});
+cursor.on('end', function() {
+  console.log('done');
+});
+```
+
+Note: this only works with `find()` operations.
 
 ### stream()
 
@@ -354,6 +478,22 @@ query.elemMatch('comment', function (elem) {
 Specifies the complementary comparison value for the path specified with `where()`.
 
 ```js
+mquery().where('age').equals(49);
+
+// is the same as
+
+mquery().where({ 'age': 49 });
+```
+
+### eq()
+
+Alias of `equals()`. Specifies the complementary comparison value for the path specified with `where()`.
+
+```js
+mquery().where('age').eq(49);
+
+// is the same as
+
 mquery().where('age').equals(49);
 
 // is the same as
