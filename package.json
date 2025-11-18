@@ -13,7 +13,7 @@
     "url": "git://github.com/aheckmann/mquery.git"
   },
   "engines": {
-    "node": ">=16.0.0"
+    "node": ">=20.19.0"
   },
   "devDependencies": {
     "eslint": "8.x",

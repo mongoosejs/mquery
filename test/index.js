@@ -1984,7 +1984,7 @@ describe('mquery', function() {
   }
 
   describe('findOneAndUpdate', function() {
-    let name = 'findOneAndUpdate + fn';
+    const name = 'findOneAndUpdate + fn';
 
     validateFindAndModifyOptions('findOneAndUpdate');
 
@@ -1992,7 +1992,7 @@ describe('mquery', function() {
       return mquery().collection(col).updateOne({ name }, { name }, { upsert: true });
     });
 
-    afterEach(function () {
+    afterEach(function() {
       return mquery().collection(col).deleteMany();
     });
 
@@ -2066,7 +2066,7 @@ describe('mquery', function() {
   });
 
   describe('findOneAndReplace', function() {
-    let name = 'findOneAndReplace + fn';
+    const name = 'findOneAndReplace + fn';
 
     validateFindAndModifyOptions('findOneAndReplace');
 
@@ -2074,7 +2074,7 @@ describe('mquery', function() {
       return mquery().collection(col).updateOne({ name }, { name }, { upsert: true });
     });
 
-    afterEach(function () {
+    afterEach(function() {
       return mquery().collection(col).deleteMany();
     });
 

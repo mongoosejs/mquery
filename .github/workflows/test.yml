@@ -12,7 +12,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node: ['lts/*', 'lts/-1', 'latest']
+        node: ['20', '22', '24']
         mongo: [7.0, 8.0]
     services:
       mongodb:
