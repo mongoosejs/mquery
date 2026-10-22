@@ -178,5 +178,48 @@ describe('lib/utils', function() {
 
       assert.strictEqual({}.polluted, void 0);
     });
+
+    it('does not merge into inherited properties like toString', function() {
+      const payload = JSON.parse('{"toString":{"polluted":1},"valueOf":{"call":{"polluted":1}}}');
+      const obj = {};
+      utils.merge(obj, payload);
+
+      assert.strictEqual(Object.prototype.toString.polluted, void 0);
+      assert.strictEqual(Function.prototype.call.polluted, void 0);
+      assert.deepStrictEqual(obj.toString, { polluted: 1 });
+      assert.deepStrictEqual(obj.valueOf, { call: { polluted: 1 } });
+    });
+
+    it('still merges into existing own properties', function() {
+      const obj = { a: { b: 1 } };
+      utils.merge(obj, { a: { c: 2 } });
+      assert.deepStrictEqual(obj, { a: { b: 1, c: 2 } });
+    });
+  });
+
+  describe('mergeClone', function() {
+    it('avoids prototype pollution', function() {
+      const payload = JSON.parse('{"__proto__": {"polluted": "vulnerable"}}');
+      utils.mergeClone({}, payload);
+
+      assert.strictEqual({}.polluted, void 0);
+    });
+
+    it('does not merge into inherited properties like toString', function() {
+      const payload = JSON.parse('{"toString":{"polluted":1},"valueOf":{"call":{"polluted":1}}}');
+      const obj = {};
+      utils.mergeClone(obj, payload);
+
+      assert.strictEqual(Object.prototype.toString.polluted, void 0);
+      assert.strictEqual(Function.prototype.call.polluted, void 0);
+      assert.deepStrictEqual(obj.toString, { polluted: 1 });
+      assert.deepStrictEqual(obj.valueOf, { call: { polluted: 1 } });
+    });
+
+    it('still merges into existing own properties', function() {
+      const obj = { a: { b: 1 } };
+      utils.mergeClone(obj, { a: { c: 2 } });
+      assert.deepStrictEqual(obj, { a: { b: 1, c: 2 } });
+    });
   });
 });

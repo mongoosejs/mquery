@@ -911,6 +911,166 @@ describe('mquery', function() {
     });
   });
 
+  describe('prototype pollution', function() {
+    const helpers = {
+      gt: (q, path) => q.gt(path, 1),
+      gte: (q, path) => q.gte(path, 1),
+      lt: (q, path) => q.lt(path, 1),
+      lte: (q, path) => q.lte(path, 1),
+      ne: (q, path) => q.ne(path, 1),
+      in: (q, path) => q.in(path, [1]),
+      nin: (q, path) => q.nin(path, [1]),
+      all: (q, path) => q.all(path, [1]),
+      regex: (q, path) => q.regex(path, /x/),
+      size: (q, path) => q.size(path, 1),
+      maxDistance: (q, path) => q.maxDistance(path, 1),
+      minDistance: (q, path) => q.minDistance(path, 1),
+      mod: (q, path) => q.mod(path, [2, 1]),
+      exists: (q, path) => q.exists(path, true),
+      elemMatch: (q, path) => q.elemMatch(path, { a: 1 }),
+      box: (q, path) => q.box(path, [0, 0], [1, 1]),
+      polygon: (q, path) => q.polygon(path, [0, 0], [1, 1], [1, 0]),
+      circle: (q, path) => q.circle(path, { center: [0, 0], radius: 1 }),
+      near: (q, path) => q.near(path, { center: [0, 0] }),
+      geometry: (q, path) => q.where(path).within().geometry({ type: 'Point', coordinates: [0, 0] })
+    };
+
+    function assertNotPolluted() {
+      const keys = Object.getOwnPropertyNames(Object.prototype).filter(key => key.startsWith('$'));
+      for (const key of keys) {
+        delete Object.prototype[key];
+      }
+      assert.deepEqual(keys, []);
+      assert.deepEqual(Object.keys(Object).filter(key => key.startsWith('$')), []);
+      assert.deepEqual(Object.keys(Object.prototype.toString), []);
+    }
+
+    afterEach(assertNotPolluted);
+
+    for (const path of ['__proto__', 'constructor', 'prototype']) {
+      it(`throws if where() is called with ${path}`, function() {
+        const re = new RegExp(`Cannot use \`${path}\` as a query path`);
+        assert.throws(() => mquery().where(path), re);
+        assert.throws(() => mquery().where(path, { $gt: 1 }), re);
+      });
+
+      for (const [name, fn] of Object.entries(helpers)) {
+        it(`${name}() throws on ${path} path`, function() {
+          const m = mquery();
+          assert.throws(() => fn(m, path), /as a query path/);
+          assert.equal(Object.getPrototypeOf(m._conditions), Object.prototype);
+          assert.deepEqual(Object.keys(m._conditions), []);
+        });
+      }
+    }
+
+    for (const [name, fn] of Object.entries(helpers)) {
+      it(`${name}() does not reuse inherited properties like toString`, function() {
+        const m = mquery();
+        fn(m, 'toString');
+        assert.ok(Object.prototype.hasOwnProperty.call(m._conditions, 'toString'));
+        assert.notStrictEqual(m._conditions.toString, Object.prototype.toString);
+      });
+    }
+
+    it('throws on non-string paths that convert to special properties', function() {
+      for (const name of ['gt', 'in', 'size', 'mod', 'exists', 'elemMatch', 'box', 'circle', 'near']) {
+        for (const path of [['__proto__'], ['constructor']]) {
+          const m = mquery();
+          assert.throws(() => helpers[name](m, path), /as a query path/, name);
+          assert.deepEqual(Object.keys(m._conditions), []);
+        }
+      }
+    });
+
+    it('throws on special property path when using where() with a 1 arg helper', function() {
+      assert.throws(() => mquery().where('__proto__').gt(1), /Cannot use `__proto__` as a query path/);
+      assert.throws(() => mquery().where('constructor').gt(1), /Cannot use `constructor` as a query path/);
+    });
+
+    it('does not merge filters into inherited properties like toString', function() {
+      const m = mquery().find(JSON.parse('{"toString":{"$gt":1},"name":"x"}'));
+      assert.deepEqual(m._conditions, { toString: { $gt: 1 }, name: 'x' });
+      assert.strictEqual(Object.prototype.toString.$gt, undefined);
+
+      mquery().where(JSON.parse('{"valueOf":{"polluted":1}}'));
+      mquery().merge(JSON.parse('{"toString":{"call":{"polluted":1}}}'));
+      assert.strictEqual(Object.prototype.valueOf.polluted, undefined);
+      assert.strictEqual(Function.prototype.call.polluted, undefined);
+    });
+
+    it('does not merge updates into inherited properties like toString', function() {
+      const m = mquery().updateOne({}, JSON.parse('{"toString":{"polluted":1}}'));
+      assert.deepEqual(m._updateDoc, { toString: { polluted: 1 } });
+      assert.strictEqual(Object.prototype.toString.polluted, undefined);
+    });
+
+    describe('select', function() {
+      it('throws on special property paths in strings and arrays', function() {
+        for (const path of ['__proto__', '-__proto__', 'constructor', 'prototype']) {
+          assert.throws(() => mquery().select('a ' + path), /as a query path/);
+          assert.throws(() => mquery().select(['a', path]), /as a query path/);
+        }
+      });
+
+      it('skips special properties in objects', function() {
+        const m = mquery().select(JSON.parse('{"__proto__":{"secret":1},"constructor":1,"prototype":1,"a":1}'));
+        assert.deepEqual(m._fields, { a: 1 });
+        assert.equal(Object.getPrototypeOf(m._fields), Object.prototype);
+        assert.strictEqual(m._fields.secret, undefined);
+      });
+    });
+
+    describe('slice', function() {
+      it('throws on special property paths', function() {
+        for (const path of ['__proto__', 'constructor', 'prototype']) {
+          assert.throws(() => mquery().slice(path, 5), /as a query path/);
+          assert.throws(() => mquery().slice(path, 5, 10), /as a query path/);
+        }
+      });
+
+      it('skips special properties in objects', function() {
+        const m = mquery().slice(JSON.parse('{"__proto__":5,"constructor":5,"a":5}'));
+        assert.deepEqual(m._fields, { a: { $slice: 5 } });
+        assert.equal(Object.getPrototypeOf(m._fields), Object.prototype);
+      });
+    });
+
+    describe('sort', function() {
+      it('throws on special property paths in strings', function() {
+        for (const path of ['__proto__', '-__proto__', 'constructor', 'prototype']) {
+          assert.throws(() => mquery().sort('a ' + path), /as a query path/);
+        }
+      });
+
+      it('skips special properties in objects', function() {
+        const m = mquery().sort(JSON.parse('{"__proto__":{"$meta":"textScore"},"constructor":1,"a":-1}'));
+        assert.deepEqual(m.options.sort, { a: -1 });
+        assert.equal(Object.getPrototypeOf(m.options.sort), Object.prototype);
+        assert.strictEqual(m.options.sort.$meta, undefined);
+      });
+    });
+
+    describe('hint', function() {
+      it('skips special properties', function() {
+        const m = mquery().hint(JSON.parse('{"__proto__":{"x":1},"constructor":1,"a":1}'));
+        assert.deepEqual(m.options.hint, { a: 1 });
+        assert.equal(Object.getPrototypeOf(m.options.hint), Object.prototype);
+        assert.strictEqual(m.options.hint.x, undefined);
+      });
+    });
+
+    describe('setOptions', function() {
+      it('skips special properties', function() {
+        const m = mquery({ a: 1 }).setOptions(JSON.parse('{"__proto__":{"overwrite":true},"constructor":[{"evil":1}],"prototype":1,"limit":5}'));
+        assert.deepEqual(m.options, { limit: 5 });
+        assert.equal(Object.getPrototypeOf(m.options), Object.prototype);
+        assert.strictEqual(m.options.overwrite, undefined);
+        assert.deepEqual(m._conditions, { a: 1 });
+      });
+    });
+  });
+
   // fields
 
   describe('select', function() {
