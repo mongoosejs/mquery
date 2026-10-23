@@ -1,3 +1,8 @@
+4.0.4 / 2026-10-23
+==================
+ * fix: avoid prototype pollution with in(), gte(), etc.
+ * fix: avoid merging filters and updates into inherited properties like toString
+
 4.0.3 / 2022-05-17
 ==================
  * fix: allow using `comment` with `findOneAndUpdate()`, `count()`, `distinct()` and `hint` with `findOneAndUpdate()` Automattic/mongoose#11793
