@@ -1001,7 +1001,7 @@ describe('mquery', function() {
 
     it('does not merge updates into inherited properties like toString', function() {
       const m = mquery().updateOne({}, JSON.parse('{"toString":{"polluted":1}}'));
-      assert.deepEqual(m._updateDoc, { toString: { polluted: 1 } });
+      assert.deepEqual(m._update, { toString: { polluted: 1 } });
       assert.strictEqual(Object.prototype.toString.polluted, undefined);
     });
 
