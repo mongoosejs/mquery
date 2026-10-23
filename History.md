@@ -1,3 +1,8 @@
+4.0.4 / 2026-10-23
+==================
+ * fix: avoid prototype pollution with in(), gte(), etc.
+ * fix: avoid merging filters and updates into inherited properties like toString
+
 5.0.0 / 2023-02-23
 ==================
  * BREAKING CHANGE: drop callback support #137 [hasezoey](https://github.com/hasezoey)
@@ -5,7 +10,6 @@
  * BREAKING CHANGE: remove long deprecated `update`, `remove` functions #136 [hasezoey](https://github.com/hasezoey)
  * BREAKING CHANGE: remove collection ducktyping: first param to `mquery()` is now always the query filter #138
  * feat: support MongoDB Node driver 5 #137 [hasezoey](https://github.com/hasezoey)
-
 4.0.3 / 2022-05-17
 ==================
  * fix: allow using `comment` with `findOneAndUpdate()`, `count()`, `distinct()` and `hint` with `findOneAndUpdate()` Automattic/mongoose#11793
