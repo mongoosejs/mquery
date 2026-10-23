@@ -1,3 +1,8 @@
+5.0.1 / 2026-10-23
+==================
+ * fix: avoid prototype pollution with in(), gte(), etc.
+ * fix: avoid merging filters and updates into inherited properties like toString
+
 4.0.4 / 2026-10-23
 ==================
  * fix: avoid prototype pollution with in(), gte(), etc.
