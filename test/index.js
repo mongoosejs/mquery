@@ -1414,7 +1414,6 @@ describe('mquery', function() {
       });
     });
 
-    noDistinct('hint');
   });
 
   describe('j', function() {
@@ -1969,11 +1968,11 @@ describe('mquery', function() {
         done();
       });
 
-      it('hint', function(done) {
-        assert.throws(function() {
-          mquery().hint({ x: 1 }).distinct();
-        }, /hint cannot be used with distinct/);
-        done();
+      it('hint', function() {
+        const hint = { x: 1 };
+        const query = mquery().hint(hint).distinct('name');
+
+        assert.deepEqual(query.options.hint, hint);
       });
 
       it('tailable', function(done) {
